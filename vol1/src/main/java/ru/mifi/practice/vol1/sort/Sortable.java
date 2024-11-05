@@ -1,5 +1,7 @@
 package ru.mifi.practice.vol1.sort;
 
+import java.util.Arrays;
+
 @FunctionalInterface
 public interface Sortable<T extends Comparable<T>> {
     void sort(T[] data);
@@ -16,9 +18,30 @@ public interface Sortable<T extends Comparable<T>> {
             public <T extends Comparable<T>> Sortable<T> newSorting() {
                 return new SelectionSorting<>();
             }
+        },
+        QSORT {
+            @Override
+            public <T extends Comparable<T>> Sortable<T> newSorting() {
+                return new QuickSorting<>();
+            }
         };
 
         public abstract <T extends Comparable<T>> Sortable<T> newSorting();
+
+        @Override
+        public String toString() {
+            return String.format("%9s", this.name());
+        }
+    }
+
+    final class QuickSorting<T extends Comparable<T>> implements Sortable<T> {
+        private QuickSorting() {
+        }
+
+        @Override
+        public void sort(T[] data) {
+            Arrays.sort(data);
+        }
     }
 
     final class BubbleSorting<T extends Comparable<T>> implements Sortable<T> {
