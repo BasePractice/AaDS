@@ -131,7 +131,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-pmd-plugin</artifactId>
-                <version>3.19.0</version>
+                <version>3.25.0</version>
                 <configuration>
                     <analysisCache>true</analysisCache>
                     <analysisCacheLocation>${project.build.directory}/pmd/pmd.cache</analysisCacheLocation>
@@ -149,13 +149,6 @@
                         <phase>validate</phase>
                         <goals>
                             <goal>check</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>duplicate</id>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>aggregate-cpd</goal>
                         </goals>
                     </execution>
                 </executions>
