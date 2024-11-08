@@ -1,0 +1,46 @@
+== Представление рекурсии
+
+[source]
+----
+pastor@MacBook-Pro-Andrej-2 vol2 % javap -c Recursion.class
+----
+
+Результат работы команды
+
+[source]
+----
+pastor@MacBook-Pro-Andrej-2 vol2 % javap -c Recursion.class
+Compiled from "Recursion.java"
+public final class ru.mifi.practice.vol2.Recursion {
+  public ru.mifi.practice.vol2.Recursion();
+    Code:
+       0: aload_0
+       1: invokespecial #1                  // Method java/lang/Object."<init>":()V
+       4: return
+
+  public static void main(java.lang.String[]);
+    Code:
+       0: new           #7                  // class ru/mifi/practice/vol2/Recursion
+       3: dup
+       4: invokespecial #9                  // Method "<init>":()V
+       7: iconst_3
+       8: invokevirtual #10                 // Method dec:(I)V
+      11: return
+
+  void dec(int);
+    Code:
+       0: getstatic     #14                 // Field java/lang/System.out:Ljava/io/PrintStream;
+       3: iload_1
+       4: invokevirtual #20                 // Method java/io/PrintStream.println:(I)V
+       7: iload_1
+       8: iconst_1
+       9: if_icmpgt     13
+      12: return
+      13: aload_0
+      14: iload_1
+      15: iconst_1
+      16: isub
+      17: invokevirtual #10                 // Method dec:(I)V
+      20: return
+}
+----

@@ -27,6 +27,7 @@
 
     <modules>
         <module>vol1</module>
+        <module>vol2</module>
     </modules>
 
     <dependencyManagement>
