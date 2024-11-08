@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HexFormat;
+import java.util.Locale;
 import java.util.Optional;
 
 
@@ -115,9 +116,13 @@ public interface VirtualMachine {
                 this.data = data;
             }
 
+            private Default(String text) {
+                this.data = HexFormat.of().parseHex(text);
+            }
+
             @Override
             public String toString() {
-                return HexFormat.of().formatHex(data);
+                return HexFormat.of().formatHex(data).toUpperCase(Locale.ROOT);
             }
 
             @Override
@@ -164,6 +169,11 @@ public interface VirtualMachine {
         public void write(ByteArrayOutputStream output) throws IOException {
             type.write(output, value);
         }
+
+        @Override
+        public String toString() {
+            return type + "(" + (value() == null ? "" : value()) + ")";
+        }
     }
 
     final class Default implements VirtualMachine {
@@ -182,7 +192,7 @@ public interface VirtualMachine {
         public Value eval(Binary input, Context context) throws IOException {
             Deque<Value> stack = context.stack();
             try (InputStream stream = new ByteArrayInputStream(input.data())) {
-                int read = -1;
+                int read;
                 while ((read = stream.read()) != -1) {
                     Optional<Op> code = Op.fromCode((byte) read);
                     if (code.isPresent()) {
@@ -194,11 +204,13 @@ public interface VirtualMachine {
                             }
                         }
                         op.eval(stack);
+                    } else {
+                        throw new IllegalArgumentException("Unknown op: " + read);
                     }
                 }
             }
             if (stack.isEmpty()) {
-                throw new IllegalArgumentException("Stack is empty");
+                return DefaultValue.none();
             }
             return stack.pop();
         }
@@ -226,7 +238,6 @@ public interface VirtualMachine {
             return new Binary.Default(output.toByteArray());
         }
 
-        //CHECKSTYLE:OFF
         private void processing(String input, Deque<Value> stack, Operation operation) {
             String[] parts = input.split("\\s+");
             for (String part : parts) {
@@ -243,7 +254,6 @@ public interface VirtualMachine {
                 }
             }
         }
-        //CHECKSTYLE:ON
 
         @SuppressWarnings("PMD.LooseCoupling")
         enum Op implements OpCode {
