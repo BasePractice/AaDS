@@ -24,7 +24,7 @@ public interface VirtualMachine {
         NONE(0) {
             @Override
             public void write(ByteArrayOutputStream output, Object value) {
-                output.write(0);
+                //None
             }
 
             @Override
@@ -36,7 +36,6 @@ public interface VirtualMachine {
             @Override
             public void write(ByteArrayOutputStream output, Object value) {
                 Number number = (Number) value;
-                output.write(code());
                 output.write(number.intValue());
             }
 
@@ -48,7 +47,6 @@ public interface VirtualMachine {
             @Override
             public void write(ByteArrayOutputStream output, Object value) throws IOException {
                 String str = (String) value;
-                output.write(code());
                 output.write(str.length());
                 output.write(str.getBytes(StandardCharsets.UTF_8));
             }
@@ -66,7 +64,6 @@ public interface VirtualMachine {
         }, BOOL(3) {
             @Override
             public void write(ByteArrayOutputStream output, Object value) {
-                output.write(code());
                 output.write((boolean) value ? 1 : 0);
             }
 
@@ -91,7 +88,7 @@ public interface VirtualMachine {
             throw new IllegalArgumentException("Unknown virtual machine code: " + code);
         }
 
-        int code() {
+        public int code() {
             return code;
         }
 
@@ -184,6 +181,7 @@ public interface VirtualMachine {
 
         @Override
         public void write(ByteArrayOutputStream output) throws IOException {
+            output.write(type().code());
             type.write(output, value);
         }
 
