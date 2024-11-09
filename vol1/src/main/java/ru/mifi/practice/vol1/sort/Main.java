@@ -14,7 +14,7 @@ public abstract class Main {
     }
 
     public static void main(String[] args) {
-        Integer[] data = generateSlice(10000);
+        Integer[] data = generateSlice(1000000);
         for (Sortable.Type type : Sortable.Type.values()) {
             Sortable<Integer> sortable = type.newSorting();
             Integer[] clone = data.clone();

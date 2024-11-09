@@ -58,7 +58,7 @@ public final class PolskaMachine implements VirtualMachine {
             for (int i = 0; i < op.args(); i++) {
                 try {
                     if (stack.isEmpty()) {
-                        Type.NONE.write(output, null);
+                        output.write(Type.NONE.code());
                     } else {
                         Value value = stack.pop();
                         value.write(output);
