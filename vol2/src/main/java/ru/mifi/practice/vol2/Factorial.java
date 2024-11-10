@@ -11,15 +11,15 @@ public final class Factorial {
         return n <= 1 ? 1 : n * recursiveFactorial(n - 1);
     }
 
+    public int recursiveFactorial() {
+        return recursiveFactorial(n);
+    }
+
     public int iterationFactorial() {
         int fact = 1;
         for (int i = 1; i <= n; i++) {
             fact = fact * i;
         }
         return fact;
-    }
-
-    public int recursiveFactorial() {
-        return recursiveFactorial(n);
     }
 }
