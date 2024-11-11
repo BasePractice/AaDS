@@ -2,6 +2,9 @@ package ru.mifi.practice.vol2.parser;
 
 import java.util.Optional;
 
+/**
+ * Может ли разборщик обработать все правильные математические выражения?
+ */
 public interface MathCalculator {
     /*
     <expr>    : <term> + <expr>
@@ -19,7 +22,9 @@ public interface MathCalculator {
 
         @Override
         public Number evaluate(String expression) {
-            return new Parser(expression).parseExpression().evaluate();
+            Expression parsed = new Parser(expression).parseExpr();
+            System.out.println("Parsed: " + parsed);
+            return parsed.evaluate();
         }
 
         enum TokenType {
@@ -53,6 +58,11 @@ public interface MathCalculator {
                 public Number evaluate() {
                     return number;
                 }
+
+                @Override
+                public String toString() {
+                    return number.toString();
+                }
             }
 
             final class ExpressionExp implements Expression {
@@ -65,6 +75,11 @@ public interface MathCalculator {
                 @Override
                 public Number evaluate() {
                     return expression.evaluate();
+                }
+
+                @Override
+                public String toString() {
+                    return "(" + expression + ")";
                 }
             }
 
@@ -87,6 +102,11 @@ public interface MathCalculator {
                         default -> throw new ArithmeticException();
                     };
                 }
+
+                @Override
+                public String toString() {
+                    return left + " " + operator + " " + right;
+                }
             }
         }
 
@@ -97,13 +117,13 @@ public interface MathCalculator {
                 lexer = new Lexer(expression);
             }
 
-            private Expression parseExpression() {
+            private Expression parseExpr() {
                 Expression left = parseTerm();
                 Optional<Token> nexted = lexer.nextToken();
                 if (nexted.isPresent()) {
                     Token token = nexted.get();
                     if (token.type == TokenType.PLUS) {
-                        Expression right = parseExpression();
+                        Expression right = parseExpr();
                         return Expression.of(left, right, '+');
                     }
                     lexer.revert(token);
@@ -132,7 +152,7 @@ public interface MathCalculator {
                     if (token.type == TokenType.NUMBER) {
                         return Expression.of((Number) token.value);
                     } else if (token.type == TokenType.LBR) {
-                        Expression expression = parseExpression();
+                        Expression expression = parseExpr();
                         nexted = lexer.nextToken();
                         if (nexted.isPresent()) {
                             token = nexted.get();

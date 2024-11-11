@@ -12,6 +12,7 @@ public abstract class MathTests {
         assertEquals(calculator, "( 2 + 4 ) * 15", 90);
         assertEquals(calculator, "2 + ( 4 * 15 )", 62);
         assertEquals(calculator, "2 * ( 4 + 15 )", 38);
+        assertEquals(calculator, "2 * ( 4 + 10 ) + 2", 30);
         assertEquals(calculator, "( 4 * ( 3 + 7 ) ) * 3 ", 120);
     }
 
