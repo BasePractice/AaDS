@@ -33,7 +33,5 @@ public abstract class Main {
             }
             ++row;
         }
-
-
     }
 }
