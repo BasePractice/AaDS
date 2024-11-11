@@ -14,7 +14,7 @@ public abstract class Main {
         List<String> lines = Files.readAllLines(path);
         int row = 0;
         int[][] block = new int[9][9];
-        Sudoku.Factory factory = Sudoku.recursionFactory();
+        Sudoku.Factory factory = Sudoku.recursionFactory(false);
         for (String line : lines) {
             if (row == 9) {
                 Sudoku sudoku = factory.create(block.length, block);
