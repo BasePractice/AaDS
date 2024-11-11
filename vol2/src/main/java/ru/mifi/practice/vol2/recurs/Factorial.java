@@ -1,5 +1,8 @@
 package ru.mifi.practice.vol2.recurs;
 
+/**
+ * С. С. Марченков - Рекурсивные функции
+ */
 public final class Factorial {
     private final int n;
 
