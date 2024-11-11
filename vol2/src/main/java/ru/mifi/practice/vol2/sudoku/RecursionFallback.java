@@ -1,19 +1,9 @@
 package ru.mifi.practice.vol2.sudoku;
 
 @SuppressWarnings("PMD.UnusedPrivateField")
-final class RecursionFallback implements Sudoku {
-    private final Block grid;
-    private int deep = 0;
-    private int iterations = 0;
-
+final class RecursionFallback extends Sudoku.AbstractSudoku {
     RecursionFallback(int size, int[][] values) {
-        grid = Block.of(size, values);
-    }
-
-    private boolean isPlacement(int row, int col, Value digit) {
-        return !grid.isNumberInRow(row, digit)
-            && !grid.isNumberInCol(col, digit)
-            && !grid.isNumberInQuad(row, col, digit);
+        super(Block.of(size, values));
     }
 
     @Override
@@ -47,21 +37,5 @@ final class RecursionFallback implements Sudoku {
         }
         --deep;
         return true;
-    }
-
-    @Override
-    public void print(String title) {
-        grid.print(title);
-    }
-
-    @Override
-    public int iterations() {
-        return iterations;
-    }
-
-    @Override
-    public void clear() {
-        deep = 0;
-        iterations = 0;
     }
 }

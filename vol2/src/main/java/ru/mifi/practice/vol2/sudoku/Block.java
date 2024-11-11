@@ -1,6 +1,6 @@
 package ru.mifi.practice.vol2.sudoku;
 
-public interface Block {
+public sealed interface Block {
     static Block of(int size, int[][] values) {
         return new Default(size, values);
     }
