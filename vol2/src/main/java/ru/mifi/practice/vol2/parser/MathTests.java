@@ -1,4 +1,4 @@
-package ru.mifi.practice.vol2;
+package ru.mifi.practice.vol2.parser;
 
 public abstract class MathTests {
     public static void main(String[] args) {

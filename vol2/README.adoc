@@ -124,3 +124,7 @@ Constant pool:
         frame_type = 13 /* same */
 }
 ----
+
+== BNF
+
+image::{docdir}/parser.png[]

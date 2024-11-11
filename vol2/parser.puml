@@ -1,0 +1,6 @@
+@startebnf
+expr = term, "+", expr | term;
+term = factor, "*", factor | factor;
+factor = number | "(", expr, ")";
+number = "1 - 9";
+@endyaml
