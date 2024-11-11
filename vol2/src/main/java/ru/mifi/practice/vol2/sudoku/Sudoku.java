@@ -51,9 +51,12 @@ public interface Sudoku {
         }
 
         protected boolean isPlacement(int row, int col, Value digit) {
-            return !grid.isNumberInRow(row, digit)
+            boolean b = !grid.isNumberInRow(row, digit)
                 && !grid.isNumberInCol(col, digit)
                 && !grid.isNumberInQuad(row, col, digit);
+            iterations += grid.iterations();
+            grid.clear();
+            return b;
         }
 
         protected void printDeep(int row, int col, Value digit) {

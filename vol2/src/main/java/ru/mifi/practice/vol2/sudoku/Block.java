@@ -5,6 +5,10 @@ public sealed interface Block {
         return new Default(size, values);
     }
 
+    void clear();
+
+    int iterations();
+
     int size();
 
     Value at(int row, int col);
@@ -26,6 +30,7 @@ public sealed interface Block {
     final class Default implements Block {
         private final Value[][] grid;
         private final int half;
+        private int iterations = 0;
 
         private Default(int size) {
             grid = new Value[size][size];
@@ -51,6 +56,16 @@ public sealed interface Block {
         }
 
         @Override
+        public void clear() {
+            iterations = 0;
+        }
+
+        @Override
+        public int iterations() {
+            return iterations;
+        }
+
+        @Override
         public int size() {
             return grid.length;
         }
@@ -63,6 +78,7 @@ public sealed interface Block {
         @Override
         public boolean isNumberInRow(int row, Value digit) {
             for (int i = 0; i < grid.length; i++) {
+                ++iterations;
                 if (grid[row][i].equals(digit)) {
                     return true;
                 }
@@ -73,6 +89,7 @@ public sealed interface Block {
         @Override
         public boolean isNumberInCol(int col, Value digit) {
             for (Value[] values : grid) {
+                ++iterations;
                 if (values[col].equals(digit)) {
                     return true;
                 }
@@ -87,6 +104,7 @@ public sealed interface Block {
             for (int i = iRow; i < iRow + half; i++) {
                 for (int j = iCol; j < iCol + half; j++) {
                     if (grid[i][j].equals(digit)) {
+                        ++iterations;
                         return true;
                     }
                 }

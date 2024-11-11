@@ -15,8 +15,12 @@ public abstract class Main {
         int row = 0;
         int[][] block = new int[9][9];
         Sudoku.Factory factory = Sudoku.recursionFactory(false);
+        int index = 0;
+        int maxIt = 0;
+        int maxIndex = 0;
         for (String line : lines) {
             if (row == 9) {
+                ++index;
                 Sudoku sudoku = factory.create(block.length, block);
                 sudoku.print();
                 System.out.println();
@@ -24,7 +28,13 @@ public abstract class Main {
                 sudoku.solve();
                 sudoku.print();
                 row = 0;
-                System.out.printf("------%7d-----%n", sudoku.iterations());
+                int it = sudoku.iterations();
+
+                if (maxIt < it) {
+                    maxIt = it;
+                    maxIndex = index;
+                }
+                System.out.printf("%2d ----%9d----%n", index, it);
                 sudoku.clear();
                 continue;
             }
@@ -33,5 +43,7 @@ public abstract class Main {
             }
             ++row;
         }
+        System.out.println();
+        System.out.printf("%2d: %d%n", maxIndex, maxIt);
     }
 }
