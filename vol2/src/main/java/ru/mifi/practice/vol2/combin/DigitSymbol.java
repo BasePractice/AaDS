@@ -18,6 +18,7 @@ public interface DigitSymbol {
 
         @SuppressWarnings("PMD.EmptyControlStatement")
         private static Optional<Context> process(Context context, Equation<String> input, int index, boolean carrier) {
+            context.print(input);
             if (index > input.x.length() || index > input.y.length()) {
                 var x = context.toNumber(input.x);
                 var y = context.toNumber(input.y);
@@ -131,7 +132,7 @@ public interface DigitSymbol {
                         }
                     }
                 }
-                return Optional.of(context);
+                return Optional.empty();
             }
             context = context.copy();
             int nX;
@@ -223,8 +224,8 @@ public interface DigitSymbol {
         private final Set<Integer> digits;
 
         Context() {
-            symbols = new HashMap<>();
-            digits = new HashSet<>();
+            this.symbols = new HashMap<>();
+            this.digits = new HashSet<>();
         }
 
         Context(Map<Character, Integer> symbols, Set<Integer> digits) {
@@ -277,6 +278,10 @@ public interface DigitSymbol {
             } catch (NumberFormatException e) {
                 return Optional.empty();
             }
+        }
+
+        private void print(Equation<String> eq) {
+            System.out.printf("%s + %s = %s%n", transform(eq.x), transform(eq.y), transform(eq.z));
         }
 
         @Override
