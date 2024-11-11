@@ -133,8 +133,7 @@ public interface DigitSymbol {
                 }
                 return Optional.of(context);
             }
-            //
-            context = context.clone();
+            context = context.copy();
             int nX;
             int nY;
             int nZ;
@@ -171,13 +170,14 @@ public interface DigitSymbol {
                             summary = summary % 10;
                             needCarrier = true;
                         }
+                        Context copy = context.copy();
                         if (carrier && summary + 1 == nZ) {
-                            var result = process(context.clone(), input, index + 1, summary + 1 > 10);
+                            var result = process(copy, input, index + 1, summary + 1 > 10);
                             if (result.isPresent()) {
                                 return result;
                             }
                         } else if (summary == nZ) {
-                            var result = process(context, input, index + 1, needCarrier);
+                            var result = process(copy, input, index + 1, needCarrier);
                             if (result.isPresent()) {
                                 return result;
                             }
@@ -203,7 +203,7 @@ public interface DigitSymbol {
                     break;
                 }
             }
-            return Optional.of(context);
+            return Optional.empty();
         }
 
         @Override
@@ -219,8 +219,18 @@ public interface DigitSymbol {
     }
 
     final class Context implements Cloneable {
-        private final Map<Character, Integer> symbols = new HashMap<>();
-        private final Set<Integer> digits = new HashSet<>();
+        private final Map<Character, Integer> symbols;
+        private final Set<Integer> digits;
+
+        Context() {
+            symbols = new HashMap<>();
+            digits = new HashSet<>();
+        }
+
+        Context(Map<Character, Integer> symbols, Set<Integer> digits) {
+            this.symbols = new HashMap<>(symbols);
+            this.digits = new HashSet<>(digits);
+        }
 
         @SuppressWarnings("PMD.AvoidBranchingStatementAsLastInLoop")
         private Optional<State> next(Character symbol, int digit) {
@@ -276,6 +286,10 @@ public interface DigitSymbol {
             } catch (CloneNotSupportedException e) {
                 throw new RuntimeException(e);
             }
+        }
+
+        public Context copy() {
+            return new Context(symbols, digits);
         }
     }
 
