@@ -2,12 +2,8 @@ package ru.mifi.practice.vol2.sudoku;
 
 public interface Sudoku {
 
-    static Sudoku recursionFallback(int size, int[][] values) {
-        return new RecursionFallback(size, values);
-    }
-
-    static Factory recursionFactory() {
-        return RecursionFallback::new;
+    static Factory recursionFactory(boolean debug) {
+        return (size, values) -> new RecursionFallback(size, values, debug);
     }
 
     boolean solve();
@@ -29,11 +25,13 @@ public interface Sudoku {
 
     abstract class AbstractSudoku implements Sudoku {
         protected final Block grid;
+        protected final boolean debug;
         protected int deep = 0;
         protected int iterations = 0;
 
-        protected AbstractSudoku(Block grid) {
+        protected AbstractSudoku(Block grid, boolean debug) {
             this.grid = grid;
+            this.debug = debug;
         }
 
         @Override
@@ -56,6 +54,12 @@ public interface Sudoku {
             return !grid.isNumberInRow(row, digit)
                 && !grid.isNumberInCol(col, digit)
                 && !grid.isNumberInQuad(row, col, digit);
+        }
+
+        protected void printDeep(int row, int col, Value digit) {
+            if (debug && deep >= 59) {
+                grid.print(String.format("%2d] %d:%d = %s", deep, row + 1, col + 1, digit));
+            }
         }
     }
 }
