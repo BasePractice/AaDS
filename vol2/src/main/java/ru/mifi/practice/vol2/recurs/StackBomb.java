@@ -1,4 +1,4 @@
-package ru.mifi.practice.vol2;
+package ru.mifi.practice.vol2.recurs;
 
 public abstract class StackBomb {
 

@@ -1,4 +1,4 @@
-package ru.mifi.practice.vol2;
+package ru.mifi.practice.vol2.recurs;
 
 public final class Factorial {
     private final int n;
