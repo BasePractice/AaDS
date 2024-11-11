@@ -4,3 +4,4 @@ target
 *.iml
 logs
 users.json
+sudoku.log
