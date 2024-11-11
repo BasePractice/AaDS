@@ -3,7 +3,7 @@ package ru.mifi.practice.vol2.sudoku;
 import java.util.Objects;
 
 @SuppressWarnings("PMD.ConstantsInInterface")
-public interface Value {
+public sealed interface Value {
     Value EMPTY = new Empty();
     Value[] DIGITS = new Value[]{
         EMPTY, new Digit(1), new Digit(2), new Digit(3), new Digit(4),
