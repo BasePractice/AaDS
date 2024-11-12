@@ -1,4 +1,4 @@
-package ru.mifi.practice.vol2.combin;
+package ru.mifi.practice.vol2.yasymb;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -6,19 +6,35 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-public interface DigitSymbol {
+public interface YaSymbol {
 
-    Optional<Equation<Number>> process(String x, String y, String z);
+    Optional<Equation> process(String x, String y, String z);
 
     enum StateType {
         DEFINED, GENERATED
     }
 
-    final class Simple implements DigitSymbol {
+    final class Metrics {
+        private int operations;
+
+        public Metrics() {
+            this.operations = 0;
+        }
+
+        public Metrics(Metrics metrics) {
+            operations = metrics.operations;
+        }
+
+        public int getOperations() {
+            return operations;
+        }
+    }
+
+    final class Simple implements YaSymbol {
 
         @SuppressWarnings("PMD.EmptyControlStatement")
-        private static Optional<Context> process(Context context, Equation<String> input, int index, boolean carrier) {
-            context.print(input);
+        private static Optional<Context> process(Context context, Equation input, int index, boolean carrier) {
+            //context.print(input);
             if (index > input.x.length() || index > input.y.length()) {
                 var x = context.toNumber(input.x);
                 var y = context.toNumber(input.y);
@@ -31,6 +47,7 @@ public interface DigitSymbol {
                 }
                 var free = new HashSet<Integer>();
                 for (int i = 0; i < 10; i++) {
+                    context.metrics.operations++;
                     if (context.digits.contains(i)) {
                         continue;
                     }
@@ -39,6 +56,7 @@ public interface DigitSymbol {
                 var maxSize = Math.max(input.x.length(), Math.max(input.y.length(), input.z.length()));
 
                 for (int i = 1; i <= maxSize; i++) {
+                    context.metrics.operations++;
                     Character cX = null;
                     Character cY = null;
                     Character cZ = null;
@@ -54,6 +72,7 @@ public interface DigitSymbol {
                     if (cX == null) {
                         if (cY != null && !Character.isDigit(cY) && cZ != null && !Character.isDigit(cZ)) {
                             for (Integer f : free) {
+                                context.metrics.operations++;
                                 var v = f;
                                 if (carrier) {
                                     f += 1;
@@ -67,6 +86,7 @@ public interface DigitSymbol {
                         } else if (cY != null && !Character.isDigit(cY) && cZ != null && Character.isDigit(cZ)) {
                             var nZ = context.symbols.get(cZ);
                             for (Integer f : free) {
+                                context.metrics.operations++;
                                 var v = f;
                                 if (carrier) {
                                     v += 1;
@@ -91,6 +111,7 @@ public interface DigitSymbol {
                     } else if (cY == null) {
                         if (!Character.isDigit(cX) && cZ != null && !Character.isDigit(cZ)) {
                             for (Integer f : free) {
+                                context.metrics.operations++;
                                 var v = f;
                                 if (carrier) {
                                     f += 1;
@@ -104,6 +125,7 @@ public interface DigitSymbol {
                         } else if (!Character.isDigit(cX) && cZ != null && Character.isDigit(cZ)) {
                             var nZ = context.symbols.get(cZ);
                             for (Integer f : free) {
+                                context.metrics.operations++;
                                 var v = f;
                                 if (carrier) {
                                     v += 1;
@@ -125,7 +147,7 @@ public interface DigitSymbol {
                                 return Optional.of(context);
                             }
                         }
-                    } else {
+                    } else if (cZ == null) {
                         if (!context.digits.contains(1)) {
                             context.assign(cZ, 1);
                             return Optional.of(context);
@@ -138,10 +160,11 @@ public interface DigitSymbol {
             int nX;
             int nY;
             int nZ;
-            var xSymbol = input.x.charAt(input.x.length() - 1);
-            var ySymbol = input.y.charAt(input.y.length() - 1);
-            var zSymbol = input.z.charAt(input.z.length() - 1);
+            var xSymbol = input.x.charAt(input.x.length() - index);
+            var ySymbol = input.y.charAt(input.y.length() - index);
+            var zSymbol = input.z.charAt(input.z.length() - index);
             for (nX = 0; nX < 10; nX++) {
+                context.metrics.operations++;
                 Optional<State> next = context.next(xSymbol, nX);
                 if (next.isEmpty()) {
                     continue;
@@ -150,6 +173,7 @@ public interface DigitSymbol {
                 nX = xState.digit;
                 context.assign(xSymbol, nX);
                 for (nY = 0; nY < 10; nY++) {
+                    context.metrics.operations++;
                     next = context.next(ySymbol, nY);
                     if (next.isEmpty()) {
                         continue;
@@ -158,6 +182,7 @@ public interface DigitSymbol {
                     nY = yState.digit;
                     context.assign(ySymbol, nY);
                     for (nZ = 0; nZ < 10; nZ++) {
+                        context.metrics.operations++;
                         next = context.next(zSymbol, nZ);
                         if (next.isEmpty()) {
                             continue;
@@ -208,29 +233,33 @@ public interface DigitSymbol {
         }
 
         @Override
-        public Optional<Equation<Number>> process(String x, String y, String z) {
-            var input = new Equation<>(x, y, z);
+        public Optional<Equation> process(String x, String y, String z) {
+            var input = new Equation(x, y, z, new Metrics());
             var context = process(new Context(), input, 1, false);
-            return context.map(value -> new Equation<>(
-                value.toNumber(x).orElse(0),
-                value.toNumber(y).orElse(0),
-                value.toNumber(z).orElse(0)
+            return context.map(value -> new Equation(
+                value.transform(x),
+                value.transform(y),
+                value.transform(z),
+                value.metrics
             ));
         }
     }
 
-    final class Context implements Cloneable {
+    final class Context {
         private final Map<Character, Integer> symbols;
         private final Set<Integer> digits;
+        private final Metrics metrics;
 
         Context() {
             this.symbols = new HashMap<>();
             this.digits = new HashSet<>();
+            this.metrics = new Metrics();
         }
 
-        Context(Map<Character, Integer> symbols, Set<Integer> digits) {
+        Context(Map<Character, Integer> symbols, Set<Integer> digits, Metrics metrics) {
             this.symbols = new HashMap<>(symbols);
             this.digits = new HashSet<>(digits);
+            this.metrics = new Metrics(metrics);
         }
 
         @SuppressWarnings("PMD.AvoidBranchingStatementAsLastInLoop")
@@ -239,6 +268,7 @@ public interface DigitSymbol {
                 return Optional.of(new State(StateType.DEFINED, symbols.get(symbol)));
             }
             for (int k = digit; k < 10; k++) {
+                metrics.operations++;
                 if (digits.contains(k)) {
                     continue;
                 }
@@ -280,28 +310,25 @@ public interface DigitSymbol {
             }
         }
 
-        private void print(Equation<String> eq) {
+        @SuppressWarnings("PMD.UnusedPrivateMethod")
+        private void print(Equation eq) {
             System.out.printf("%s + %s = %s%n", transform(eq.x), transform(eq.y), transform(eq.z));
         }
 
-        @Override
-        public Context clone() {
-            try {
-                return (Context) super.clone();
-            } catch (CloneNotSupportedException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
         public Context copy() {
-            return new Context(symbols, digits);
+            return new Context(symbols, digits, metrics);
         }
     }
 
     record State(StateType type, int digit) {
     }
 
-    record Equation<T>(T x, T y, T z) {
-
+    record Equation(String x, String y, String z, Metrics metrics) {
+        void print() {
+            int width = Math.max(x.length(), Math.max(y.length(), z.length()));
+            System.out.printf("%" + width + "s + %n", x);
+            System.out.printf("%" + width + "s%n", y);
+            System.out.printf("%" + width + "s%n", z);
+        }
     }
 }
