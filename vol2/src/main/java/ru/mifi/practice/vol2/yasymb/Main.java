@@ -4,8 +4,10 @@ import java.util.Optional;
 
 public abstract class Main {
 
+    private static final YaSymbol YA = new SimpleGen2();
+
     private static void start(String x, String y, String z) {
-        Optional<YaSymbol.Equation> processed = new YaSymbol.Simple().process(x, y, z);
+        Optional<YaSymbol.Equation> processed = YA.process(x, y, z);
         if (processed.isPresent()) {
             System.out.printf("------ %7d -------%n", processed.get().metrics().getOperations());
         } else {
@@ -23,7 +25,7 @@ public abstract class Main {
     }
 
     public static void main(String[] args) {
-        start("x", "y", "z");
+//        start("x", "y", "z");
         start("win", "lose", "game");
         start("love", "hate", "feel");
         start("four", "seven", "eight");
