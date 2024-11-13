@@ -4,7 +4,7 @@ import java.util.Optional;
 
 public abstract class Main {
 
-    private static final YaSymbol YA = new SimpleGen2();
+    private static final YaSymbol YA = new SimpleGen1();
 
     private static void start(String x, String y, String z) {
         Optional<YaSymbol.Equation> processed = YA.process(x, y, z);
@@ -25,7 +25,7 @@ public abstract class Main {
     }
 
     public static void main(String[] args) {
-//        start("x", "y", "z");
+        start("x", "y", "z");
         start("win", "lose", "game");
         start("love", "hate", "feel");
         start("four", "seven", "eight");
