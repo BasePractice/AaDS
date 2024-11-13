@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.Set;
 
 public interface YaSymbol {
+    int START_DIGIT = 1;
 
     Optional<Equation> process(String x, String y, String z);
 
@@ -70,6 +71,12 @@ public interface YaSymbol {
         void reset(Character symbol) {
             if (symbols.containsKey(symbol)) {
                 Integer removed = symbols.remove(symbol);
+                if (removed != null) {
+                    boolean contains = symbols.containsValue(removed);
+                    if (contains) {
+                        return;
+                    }
+                }
                 digits.remove(removed);
             }
         }

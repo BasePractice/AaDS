@@ -4,9 +4,11 @@ import java.util.HashSet;
 import java.util.Optional;
 
 public final class SimpleGen2 implements YaSymbol {
-
     @SuppressWarnings("PMD.EmptyControlStatement")
     private static Optional<Context> process(Context context, Equation input, int index, boolean carrier) {
+        //var xText = context.transform(input.x());
+        //var yText = context.transform(input.y());
+        //var zText = context.transform(input.z());
         context.print(input);
         if (index > input.x().length() || index > input.y().length()) {
             var x = context.toNumber(input.x());
@@ -28,7 +30,7 @@ public final class SimpleGen2 implements YaSymbol {
             }
             var maxSize = Math.max(input.x().length(), Math.max(input.y().length(), input.z().length()));
 
-            for (int i = 1; i <= maxSize; i++) {
+            for (int i = 1; i <= maxSize && !free.isEmpty(); i++) {
                 context.addOperation();
                 Character cX = null;
                 Character cY = null;
@@ -144,7 +146,8 @@ public final class SimpleGen2 implements YaSymbol {
             State xState = next.get();
             nX = xState.digit();
             context.assign(xSymbol, nX);
-            for (nY = 0; nY < 10; nY++) {
+            boolean nextIt = true;
+            for (nY = 0; nY < 10 && nextIt; nY++) {
                 context.addOperation();
                 next = context.next(ySymbol, nY);
                 if (next.isEmpty()) {
@@ -156,17 +159,34 @@ public final class SimpleGen2 implements YaSymbol {
 
 
                 var summary = nX + nY;
+                if (summary == 0) {
+                    nextIt = false;
+                    if (yState.type() == StateType.GENERATED) {
+                        context.reset(ySymbol);
+                    }
+                    continue;
+                }
                 var needCarrier = carrier;
                 if (summary >= 10) {
                     summary = summary % 10;
                     needCarrier = true;
                 }
 
-                if (context.digits.contains(summary)) {
+                if (context.symbols.containsKey(zSymbol)) {
+                    Optional<State> nexted = context.next(zSymbol, summary);
+                    if (nexted.isPresent() && nexted.get().digit() != summary) {
+                        if (yState.type() == StateType.GENERATED) {
+                            context.reset(ySymbol);
+                        }
+                        nextIt = nX != nY;
+                        continue;
+                    }
+                } else if (context.digits.contains(summary)) {
                     if (zSymbol != xSymbol && zSymbol != ySymbol) {
                         if (yState.type() == StateType.GENERATED) {
                             context.reset(ySymbol);
                         }
+                        nextIt = nX != nY;
                         continue;
                     }
                 }
@@ -174,7 +194,7 @@ public final class SimpleGen2 implements YaSymbol {
                 Context copy = context.copy();
                 Optional<Context> result;
                 if (needCarrier) {
-                    result = process(copy, input, index + 1, summary + 1 >= 10);
+                    result = process(copy, input, index + 1, true);
                 } else {
                     result = process(copy, input, index + 1, false);
                 }
