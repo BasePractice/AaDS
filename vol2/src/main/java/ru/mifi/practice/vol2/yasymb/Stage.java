@@ -5,14 +5,50 @@ public interface Stage {
     final class Generation {
         private final char[] numbers = new char[10];
         private final Generation parent;
+        private final int index;
+        private final char[] x;
+        private final char[] y;
+        private final char[] z;
+        private int cx;
+        private int cy;
+        private int cz;
         private Generation next;
 
-        public Generation(Generation parent) {
+        public Generation(char[] x, char[] y, char[] z) {
+            this.parent = null;
+            this.index = 1;
+            this.x = x;
+            this.y = y;
+            this.z = z;
+        }
+
+        private Generation(Generation parent, int index, char[] x, char[] y, char[] z) {
             this.parent = parent;
+            this.index = index;
+            this.x = x;
+            this.y = y;
+            this.z = z;
+        }
+
+        public boolean permutation() {
+
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        public Generation parent() {
+            return parent;
+        }
+
+        public boolean hasParent() {
+            return parent != null;
+        }
+
+        public boolean hasStage() {
+            return x.length >= index + 1 && y.length >= index + 1 && z.length >= index + 1;
         }
 
         public Generation newStage() {
-            Generation stage = new Generation(this);
+            Generation stage = new Generation(this, index + 1, x, y, z);
             this.next = stage;
             return stage;
         }
