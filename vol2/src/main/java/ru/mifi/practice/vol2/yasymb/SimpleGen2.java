@@ -158,7 +158,8 @@ public final class SimpleGen2 implements YaSymbol {
                 context.assign(ySymbol, nY);
 
 
-                var summary = nX + nY;
+                var nZ = nX + nY;
+                var summary = nZ;
                 if (summary == 0) {
                     nextIt = false;
                     if (yState.type() == StateType.GENERATED) {
@@ -190,13 +191,15 @@ public final class SimpleGen2 implements YaSymbol {
                         continue;
                     }
                 }
-                context.assign(zSymbol, summary);
+                context.assign(zSymbol, nZ);
                 Context copy = context.copy();
                 Optional<Context> result;
-                if (needCarrier) {
-                    result = process(copy, input, index + 1, true);
+                if (carrier && summary + 1 == nZ) {
+                    result = process(copy, input, index + 1, summary + 1 >= 10);
+                } else if (summary == nZ) {
+                    result = process(copy, input, index + 1, needCarrier);
                 } else {
-                    result = process(copy, input, index + 1, false);
+                    result = Optional.empty();
                 }
                 if (result.isPresent()) {
                     return result;
