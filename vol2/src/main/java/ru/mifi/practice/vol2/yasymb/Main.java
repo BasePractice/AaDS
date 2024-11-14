@@ -4,9 +4,19 @@ import java.util.Optional;
 
 public abstract class Main {
 
-    private static final YaSymbol YA = new SimpleGen1();
+    private static final YaSymbol YA = new SimpleGen2();
+
+    private static int fact(int n) {
+        if (n <= 1) {
+            return 1;
+        }
+        return n * fact(n - 1);
+    }
 
     private static void start(String x, String y, String z) {
+        int fact = x.length() * y.length() * z.length() * fact(9);
+        System.out.println("Перестановок: " + fact);
+
         Optional<YaSymbol.Equation> processed = YA.process(x, y, z);
         if (processed.isPresent()) {
             System.out.printf("------ %7d -------%n", processed.get().metrics().getOperations());

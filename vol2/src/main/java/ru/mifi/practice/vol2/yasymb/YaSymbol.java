@@ -29,6 +29,10 @@ public interface YaSymbol {
         public int getOperations() {
             return operations;
         }
+
+        public void addOperations() {
+            operations++;
+        }
     }
 
     final class Context {
@@ -54,7 +58,7 @@ public interface YaSymbol {
                 return Optional.of(new State(StateType.DEFINED, symbols.get(symbol)));
             }
             for (int k = digit; k < 10; k++) {
-                metrics.operations++;
+                metrics.addOperations();
                 if (digits.contains(k)) {
                     continue;
                 }
@@ -108,7 +112,7 @@ public interface YaSymbol {
         }
 
         void addOperation() {
-            ++metrics.operations;
+            metrics.addOperations();
         }
 
         public Context copy() {
