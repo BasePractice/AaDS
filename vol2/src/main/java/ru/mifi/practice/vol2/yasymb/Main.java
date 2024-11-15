@@ -4,7 +4,7 @@ import java.util.Optional;
 
 public abstract class Main {
 
-    private static final YaSymbol YA = new SimpleGen2();
+    private static final YaSymbol YA = new SimpleGen1();
 
     private static int fact(int n) {
         if (n <= 1) {
