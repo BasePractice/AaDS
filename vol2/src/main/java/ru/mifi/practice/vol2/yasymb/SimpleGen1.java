@@ -7,7 +7,6 @@ public final class SimpleGen1 implements YaSymbol {
 
     @SuppressWarnings("PMD.EmptyControlStatement")
     private static Optional<Context> process(Context context, Equation input, int index, boolean carrier) {
-//        context.print(input);
         if (index > input.x().length() || index > input.y().length()) {
             var x = context.toNumber(input.x());
             var y = context.toNumber(input.y());
