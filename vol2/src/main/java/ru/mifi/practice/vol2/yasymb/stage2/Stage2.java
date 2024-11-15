@@ -45,8 +45,8 @@ public interface Stage2 {
 
     static void main(String[] args) {
         boolean debug = false;
-//        simple(debug);
-        generated(debug);
+        simple(debug);
+//        generated(debug);
     }
 
     final class Solution {
@@ -359,9 +359,11 @@ public interface Stage2 {
                     } else if (slice.z == slice.y) {
                         if (sum != y) {
                             z = -1;
-                            y = -1;
                             needCarrier = false;
-                            nextGeneration = true;
+                            if (!hasX) {
+                                y = -1;
+                                nextGeneration = true;
+                            }
                             continue;
                         }
                         z = y;
@@ -382,6 +384,9 @@ public interface Stage2 {
                         continue;
                     } else if (z == y && slice.z != slice.y) {
                         if (hasY) {
+                            if (hasX) {
+                                return false;
+                            }
                             nextGeneration = true;
                         }
                         continue;
@@ -395,6 +400,7 @@ public interface Stage2 {
                             nextGeneration = true;
                         }
                         z = -1;
+                        needCarrier = false;
                         continue;
                     }
                 } else {
@@ -417,6 +423,8 @@ public interface Stage2 {
                                 y = -1;
                             }
                             nextGeneration = true;
+                        } else if (hasX && hasY) {
+                            return false;
                         }
                         z = -1;
                     } else {
