@@ -157,6 +157,19 @@ public interface Stage {
             return -1;
         }
 
+        private static boolean hasLetter(String transmute) {
+            for (int i = 0; i < transmute.length(); i++) {
+                if (Character.isLetter(transmute.charAt(i))) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public boolean isComplete() {
+            return !hasLetter(transmute(x)) && !hasLetter(transmute(y)) && !hasLetter(transmute(z));
+        }
+
         private static boolean isComplete(char x, char y, char z, int cx, int cy, int cz) {
             if (cx == cy && x != y) {
                 return false;
@@ -170,15 +183,6 @@ public interface Stage {
                 return false;
             }
             return true;
-        }
-
-        private static boolean hasLetter(String transmute) {
-            for (int i = 0; i < transmute.length(); i++) {
-                if (Character.isLetter(transmute.charAt(i))) {
-                    return true;
-                }
-            }
-            return false;
         }
 
         private String transmute(char[] chars) {
@@ -195,8 +199,7 @@ public interface Stage {
                 z = this.z[this.z.length - index];
             }
             StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < chars.length; i++) {
-                char ch = chars[i];
+            for (char ch : chars) {
                 if (ch == x && gx != -1) {
                     sb.append(gx);
                     continue;
@@ -373,10 +376,6 @@ public interface Stage {
             return sb.toString();
         }
 
-        public boolean isComplete() {
-            return !hasLetter(transmute(x)) && !hasLetter(transmute(y)) && !hasLetter(transmute(z));
-        }
-
         public boolean isCarrier() {
             if (z.length > x.length || z.length > y.length) {
                 return indexOf(numbers, z[0]) == -1;
@@ -393,18 +392,6 @@ public interface Stage {
                 return true;
             }
             return false;
-        }
-
-        public String x() {
-            return transmute(x);
-        }
-
-        public String y() {
-            return transmute(y);
-        }
-
-        public String z() {
-            return transmute(z);
         }
     }
 }

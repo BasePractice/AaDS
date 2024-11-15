@@ -106,7 +106,11 @@ public interface Stage2 {
                     System.out.println(this);
                 }
             }
-            return steps[steps.length - 1].isComplete();
+            return steps[steps.length - 1].isComplete() && hardValidate();
+        }
+
+        private boolean hardValidate() {
+            return Integer.parseInt(x().trim()) + Integer.parseInt(y().trim()) == Integer.parseInt(z().trim());
         }
 
         public boolean isComplete() {
@@ -120,15 +124,27 @@ public interface Stage2 {
 
         @Override
         public String toString() {
+            return x() + "\n" + y() + "\n" + z();
+        }
+
+        private String x() {
             StringBuilder b = new StringBuilder();
             for (int i = steps.length - 1; i >= 0; i--) {
                 b.append(steps[i].trX());
             }
-            b.append("\n");
+            return b.toString();
+        }
+
+        private String y() {
+            StringBuilder b = new StringBuilder();
             for (int i = steps.length - 1; i >= 0; i--) {
                 b.append(steps[i].trY());
             }
-            b.append("\n");
+            return b.toString();
+        }
+
+        private String z() {
+            StringBuilder b = new StringBuilder();
             for (int i = steps.length - 1; i >= 0; i--) {
                 b.append(steps[i].trZ());
             }
@@ -235,8 +251,8 @@ public interface Stage2 {
         }
 
         boolean isComplete() {
-            return (slice.x == 0 || x != -1) &&
-                (slice.y == 0 || y != -1) && z != -1;
+            return (slice.x == 0 || x != -1)
+                && (slice.y == 0 || y != -1) && z != -1;
         }
 
         @Override
@@ -378,6 +394,7 @@ public interface Stage2 {
                             y = -1;
                             nextGeneration = true;
                         }
+                        z = -1;
                         continue;
                     }
                 } else {
@@ -429,6 +446,7 @@ public interface Stage2 {
             return x + y + (carrier ? 1 : 0);
         }
 
+        @SuppressWarnings("PMD.AvoidBranchingStatementAsLastInLoop")
         private int nextNumber(int n) {
             int search = n + 1;
             while (search < 10) {
