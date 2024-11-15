@@ -1,4 +1,4 @@
-package ru.mifi.practice.vol2.yasymb;
+package ru.mifi.practice.vol2.yasymb.stage2;
 
 import java.util.ArrayDeque;
 import java.util.Deque;

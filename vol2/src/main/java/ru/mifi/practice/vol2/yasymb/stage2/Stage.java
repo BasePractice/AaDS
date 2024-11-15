@@ -1,4 +1,4 @@
-package ru.mifi.practice.vol2.yasymb;
+package ru.mifi.practice.vol2.yasymb.stage2;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -58,21 +58,21 @@ public interface Stage {
     static void main(String[] args) {
 //        start("x", "y", "z");
 //        start("win", "lose", "game");
-//        start("love", "hate", "feel");
+        start("love", "hate", "feel");
 //        start("four", "seven", "eight");
 //        start("a", "b", "a");
 //        start("odin", "odin", "mnogo");
-        Generator generator = new Generator(4, 4);
-        for (int i = 0; i < 1; i++) {
-            Generator.Result generated = generator.generate();
-            Generator.Equation letters = generated.letters();
-            Generation generation = process(letters.x(), letters.y(), letters.z(), true);
-            if (generation.isComplete()) {
-                System.out.println("SUCCESS");
-            } else {
-                System.out.println("FAILURE");
-            }
-        }
+//        Generator generator = new Generator(4, 4);
+//        for (int i = 0; i < 1; i++) {
+//            Generator.Result generated = generator.generate();
+//            Generator.Equation letters = generated.letters();
+//            Generation generation = process(letters.x(), letters.y(), letters.z(), true);
+//            if (generation.isComplete()) {
+//                System.out.println("SUCCESS");
+//            } else {
+//                System.out.println("FAILURE");
+//            }
+//        }
     }
 
     interface Stepper {
