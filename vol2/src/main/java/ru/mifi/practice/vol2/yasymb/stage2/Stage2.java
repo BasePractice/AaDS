@@ -28,6 +28,7 @@ public interface Stage2 {
         start("odin", "odin", "mnogo", debug);
         start("acdf", "adbg", "baeg", debug);
         start("accb", "adeg", "bcfe", debug);
+        start("acef", "abfg", "bdcf", debug);
     }
 
     static void generated(boolean debug) {
@@ -44,8 +45,8 @@ public interface Stage2 {
 
     static void main(String[] args) {
         boolean debug = false;
-        simple(debug);
-//        generated(debug);
+//        simple(debug);
+        generated(debug);
     }
 
     final class Solution {
@@ -277,7 +278,7 @@ public interface Stage2 {
                         if (slice.y != 0 && slice.y == slice.x) {
                             y = x;
                         } else {
-                            y = nextNumber(hasNext ? 0 : 1);
+                            y = nextNumber(hasNext ? y : 1);
                         }
                     }
                 } else {
@@ -331,8 +332,22 @@ public interface Stage2 {
                 int sum = sum(nX, nY);
                 if (!hasZ) {
                     if (slice.z == slice.x) {
+                        if (sum != x) {
+                            z = -1;
+                            y = -1;
+                            needCarrier = false;
+                            nextGeneration = true;
+                            continue;
+                        }
                         z = x;
                     } else if (slice.z == slice.y) {
+                        if (sum != y) {
+                            z = -1;
+                            y = -1;
+                            needCarrier = false;
+                            nextGeneration = true;
+                            continue;
+                        }
                         z = y;
                     } else if (sum >= 10) {
                         z = sum % 10;
@@ -341,7 +356,7 @@ public interface Stage2 {
                         z = sum;
                     }
 
-                    if (z == x && slice.z != slice.x) {
+                    if (z == x && slice.z != slice.x && !carrier) {
                         if (slice.y == slice.x) {
                             y = -1;
                             nextGeneration = true;
@@ -386,6 +401,7 @@ public interface Stage2 {
                             }
                             nextGeneration = true;
                         }
+                        z = -1;
                     } else {
                         return true;
                     }
