@@ -56,12 +56,12 @@ public interface Stage {
     }
 
     static void main(String[] args) {
-//        start("x", "y", "z");
-//        start("win", "lose", "game");
+        start("x", "y", "z");
+        start("win", "lose", "game");
         start("love", "hate", "feel");
-//        start("four", "seven", "eight");
-//        start("a", "b", "a");
-//        start("odin", "odin", "mnogo");
+        start("four", "seven", "eight");
+        start("a", "b", "a");
+        start("odin", "odin", "mnogo");
 //        Generator generator = new Generator(4, 4);
 //        for (int i = 0; i < 1; i++) {
 //            Generator.Result generated = generator.generate();

@@ -20,15 +20,15 @@ public interface Stage2 {
     }
 
     static void simple(boolean debug) {
-        start("x", "y", "z", debug);
-        start("win", "lose", "game", debug);
-        start("love", "hate", "feel", debug);
+//        start("x", "y", "z", debug);
+//        start("win", "lose", "game", debug);
+//        start("love", "hate", "feel", debug);
         start("four", "seven", "eight", debug);
-        start("a", "b", "a", debug);
-        start("odin", "odin", "mnogo", debug);
-        start("acdf", "adbg", "baeg", debug);
-        start("accb", "adeg", "bcfe", debug);
-        start("acef", "abfg", "bdcf", debug);
+//        start("a", "b", "a", debug);
+//        start("odin", "odin", "mnogo", debug);
+//        start("acdf", "adbg", "baeg", debug);
+//        start("accb", "adeg", "bcfe", debug);
+//        start("acef", "abfg", "bdcf", debug);
     }
 
     static void generated(boolean debug) {
