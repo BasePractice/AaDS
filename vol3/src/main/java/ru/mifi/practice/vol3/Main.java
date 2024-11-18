@@ -21,14 +21,15 @@ public abstract class Main {
      * ДЗ: почему реальная сложность больше в два раза сложности расчетной?
      */
     public static void main(String[] args) {
-        boolean debug = false;
-        List<Integer> slice = generateSlice(10000);
-//        List<Integer> slice = List.of(7, 8, 2, 0, 5, 2, 7, 0);
-        System.out.println("BAD    : " + (slice.size() * slice.size()));
-        System.out.println("MUST   : " + Math.round(slice.size() * (Math.log(slice.size()) / Math.log(2))));
+        boolean debug = true;
+//        List<Integer> slice = generateSlice(10000);
+        List<Integer> slice = List.of(7, 8, 2, 0, 5, 2, 7, 0);
+        System.out.println("    BAD: " + (slice.size() * slice.size()));
+        System.out.println("   MUST: " + Math.round(slice.size() * (Math.log(slice.size()) / Math.log(2))));
+        System.out.println("========");
         for (Algorithms algorithm : Algorithms.values()) {
             Sort.Counter counter = new Sort.Counter.Default();
-            var result = algorithm.sort(slice, counter, debug);
+            algorithm.sort(slice, counter, debug);
             System.out.printf("%7s: %s%n", algorithm, counter);
         }
     }
