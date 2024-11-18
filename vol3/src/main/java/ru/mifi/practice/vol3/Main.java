@@ -8,6 +8,7 @@ import java.util.Random;
 public abstract class Main {
     private static final int MAX_GENERATED_ELEMENT_VALUE = 100;
 
+    @SuppressWarnings("PMD.UnusedPrivateMethod")
     private static List<Integer> generateSlice(int length) {
         Random r = new Random(new Date().getTime());
         List<Integer> slice = new ArrayList<>(length);
@@ -21,12 +22,12 @@ public abstract class Main {
      * ДЗ: почему реальная сложность больше в два раза сложности расчетной?
      */
     public static void main(String[] args) {
-        boolean debug = true;
+        final boolean debug = false;
 //        List<Integer> slice = generateSlice(10000);
         List<Integer> slice = List.of(7, 8, 2, 0, 5, 2, 7, 0);
         System.out.println("    BAD: " + (slice.size() * slice.size()));
         System.out.println("   MUST: " + Math.round(slice.size() * (Math.log(slice.size()) / Math.log(2))));
-        System.out.println("========");
+        System.out.println("===========");
         for (Algorithms algorithm : Algorithms.values()) {
             Sort.Counter counter = new Sort.Counter.Default();
             algorithm.sort(slice, counter, debug);
@@ -36,7 +37,8 @@ public abstract class Main {
 
     enum Algorithms implements Sort<Integer> {
         MERGE(new MergeSort<>()),
-        QUICK(new QuickSort<>()),
+        QUICK_H(new QuickSort<>()),
+        QUICK_R(new QuickSort<>(new QuickSort.Strategy.Randomly<Integer>())),
         COUNT(new CountSort(MAX_GENERATED_ELEMENT_VALUE));
 
         private final Sort<Integer> sort;
