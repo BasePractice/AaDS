@@ -6,9 +6,11 @@ import java.util.Optional;
 
 public final class BinaryIndexSearch implements Search<Long, Number> {
     private final List<Long> array;
+    private final boolean debug;
 
-    public BinaryIndexSearch(List<Long> array) {
+    public BinaryIndexSearch(List<Long> array, boolean debug) {
         this.array = array;
+        this.debug = debug;
     }
 
     public Optional<Number> search(Long element, Counter counter) {
@@ -22,6 +24,9 @@ public final class BinaryIndexSearch implements Search<Long, Number> {
         var right = range.right;
         while (!Objects.equals(left, right - 1)) {
             var mid = (right + left) >>> 1;
+            if (debug) {
+                System.out.printf("[%4d - %4d]. mid: %4d%n", left, right, mid);
+            }
             var result = function.apply(mid);
             if (result > element) {
                 right = mid;
