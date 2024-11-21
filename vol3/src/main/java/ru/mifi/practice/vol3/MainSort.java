@@ -1,35 +1,23 @@
 package ru.mifi.practice.vol3;
 
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Random;
 
-public abstract class Main {
-    private static final int MAX_GENERATED_ELEMENT_VALUE = 100;
+import static ru.mifi.practice.vol3.NumberGenerator.MAX_GENERATED_ELEMENT_VALUE;
 
-    @SuppressWarnings("PMD.UnusedPrivateMethod")
-    private static List<Integer> generateSlice(int length) {
-        Random r = new Random(new Date().getTime());
-        List<Integer> slice = new ArrayList<>(length);
-        for (int i = 0; i < length; i++) {
-            slice.add(r.nextInt(MAX_GENERATED_ELEMENT_VALUE + 1));
-        }
-        return slice;
-    }
-
+public abstract class MainSort {
     /**
      * ДЗ: почему реальная сложность больше в два раза сложности расчетной?
      */
     public static void main(String[] args) {
         final boolean debug = false;
 //        List<Integer> slice = generateSlice(10000);
+//        List<Integer> slice = generateSlice(100);
         List<Integer> slice = List.of(7, 8, 2, 0, 5, 2, 7, 0);
-        System.out.println("    BAD: " + (slice.size() * slice.size()));
+        System.out.println("    BAD: " + ((long) slice.size() * slice.size()));
         System.out.println("   MUST: " + Math.round(slice.size() * (Math.log(slice.size()) / Math.log(2))));
         System.out.println("===========");
         for (Algorithms algorithm : Algorithms.values()) {
-            Sort.Counter counter = new Sort.Counter.Default();
+            Counter counter = new Counter.Default();
             algorithm.sort(slice, counter, debug);
             System.out.printf("%7s: %s%n", algorithm, counter);
         }
