@@ -1,8 +1,9 @@
-package ru.mifi.practice.vol4;
+package ru.mifi.practice.vol4.hash;
+
+import ru.mifi.practice.vol4.Counter;
 
 import java.util.Date;
 import java.util.Random;
-import java.util.function.Function;
 
 public abstract class MainHash {
     private static final String ORIGINAL_TEXT = "text";
@@ -23,25 +24,29 @@ public abstract class MainHash {
      * @param origin оригинальный текст для которого необходимо подобрать хеш
      * @param hash   функция хеширования
      */
-    private static void collision(String title, String origin, Function<String, Integer> hash) {
+    private static void collision(String title, String origin, Hash hash) {
         Generator generator = new Generator();
-        int originHash = hash.apply(origin);
+        Counter counter = new Counter.Default();
+        int originHash = hash.hash(origin, counter);
+        final String count = counter.toString();
         int generateHash = 0;
         String generate = "";
         int length = origin.length();
         int it = 0;
         while (originHash != generateHash) {
+            counter.reset();
             if (it > 10000000) {
                 it = 0;
                 length++;
                 System.out.println("Length  : " + length);
             }
             generate = generator.generate(length);
-            generateHash = hash.apply(generate);
+            generateHash = hash.hash(generate, counter);
             ++it;
         }
         System.out.println("Name    : " + title);
         System.out.println("Origin  : " + origin);
+        System.out.println("Count   : " + count);
         System.out.println("Hash    : " + originHash);
         System.out.println("Generate: " + generate);
         System.out.println("Iterate : " + it);
@@ -49,16 +54,11 @@ public abstract class MainHash {
         System.out.println("==================");
     }
 
-    public static void main(String[] args) {
-        Hash hash = new Hash.DefaultHash();
-        collision("Default", ORIGINAL_TEXT, hash::hash);
-        hash = new Hash.PolynomialHash();
-        collision("Polynomial", ORIGINAL_TEXT, hash::hash);
-        hash = new Hash.PolynomialHashCached();
-        collision("PolyCached", ORIGINAL_TEXT, hash::hash);
-
-        Search search = new Hash.PolynomialHashCached();
-        var index = search.search("100000045608889", "456");
+    private static void search(String title, String text, String subtext, Search search) {
+        var counter = new Counter.Default();
+        var index = search.search(text, subtext, counter);
+        System.out.println("Name    : " + title);
+        System.out.println("Iterate : " + counter);
         if (index.isEmpty()) {
             System.out.println("Index   : ()");
         } else {
@@ -67,6 +67,23 @@ public abstract class MainHash {
             System.out.println("SubText : " + d.subtext());
             System.out.println("Index   : " + d.index());
         }
+        System.out.println("==================");
+    }
+
+    public static void main(String[] args) {
+        Hash hash = new Hash.DefaultHash();
+        System.out.println("======Hashing=====");
+        collision("Default", ORIGINAL_TEXT, hash);
+        hash = new Hash.PolynomialHash();
+        collision("Polynomial", ORIGINAL_TEXT, hash);
+        hash = new Hash.PolynomialHashCached();
+        collision("PolyCached", ORIGINAL_TEXT, hash);
+
+        System.out.println("=====Searching====");
+        Search search = new Search.PolynomialSearchCached();
+        search("Cached", "100000045608889", "456", search);
+        search = new Search.SimpleSearch();
+        search("Simple", "100000045608889", "456", search);
     }
 
     private static final class Generator {
