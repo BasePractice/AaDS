@@ -1,5 +1,7 @@
 package ru.mifi.practice.vol4;
 
+import java.util.Optional;
+
 @FunctionalInterface
 public interface Hash {
     int POLY_MOD = Integer.MAX_VALUE;
@@ -12,7 +14,7 @@ public interface Hash {
         public int hash(String text) {
             int hash = 0;
             for (int i = 0; i < text.length(); i++) {
-                hash = hash * 31 + text.charAt(i);
+                hash = hash * POLY_PRIME + text.charAt(i);
             }
             return hash;
         }
@@ -85,16 +87,15 @@ public interface Hash {
         }
 
         @Override
-        public int search(String text, String substring) {
+        public Optional<Index> search(String text, String substring) {
             int[] hashes = hashing(text);
-            int[] subHashes = hashing(substring);
-            int subHash = hash(subHashes, 0, substring.length() - 1);
+            int subHash = hash(hashing(substring), 0, substring.length() - 1);
             for (int i = 0; i + substring.length() <= hashes.length; i++) {
                 if (hash(hashes, i, i + substring.length() - 1) == subHash * polynomials[i]) {
-                    return i;
+                    return Optional.of(new Index(text, substring, i));
                 }
             }
-            return -1;
+            return Optional.empty();
         }
     }
 }
