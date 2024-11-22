@@ -20,7 +20,7 @@ public abstract class MainHash {
      * @param origin оригинальный текст для которого необходимо подобрать хеш
      * @param hash функция хеширования
      */
-    private static void collision(String origin, Function<String, Integer> hash) {
+    private static void collision(String title, String origin, Function<String, Integer> hash) {
         Generator generator = new Generator();
         int originHash = hash.apply(origin);
         int generateHash = 0;
@@ -37,16 +37,26 @@ public abstract class MainHash {
             generateHash = hash.apply(generate);
             ++it;
         }
+        System.out.println("Name    : " + title);
         System.out.println("Origin  : " + origin);
         System.out.println("Hash    : " + originHash);
         System.out.println("Generate: " + generate);
         System.out.println("Iterate : " + it);
         System.out.println("Hash    : " + generateHash);
+        System.out.println("==================");
     }
 
     public static void main(String[] args) {
         Hash hash = new Hash.DefaultHash();
-        collision("text", hash::hash);
+        collision("Default", "text", hash::hash);
+        hash = new Hash.PolynomialHash();
+        collision("Polynomial","text", hash::hash);
+        hash = new Hash.PolynomialHashCached();
+        collision("PolyCached","text", hash::hash);
+
+        Search search = new Hash.PolynomialHashCached();
+        var index = search.search("100000045608889", "456");
+        System.out.println(index);
     }
 
     private static final class Generator {
