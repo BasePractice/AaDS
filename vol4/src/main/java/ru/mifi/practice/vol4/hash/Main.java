@@ -5,7 +5,7 @@ import ru.mifi.practice.vol4.Counter;
 import java.util.Date;
 import java.util.Random;
 
-public abstract class MainHash {
+public abstract class Main {
     private static final String ORIGINAL_TEXT = "text";
 
     /**
@@ -81,9 +81,9 @@ public abstract class MainHash {
 
         System.out.println("=====Searching====");
         Search search = new Search.PolynomialSearchCached();
-        search("Cached", "100000045608889", "456", search);
+        search("Cached", "100000045608889", "4560", search);
         search = new Search.SimpleSearch();
-        search("Simple", "100000045608889", "456", search);
+        search("Simple", "100000045608889", "4560", search);
     }
 
     private static final class Generator {
