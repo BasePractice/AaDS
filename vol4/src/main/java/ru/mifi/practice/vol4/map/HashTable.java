@@ -122,9 +122,9 @@ public interface HashTable<K, V> {
         public void put(K key, V value, Counter counter) {
             resize();
             int index = keyIndex(key, entries.length);
+            counter.increment();
             if (entries[index] == null) {
                 entries[index] = new Entry<>(key, value);
-                counter.increment();
             } else {
                 Entry<K, V> entry = entries[index];
                 for (; entry != null; entry = entry.next) {
@@ -188,6 +188,7 @@ public interface HashTable<K, V> {
                         }
                     }
                     size--;
+                    break;
                 }
                 prev = entry;
             }
