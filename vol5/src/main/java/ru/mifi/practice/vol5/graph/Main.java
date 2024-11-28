@@ -1,21 +1,15 @@
 package ru.mifi.practice.vol5.graph;
 
+import ru.mifi.practice.vol5.graph.loader.StandardLoader;
+
+import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
 public abstract class Main {
-    public static void main(String[] args) {
-        Graph<Void, Integer> graph = Factory.createGraph();
-        graph.createVertex(null);
-        graph.createVertex(null);
-        graph.createVertex(null);
-        graph.createVertex(null);
-        graph.createVertex(null);
-        graph.createEdge("1", "2", 0);
-        graph.createEdge("1", "3", 0);
-        graph.createEdge("2", "5", 0);
-        graph.createEdge("3", "4", 0);
-        graph.createEdge("4", "5", 0);
-        graph.createEdge("5", "3", 0);
+    public static void main(String[] args) throws IOException {
+        Graph<String, Integer> graph = new StandardLoader<String>()
+            .load(Objects.requireNonNull(Main.class.getResourceAsStream("/standard.graph")), s -> s);
         var algorithms = new Algorithms.Default<>(graph);
         algorithms.dfs(vertex -> System.out.printf("%s", vertex));
         System.out.println();
