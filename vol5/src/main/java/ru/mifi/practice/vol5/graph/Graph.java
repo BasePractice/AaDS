@@ -1,11 +1,15 @@
 package ru.mifi.practice.vol5.graph;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 @SuppressWarnings("UnusedReturnValue")
 public interface Graph<T, W extends Number & Comparable<W>> {
@@ -46,9 +50,7 @@ public interface Graph<T, W extends Number & Comparable<W>> {
 
         @Override
         public Vertex<T, W> createVertex(String id, T value) {
-            Vertex<T, W> vertex = new Vertex.Default<>(id, value);
-            vertices.put(id, vertex);
-            return vertex;
+            return vertices.computeIfAbsent(id, s -> new Vertex.Default<>(id, value));
         }
 
         @Override
@@ -73,6 +75,11 @@ public interface Graph<T, W extends Number & Comparable<W>> {
         public Set<String> getVertices() {
             return vertices.keySet();
         }
+    }
+
+    @FunctionalInterface
+    interface Loader<T, W extends Number & Comparable<W>> {
+        Graph<T, W> load(InputStream stream, Function<String, T> value) throws IOException;
     }
 
     interface Vertex<T, W extends Number & Comparable<W>> {
@@ -151,6 +158,15 @@ public interface Graph<T, W extends Number & Comparable<W>> {
             public String toString() {
                 return "{" + id() + "}";
             }
+        }
+    }
+
+    final class Standard<T, W extends Number & Comparable<W>> extends AbstractGraph<T, W> {
+        private final AtomicInteger vertexCount = new AtomicInteger(0);
+
+        @Override
+        protected String nextVertexId() {
+            return String.valueOf(vertexCount.incrementAndGet());
         }
     }
 }
