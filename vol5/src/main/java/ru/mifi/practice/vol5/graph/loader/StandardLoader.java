@@ -28,7 +28,7 @@ public final class StandardLoader<T> implements Graph.Loader<T, Integer> {
                 String targetText = target.toString();
                 graph.createVertex(sourceText, value.apply(sourceText));
                 graph.createVertex(targetText, value.apply(targetText));
-                graph.createEdge(sourceText, targetText, -1);
+                graph.createEdge(sourceText, targetText, 1);
             } else if (c == ',') {
                 current = target;
             } else {
