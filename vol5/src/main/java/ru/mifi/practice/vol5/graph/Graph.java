@@ -29,54 +29,6 @@ public interface Graph<T, W extends Number & Comparable<W>> {
     Set<String> getVertices();
 
 
-    abstract class AbstractGraph<T, W extends Number & Comparable<W>> implements Graph<T, W> {
-        protected final Map<String, Vertex<T, W>> vertices = new HashMap<>();
-        protected final Map<String, List<Edge<T, W>>> edges = new HashMap<>();
-
-        @Override
-        public Vertex<T, W> getVertex(String id) {
-            return vertices.get(id);
-        }
-
-        @Override
-        public List<Edge<T, W>> getEdges(String id) {
-            return edges.getOrDefault(id, List.of());
-        }
-
-        @Override
-        public Vertex<T, W> createVertex(T value) {
-            return createVertex(nextVertexId(), value);
-        }
-
-        @Override
-        public Vertex<T, W> createVertex(String id, T value) {
-            return vertices.computeIfAbsent(id, s -> new Vertex.Default<>(id, value));
-        }
-
-        @Override
-        public Edge<T, W> createEdge(Vertex<T, W> source, Vertex<T, W> target, W weight) {
-            Edge.Default<T, W> edge = new Edge.Default<>(source, target, weight);
-            edges.computeIfAbsent(source.id(), k -> new ArrayList<>()).add(edge);
-            return edge;
-        }
-
-        @Override
-        public Edge<T, W> createEdge(String source, String target, W weight) {
-            Vertex<T, W> sourceVertex = vertices.get(source);
-            Objects.requireNonNull(sourceVertex, "Source vertex not found");
-            Vertex<T, W> targetVertex = vertices.get(target);
-            Objects.requireNonNull(targetVertex, "Target vertex not found");
-            return createEdge(sourceVertex, targetVertex, weight);
-        }
-
-        protected abstract String nextVertexId();
-
-        @Override
-        public Set<String> getVertices() {
-            return vertices.keySet();
-        }
-    }
-
     @FunctionalInterface
     interface Loader<T, W extends Number & Comparable<W>> {
         Graph<T, W> load(InputStream stream, Function<String, T> value) throws IOException;
@@ -151,13 +103,61 @@ public interface Graph<T, W extends Number & Comparable<W>> {
 
             @Override
             public String id() {
-                return source().id() + ":" + target().id();
+                return source().id() + ":" + target().id() + ":" + weight();
             }
 
             @Override
             public String toString() {
                 return "{" + id() + "}";
             }
+        }
+    }
+
+    abstract class AbstractGraph<T, W extends Number & Comparable<W>> implements Graph<T, W> {
+        protected final Map<String, Vertex<T, W>> vertices = new HashMap<>();
+        protected final Map<String, List<Edge<T, W>>> edges = new HashMap<>();
+
+        @Override
+        public Vertex<T, W> getVertex(String id) {
+            return vertices.get(id);
+        }
+
+        @Override
+        public List<Edge<T, W>> getEdges(String id) {
+            return edges.getOrDefault(id, List.of());
+        }
+
+        @Override
+        public Vertex<T, W> createVertex(T value) {
+            return createVertex(nextVertexId(), value);
+        }
+
+        @Override
+        public Vertex<T, W> createVertex(String id, T value) {
+            return vertices.computeIfAbsent(id, s -> new Vertex.Default<>(id, value));
+        }
+
+        @Override
+        public Edge<T, W> createEdge(Vertex<T, W> source, Vertex<T, W> target, W weight) {
+            Edge.Default<T, W> edge = new Edge.Default<>(source, target, weight);
+            edges.computeIfAbsent(source.id(), k -> new ArrayList<>()).add(edge);
+            return edge;
+        }
+
+        @Override
+        public Edge<T, W> createEdge(String source, String target, W weight) {
+            Vertex<T, W> sourceVertex = vertices.get(source);
+            Objects.requireNonNull(sourceVertex, "Source vertex not found");
+            Vertex<T, W> targetVertex = vertices.get(target);
+            Objects.requireNonNull(targetVertex, "Target vertex not found");
+            return createEdge(sourceVertex, targetVertex, weight);
+        }
+
+        protected abstract String nextVertexId();
+
+        @Override
+        public Set<String> getVertices() {
+            return vertices.keySet();
         }
     }
 

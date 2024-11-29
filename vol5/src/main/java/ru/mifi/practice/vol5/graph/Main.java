@@ -1,6 +1,7 @@
 package ru.mifi.practice.vol5.graph;
 
 import ru.mifi.practice.vol5.graph.loader.StandardLoader;
+import ru.mifi.practice.vol5.graph.loader.StandardWeightLoader;
 
 import java.io.IOException;
 import java.util.List;
@@ -22,6 +23,11 @@ public abstract class Main {
         System.out.println("CRL: " + circle);
         var dist = new Algorithms.DijkstraShortestPath<String, Integer>(Integer.MAX_VALUE, 0, Integer::sum);
         Map<String, Integer> distances = dist.distances(graph, "1");
+        System.out.println("DST: " + distances);
+        graph = new StandardWeightLoader<String>()
+            .load(Objects.requireNonNull(Main.class.getResourceAsStream("/standard-weight.graph")), s -> s);
+        dist = new Algorithms.DijkstraShortestPath<>(Integer.MAX_VALUE, 0, Integer::sum);
+        distances = dist.distances(graph, "1");
         System.out.println("DST: " + distances);
     }
 }
