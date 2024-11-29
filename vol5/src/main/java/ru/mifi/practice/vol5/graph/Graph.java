@@ -7,16 +7,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 @SuppressWarnings("UnusedReturnValue")
 public interface Graph<T, W extends Number & Comparable<W>> {
 
+    int size();
+
+    int indexOf(String label);
+
+    Vertex<T, W> ofIndex(int index);
+
     Vertex<T, W> createVertex(T value);
 
-    Vertex<T, W> createVertex(String id, T value);
+    Vertex<T, W> createVertex(String label, T value);
 
     Edge<T, W> createEdge(Vertex<T, W> source, Vertex<T, W> target, W weight);
 
@@ -24,10 +29,13 @@ public interface Graph<T, W extends Number & Comparable<W>> {
 
     List<Edge<T, W>> getEdges(String source);
 
+    default List<Edge<T, W>> getEdges(Vertex<T, W> source) {
+        return getEdges(source.label());
+    }
+
     Vertex<T, W> getVertex(String source);
 
-    Set<String> getVertices();
-
+    List<Graph.Vertex<T, W>> getVertices();
 
     @FunctionalInterface
     interface Loader<T, W extends Number & Comparable<W>> {
@@ -36,22 +44,31 @@ public interface Graph<T, W extends Number & Comparable<W>> {
 
     interface Vertex<T, W extends Number & Comparable<W>> {
 
-        String id();
+        String label();
+
+        int index();
 
         T value();
 
         final class Default<T, W extends Number & Comparable<W>> implements Vertex<T, W> {
-            private final String id;
+            private final int index;
+            private final String label;
             private final T value;
 
-            Default(String id, T value) {
-                this.id = id;
+            Default(int index, String label, T value) {
+                this.index = index;
+                this.label = label;
                 this.value = value;
             }
 
             @Override
-            public String id() {
-                return id;
+            public String label() {
+                return label;
+            }
+
+            @Override
+            public int index() {
+                return index;
             }
 
             @Override
@@ -61,7 +78,21 @@ public interface Graph<T, W extends Number & Comparable<W>> {
 
             @Override
             public String toString() {
-                return "(" + id + ")";
+                return "(" + label + ")";
+            }
+
+            @Override
+            public boolean equals(Object o) {
+                if (o == null || getClass() != o.getClass()) {
+                    return false;
+                }
+                Default<?, ?> aDefault = (Default<?, ?>) o;
+                return index == aDefault.index;
+            }
+
+            @Override
+            public int hashCode() {
+                return Objects.hash(index);
             }
         }
     }
@@ -103,7 +134,7 @@ public interface Graph<T, W extends Number & Comparable<W>> {
 
             @Override
             public String id() {
-                return source().id() + ":" + target().id() + ":" + weight();
+                return source().label() + ":" + target().label() + ":" + weight();
             }
 
             @Override
@@ -114,50 +145,93 @@ public interface Graph<T, W extends Number & Comparable<W>> {
     }
 
     abstract class AbstractGraph<T, W extends Number & Comparable<W>> implements Graph<T, W> {
-        protected final Map<String, Vertex<T, W>> vertices = new HashMap<>();
-        protected final Map<String, List<Edge<T, W>>> edges = new HashMap<>();
+        protected final List<Vertex<T, W>> vertices = new ArrayList<>();
+        protected final List<List<Edge<T, W>>> edges = new ArrayList<>();
+        protected final Map<String, Integer> labelIndexes = new HashMap<>();
+
 
         @Override
-        public Vertex<T, W> getVertex(String id) {
-            return vertices.get(id);
+        public int size() {
+            return vertices.size();
         }
 
         @Override
-        public List<Edge<T, W>> getEdges(String id) {
-            return edges.getOrDefault(id, List.of());
+        public Vertex<T, W> ofIndex(int index) {
+            Objects.checkIndex(index, vertices.size());
+            return vertices.get(index);
+        }
+
+        @Override
+        public int indexOf(String label) {
+            Integer index = labelIndexes.get(label);
+            Objects.requireNonNull(index, "Index not found");
+            return index;
+        }
+
+        @Override
+        public Vertex<T, W> getVertex(String label) {
+            return vertices.get(indexOf(label));
+        }
+
+        @Override
+        public List<Edge<T, W>> getEdges(String label) {
+            List<Edge<T, W>> list = edges.get(indexOf(label));
+            return list == null ? List.of() : list;
         }
 
         @Override
         public Vertex<T, W> createVertex(T value) {
-            return createVertex(nextVertexId(), value);
+            return createVertex(null, value);
         }
 
         @Override
-        public Vertex<T, W> createVertex(String id, T value) {
-            return vertices.computeIfAbsent(id, s -> new Vertex.Default<>(id, value));
+        public Vertex<T, W> createVertex(String label, T value) {
+            final int index;
+            if (labelIndexes.containsKey(label)) {
+                index = labelIndexes.get(label);
+            } else {
+                index = nextVertexIndex();
+            }
+            if (label == null) {
+                label = String.valueOf(index);
+            }
+            Vertex.Default<T, W> vertex = new Vertex.Default<>(index, label, value);
+            labelIndexes.put(label, index);
+            if (index < vertices.size()) {
+                vertices.set(index, vertex);
+            } else {
+                vertices.add(vertex);
+                edges.add(new ArrayList<>());
+            }
+            Objects.checkIndex(index, vertices.size());
+            Objects.checkIndex(index, edges.size());
+            return vertex;
         }
 
         @Override
         public Edge<T, W> createEdge(Vertex<T, W> source, Vertex<T, W> target, W weight) {
             Edge.Default<T, W> edge = new Edge.Default<>(source, target, weight);
-            edges.computeIfAbsent(source.id(), k -> new ArrayList<>()).add(edge);
+            List<Edge<T, W>> list = edges.get(source.index());
+            if (list == null) {
+                list = new ArrayList<>();
+            }
+            list.add(edge);
+            edges.set(source.index(), list);
             return edge;
         }
 
         @Override
         public Edge<T, W> createEdge(String source, String target, W weight) {
-            Vertex<T, W> sourceVertex = vertices.get(source);
-            Objects.requireNonNull(sourceVertex, "Source vertex not found");
-            Vertex<T, W> targetVertex = vertices.get(target);
-            Objects.requireNonNull(targetVertex, "Target vertex not found");
+            Vertex<T, W> sourceVertex = getVertex(source);
+            Vertex<T, W> targetVertex = getVertex(target);
             return createEdge(sourceVertex, targetVertex, weight);
         }
 
-        protected abstract String nextVertexId();
+        protected abstract int nextVertexIndex();
 
         @Override
-        public Set<String> getVertices() {
-            return vertices.keySet();
+        public List<Graph.Vertex<T, W>> getVertices() {
+            return vertices;
         }
     }
 
@@ -165,8 +239,8 @@ public interface Graph<T, W extends Number & Comparable<W>> {
         private final AtomicInteger vertexCount = new AtomicInteger(0);
 
         @Override
-        protected String nextVertexId() {
-            return String.valueOf(vertexCount.incrementAndGet());
+        protected int nextVertexIndex() {
+            return vertexCount.getAndIncrement();
         }
     }
 }
