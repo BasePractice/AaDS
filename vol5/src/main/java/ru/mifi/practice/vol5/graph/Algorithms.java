@@ -2,9 +2,11 @@ package ru.mifi.practice.vol5.graph;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
@@ -12,6 +14,8 @@ import java.util.function.Supplier;
 public interface Algorithms<T, W extends Number & Comparable<W>> {
 
     void dfs(Visitor<T, W> visitor);
+
+    void bfs(Visitor<T, W> visitor);
 
     List<String> searchCircle();
 
@@ -48,6 +52,28 @@ public interface Algorithms<T, W extends Number & Comparable<W>> {
                 if (!v) {
                     dfs(target, visitor, visited);
                 }
+            }
+        }
+
+        @Override
+        public void bfs(Visitor<T, W> visitor) {
+            Map<String, Boolean> visited = new ConcurrentHashMap<>();
+            Iterator<String> it = graph.getVertices().iterator();
+            if (!it.hasNext()) {
+                return;
+            }
+            String source = it.next();
+            Queue<String> queue = new LinkedList<>();
+            queue.add(source);
+            while (!queue.isEmpty()) {
+                String current = queue.poll();
+                if (visited.containsKey(current)) {
+                    continue;
+                }
+                Graph.Vertex<T, W> vertex = graph.getVertex(current);
+                visited.put(current, true);
+                visitor.visit(vertex);
+                graph.getEdges(current).forEach(edge -> queue.add(edge.target().id()));
             }
         }
 
