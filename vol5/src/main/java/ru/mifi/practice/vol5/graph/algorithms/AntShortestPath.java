@@ -5,6 +5,7 @@ import ru.mifi.practice.vol5.graph.Graph;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -72,16 +73,16 @@ public final class AntShortestPath<T, W extends Number & Comparable<W>> implemen
             return random.nextDouble(1.);
         }
 
-        void step(Matrix pheromones) {
+        void step(Matrix pheromones, Parameters parameters) {
             if (path.isEmpty()) {
                 path.add(current);
                 visited.add(current);
             }
-            Set<String> neighbours = new HashSet<>();
+            List<Graph.Vertex<T, W>> neighbours = new ArrayList<>();
             List<Graph.Edge<T, W>> edges = graph.getEdges(current);
             edges.forEach(edge -> {
                 if (!visited.contains(edge.target())) {
-                    neighbours.add(edge.target().label());
+                    neighbours.add(edge.target());
                 }
             });
             if (neighbours.isEmpty()) {
@@ -92,8 +93,48 @@ public final class AntShortestPath<T, W extends Number & Comparable<W>> implemen
                 });
                 return;
             }
-            Map<String, Double> choosing = new HashMap<>();
+            Map<Graph.Vertex<T, W>, Double> choosing = new HashMap<>();
+            {
+                List<Double> wish = new LinkedList<>();
+                double summary = 0;
+                for (Graph.Vertex<T, W> v : neighbours) {
+                    var tau = pheromones.values[current.index()][v.index()];
+                    var weight = edges.stream().filter(e -> e.target().equals(v)).findAny()
+                        .map(e -> e.weight().doubleValue()).orElse(0.);
+                    var n = 1. / weight;
+                    double w = Math.pow(tau, parameters.kAlpha.doubleValue()) * Math.pow(n, parameters.kBeta.doubleValue());
+                    wish.add(w);
+                    summary += w;
+                }
 
+                Graph.Vertex<T, W> prev = null;
+                for (int i = 0; i < neighbours.size(); i++) {
+                    var vertex = neighbours.get(i);
+                    var v = wish.get(i);
+                    double p = v / summary;
+                    if (i == 0) {
+                        choosing.put(vertex, p);
+                    } else {
+                        choosing.put(vertex, choosing.get(prev) + p);
+                    }
+                    prev = vertex;
+                }
+            }
+            double v = random();
+            Graph.Vertex<T, W> next = null;
+            for (Graph.Vertex<T, W> vertex : neighbours) {
+                Double d = choosing.get(vertex);
+                if (v <= d) {
+                    next = vertex;
+                    break;
+                }
+            }
+            path.add(next);
+            visited.add(next);
+            Graph.Vertex<T, W> finalNext = next;
+            distance += graph.getEdges(current).stream().filter(e -> e.target().equals(finalNext))
+                .findAny().map(e -> e.weight().doubleValue()).orElse(0.);
+            current = finalNext;
         }
     }
 
