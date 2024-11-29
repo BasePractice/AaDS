@@ -7,7 +7,6 @@ import ru.mifi.practice.vol5.graph.loader.StandardLoader;
 import ru.mifi.practice.vol5.graph.loader.StandardWeightLoader;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Objects;
 
 public abstract class Main {
@@ -32,7 +31,7 @@ public abstract class Main {
         distances = dist.distances(graph, "1");
         System.out.println("DST: " + distances);
         var path = new AntShortestPath<String, Integer>();
-        List<String> shortest = path.shortestPath(graph, "1", "4");
+        var shortest = path.shortestPath(graph, "1", "3");
         System.out.println("SHT: " + shortest);
     }
 }

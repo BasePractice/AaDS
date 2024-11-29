@@ -30,6 +30,6 @@ public interface Algorithms {
 
     @FunctionalInterface
     interface ShortestPath<T, W extends Number & Comparable<W>> {
-        List<String> shortestPath(Graph<T, W> graph, String source, String target);
+        List<Graph.Vertex<T, W>> shortestPath(Graph<T, W> graph, String source, String target);
     }
 }
