@@ -3,8 +3,10 @@ package ru.mifi.practice.vol5.graph.algorithms;
 import ru.mifi.practice.vol5.graph.Graph;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
@@ -47,24 +49,51 @@ public final class AntShortestPath<T, W extends Number & Comparable<W>> implemen
     private static final class Ant<T, W extends Number & Comparable<W>> {
         private final Random random;
         private final Graph<T, W> graph;
-        private final Graph.Vertex<T, W> source;
-        private final Graph.Vertex<T, W> target;
+        private final String source;
+        private final String target;
         private final Set<String> visited;
-        private Graph.Vertex<T, W> current;
+        private final List<String> path;
+        private double distance;
+        private String current;
         private boolean canContinue;
 
         private Ant(Random random, Graph<T, W> graph, String source, String target) {
             this.random = random;
             this.graph = graph;
-            this.source = graph.getVertex(source);
-            this.target = graph.getVertex(target);
+            this.source = source;
+            this.target = target;
             this.visited = new HashSet<>();
-            this.current = this.source;
+            this.path = new ArrayList<>();
+            this.current = source;
             this.canContinue = true;
         }
 
         private double random() {
             return random.nextDouble(1.);
+        }
+
+        void step(Matrix pheromones) {
+            if (path.isEmpty()) {
+                path.add(current);
+                visited.add(current);
+            }
+            Set<String> neighbours = new HashSet<>();
+            List<Graph.Edge<T, W>> edges = graph.getEdges(current);
+            edges.forEach(edge -> {
+                if (!visited.contains(edge.target().id())) {
+                    neighbours.add(edge.target().id());
+                }
+            });
+            if (neighbours.isEmpty()) {
+                canContinue = false;
+                edges.stream().filter(e -> e.target().id().equals(source)).forEach(edge -> {
+                    path.add(source);
+                    distance += edge.weight().doubleValue();
+                });
+                return;
+            }
+            Map<String, Double> choosing = new HashMap<>();
+
         }
     }
 
@@ -79,11 +108,16 @@ public final class AntShortestPath<T, W extends Number & Comparable<W>> implemen
         private Colony(Random random, Graph<T, W> graph, String target, Parameters parameters) {
             this.random = random;
             this.graph = graph;
-            String[] vertices = graph.getVertices().toArray(new String[0]);
-            int size = vertices.length;
+            int size = graph.getVertices().size();
             this.pheromones = new Matrix(size, parameters.kPheromone.doubleValue());
             this.parameters = parameters;
             this.ants = new ArrayList<>(size * 2);
+            createAnts(random, graph, target);
+        }
+
+        private void createAnts(Random random, Graph<T, W> graph, String target) {
+            int size = graph.getVertices().size();
+            String[] vertices = graph.getVertices().toArray(new String[0]);
             for (int i = 0; i < size * 2; i++) {
                 int v = (int) random.nextDouble(size - 1);
                 ants.add(new Ant<>(random, graph, graph.getVertex(vertices[v]).id(), target));
