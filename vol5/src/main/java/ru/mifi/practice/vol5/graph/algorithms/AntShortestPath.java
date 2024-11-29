@@ -49,15 +49,15 @@ public final class AntShortestPath<T, W extends Number & Comparable<W>> implemen
     private static final class Ant<T, W extends Number & Comparable<W>> {
         private final Random random;
         private final Graph<T, W> graph;
-        private final String source;
+        private final Graph.Vertex<T, W> source;
         private final String target;
-        private final Set<String> visited;
-        private final List<String> path;
+        private final Set<Graph.Vertex<T, W>> visited;
+        private final List<Graph.Vertex<T, W>> path;
         private double distance;
-        private String current;
+        private Graph.Vertex<T, W> current;
         private boolean canContinue;
 
-        private Ant(Random random, Graph<T, W> graph, String source, String target) {
+        private Ant(Random random, Graph<T, W> graph, Graph.Vertex<T, W> source, String target) {
             this.random = random;
             this.graph = graph;
             this.source = source;
@@ -80,13 +80,13 @@ public final class AntShortestPath<T, W extends Number & Comparable<W>> implemen
             Set<String> neighbours = new HashSet<>();
             List<Graph.Edge<T, W>> edges = graph.getEdges(current);
             edges.forEach(edge -> {
-                if (!visited.contains(edge.target().id())) {
-                    neighbours.add(edge.target().id());
+                if (!visited.contains(edge.target())) {
+                    neighbours.add(edge.target().label());
                 }
             });
             if (neighbours.isEmpty()) {
                 canContinue = false;
-                edges.stream().filter(e -> e.target().id().equals(source)).forEach(edge -> {
+                edges.stream().filter(e -> e.target().equals(source)).forEach(edge -> {
                     path.add(source);
                     distance += edge.weight().doubleValue();
                 });
@@ -117,10 +117,10 @@ public final class AntShortestPath<T, W extends Number & Comparable<W>> implemen
 
         private void createAnts(Random random, Graph<T, W> graph, String target) {
             int size = graph.getVertices().size();
-            String[] vertices = graph.getVertices().toArray(new String[0]);
+            List<Graph.Vertex<T, W>> vertices = graph.getVertices();
             for (int i = 0; i < size * 2; i++) {
                 int v = (int) random.nextDouble(size - 1);
-                ants.add(new Ant<>(random, graph, graph.getVertex(vertices[v]).id(), target));
+                ants.add(new Ant<>(random, graph, vertices.get(v), target));
             }
         }
 

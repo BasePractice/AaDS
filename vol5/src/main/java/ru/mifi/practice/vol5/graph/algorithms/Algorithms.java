@@ -19,13 +19,13 @@ public interface Algorithms {
     }
 
     interface CircleSearch<T, W extends Number & Comparable<W>> {
-        List<String> searchCircle(Graph<T, W> graph);
+        List<Graph.Vertex<T, W>> searchCircle(Graph<T, W> graph);
     }
 
     @FunctionalInterface
     interface ShortestDistance<T, W extends Number & Comparable<W>> {
 
-        Map<String, W> distances(Graph<T, W> graph, String source);
+        Map<Graph.Vertex<T, W>, W> distances(Graph<T, W> graph, String source);
     }
 
     @FunctionalInterface

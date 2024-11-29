@@ -3,38 +3,34 @@ package ru.mifi.practice.vol5.graph.algorithms;
 import ru.mifi.practice.vol5.graph.Graph;
 
 import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Queue;
-import java.util.UUID;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 public final class Base<T, W extends Number & Comparable<W>>
     implements Algorithms.CircleSearch<T, W>, Algorithms.FirstSearch<T, W> {
-    private static final String NONE = UUID.randomUUID().toString();
 
     @Override
     public void dfs(Graph<T, W> graph, Algorithms.Visitor<T, W> visitor) {
-        Iterator<String> it = graph.getVertices().iterator();
-        if (it.hasNext()) {
-            Map<String, Boolean> visited = new ConcurrentHashMap<>();
-            dfs(graph, it.next(), visitor, visited);
+        if (graph.size() > 0) {
+            Set<Graph.Vertex<T, W>> visited = new HashSet<>();
+            dfs(graph, graph.ofIndex(0), visitor, visited);
         }
     }
 
-    private void dfs(Graph<T, W> graph, String source, Algorithms.Visitor<T, W> visitor, Map<String, Boolean> visited) {
-        Graph.Vertex<T, W> vertex = graph.getVertex(source);
-        Objects.requireNonNull(vertex, "Vertex is null");
-        visited.put(source, true);
-        visitor.visit(vertex);
+    private void dfs(Graph<T, W> graph, Graph.Vertex<T, W> source, Algorithms.Visitor<T, W> visitor, Set<Graph.Vertex<T, W>> visited) {
+        Objects.requireNonNull(source, "Source is null");
+        visited.add(source);
+        visitor.visit(source);
         for (var next : graph.getEdges(source)) {
-            String target = next.target().id();
-            Boolean v = visited.getOrDefault(target, false);
-            if (!v) {
+            Graph.Vertex<T, W> target = next.target();
+            if (!visited.contains(target)) {
                 dfs(graph, target, visitor, visited);
             }
         }
@@ -42,37 +38,31 @@ public final class Base<T, W extends Number & Comparable<W>>
 
     @Override
     public void bfs(Graph<T, W> graph, Algorithms.Visitor<T, W> visitor) {
-        Map<String, Boolean> visited = new ConcurrentHashMap<>();
-        Iterator<String> it = graph.getVertices().iterator();
-        if (!it.hasNext()) {
+        Set<Graph.Vertex<T, W>> visited = new HashSet<>();
+        if (graph.size() == 0) {
             return;
         }
-        String source = it.next();
-        Queue<String> queue = new LinkedList<>();
+        var source = graph.ofIndex(0);
+        Queue<Graph.Vertex<T, W>> queue = new LinkedList<>();
         queue.add(source);
         while (!queue.isEmpty()) {
-            String current = queue.poll();
-            if (visited.containsKey(current)) {
+            var current = queue.poll();
+            if (visited.contains(current)) {
                 continue;
             }
-            Graph.Vertex<T, W> vertex = graph.getVertex(current);
-            visited.put(current, true);
-            visitor.visit(vertex);
-            graph.getEdges(current).forEach(edge -> queue.add(edge.target().id()));
+            visited.add(current);
+            visitor.visit(current);
+            graph.getEdges(current).forEach(edge -> queue.add(edge.target()));
         }
     }
 
     @Override
-    public List<String> searchCircle(Graph<T, W> graph) {
-        Map<String, Boolean> visited = new ConcurrentHashMap<>();
-        Map<String, String> parents = new ConcurrentHashMap<>();
-        for (String vertex : graph.getVertices()) {
-            parents.put(vertex, NONE);
-            visited.put(vertex, false);
-        }
-        for (String vertex : graph.getVertices()) {
-            if (!visited.getOrDefault(vertex, false)) {
-                var circle = searchCircle(graph, vertex, NONE, visited, parents);
+    public List<Graph.Vertex<T, W>> searchCircle(Graph<T, W> graph) {
+        Map<Graph.Vertex<T, W>, Graph.Vertex<T, W>> parents = new ConcurrentHashMap<>();
+        Set<Graph.Vertex<T, W>> visited = new HashSet<>();
+        for (Graph.Vertex<T, W> vertex : graph.getVertices()) {
+            if (!visited.contains(vertex)) {
+                var circle = searchCircle(graph, vertex, null, visited, parents);
                 if (circle.isEmpty()) {
                     continue;
                 }
@@ -82,19 +72,21 @@ public final class Base<T, W extends Number & Comparable<W>>
         return List.of();
     }
 
-    private List<String> searchCircle(Graph<T, W> graph, String vertex, String parent,
-                                      Map<String, Boolean> visited, Map<String, String> parents) {
-        if (visited.getOrDefault(vertex, false)) {
+    private List<Graph.Vertex<T, W>> searchCircle(Graph<T, W> graph, Graph.Vertex<T, W> vertex, Graph.Vertex<T, W> parent,
+                                                  Set<Graph.Vertex<T, W>> visited, Map<Graph.Vertex<T, W>, Graph.Vertex<T, W>> parents) {
+        if (visited.contains(vertex)) {
             return buildCircle(vertex, parent, parents);
         }
-        visited.put(vertex, true);
-        parents.put(vertex, parent);
+        visited.add(vertex);
+        if (parent != null) {
+            parents.put(vertex, parent);
+        }
         for (var edge : graph.getEdges(vertex)) {
-            String target = edge.target().id();
+            var target = edge.target();
             if (target.equals(parent)) {
                 continue;
             }
-            List<String> circle = searchCircle(graph, target, vertex, visited, parents);
+            List<Graph.Vertex<T, W>> circle = searchCircle(graph, target, vertex, visited, parents);
             if (!circle.isEmpty()) {
                 return circle;
             }
@@ -102,10 +94,11 @@ public final class Base<T, W extends Number & Comparable<W>>
         return List.of();
     }
 
-    private List<String> buildCircle(String vertex, String parent, Map<String, String> parents) {
-        List<String> circle = new ArrayList<>();
+    private List<Graph.Vertex<T, W>> buildCircle(Graph.Vertex<T, W> vertex, Graph.Vertex<T, W> parent,
+                                                 Map<Graph.Vertex<T, W>, Graph.Vertex<T, W>> parents) {
+        List<Graph.Vertex<T, W>> circle = new ArrayList<>();
         circle.add(parent);
-        Supplier<String> lastElement = () -> circle.get(circle.size() - 1);
+        Supplier<Graph.Vertex<T, W>> lastElement = () -> circle.get(circle.size() - 1);
         while (!lastElement.get().equals(vertex)) {
             circle.add(parents.get(lastElement.get()));
         }
