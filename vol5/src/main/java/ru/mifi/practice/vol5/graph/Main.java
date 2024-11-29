@@ -11,9 +11,13 @@ public abstract class Main {
         Graph<String, Integer> graph = new StandardLoader<String>()
             .load(Objects.requireNonNull(Main.class.getResourceAsStream("/standard.graph")), s -> s);
         var algorithms = new Algorithms.Default<>(graph);
+        System.out.print("DFS: ");
         algorithms.dfs(vertex -> System.out.printf("%s", vertex));
         System.out.println();
+        System.out.print("BFS: ");
+        algorithms.bfs(vertex -> System.out.printf("%s", vertex));
+        System.out.println();
         List<String> circle = algorithms.searchCircle();
-        System.out.println(circle);
+        System.out.print("CRL: " + circle);
     }
 }
