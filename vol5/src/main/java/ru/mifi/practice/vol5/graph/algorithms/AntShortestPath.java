@@ -12,10 +12,39 @@ import java.util.Random;
 import java.util.Set;
 
 public final class AntShortestPath<T, W extends Number & Comparable<W>> implements Algorithms.ShortestPath<T, W> {
+    private final Parameters parameters = Parameters.started();
+
     @Override
-    public List<String> shortestPath(Graph<T, W> graph, String source, String target) {
-        Colony<T, W> colony = new Colony<>(new Random(), graph, target, Parameters.started());
-        return List.of();
+    public List<Graph.Vertex<T, W>> shortestPath(Graph<T, W> graph, String source, String target) {
+        Matrix pheromones = new Matrix(graph.size(), parameters.kPheromone.doubleValue());
+        Colony<T, W> colony = new Colony<>(graph, source, target, parameters);
+        int counter = 0;
+        double distance = Double.MAX_VALUE;
+        List<Graph.Vertex<T, W>> path = List.of();
+        while (counter++ < 100) {
+            var summaryPheromones = new Matrix(graph.size(), 0.);
+            colony.createAnts(source, target);
+            for (var ant : colony.ants) {
+                while (ant.canContinue) {
+                    ant.step(pheromones, parameters);
+                }
+                if (!ant.path.isEmpty()) {
+                    if (distance > ant.distance) {
+                        distance = ant.distance;
+                        path = ant.path;
+                        counter = 0;
+                    }
+
+                    for (int i = 1; i < ant.path.size() - 1; i++) {
+                        Graph.Vertex<T, W> v1 = ant.path.get(i - 1);
+                        Graph.Vertex<T, W> v2 = ant.path.get(i);
+                        summaryPheromones.values[v1.index()][v2.index()] += parameters.kQ.doubleValue() / ant.distance;
+                    }
+                }
+                colony.pheromoneStage(summaryPheromones);
+            }
+        }
+        return path;
     }
 
     record Parameters(Number kAlpha,
@@ -47,18 +76,19 @@ public final class AntShortestPath<T, W extends Number & Comparable<W>> implemen
         }
     }
 
+    @SuppressWarnings("PMD.UnusedPrivateField")
     private static final class Ant<T, W extends Number & Comparable<W>> {
         private final Random random;
         private final Graph<T, W> graph;
         private final Graph.Vertex<T, W> source;
-        private final String target;
+        private final Graph.Vertex<T, W> target;
         private final Set<Graph.Vertex<T, W>> visited;
         private final List<Graph.Vertex<T, W>> path;
         private double distance;
         private Graph.Vertex<T, W> current;
         private boolean canContinue;
 
-        private Ant(Random random, Graph<T, W> graph, Graph.Vertex<T, W> source, String target) {
+        private Ant(Random random, Graph<T, W> graph, Graph.Vertex<T, W> source, Graph.Vertex<T, W> target) {
             this.random = random;
             this.graph = graph;
             this.source = source;
@@ -77,6 +107,9 @@ public final class AntShortestPath<T, W extends Number & Comparable<W>> implemen
             if (path.isEmpty()) {
                 path.add(current);
                 visited.add(current);
+            } else if (current.equals(target)) {
+                canContinue = false;
+                return;
             }
             List<Graph.Vertex<T, W>> neighbours = new ArrayList<>();
             List<Graph.Edge<T, W>> edges = graph.getEdges(current);
@@ -146,22 +179,33 @@ public final class AntShortestPath<T, W extends Number & Comparable<W>> implemen
         private final List<Ant<T, W>> ants;
 
 
-        private Colony(Random random, Graph<T, W> graph, String target, Parameters parameters) {
-            this.random = random;
+        private Colony(Graph<T, W> graph, String source, String target, Parameters parameters) {
+            this.random = new Random();
             this.graph = graph;
             int size = graph.getVertices().size();
             this.pheromones = new Matrix(size, parameters.kPheromone.doubleValue());
             this.parameters = parameters;
             this.ants = new ArrayList<>(size * 2);
-            createAnts(random, graph, target);
+            createAnts(source, target);
         }
 
-        private void createAnts(Random random, Graph<T, W> graph, String target) {
-            int size = graph.getVertices().size();
+        private void createAnts(String source, String target) {
+            final int size;
+            if (source == null) {
+                size = graph.size();
+            } else {
+                size = graph.getEdges(source).size();
+            }
             List<Graph.Vertex<T, W>> vertices = graph.getVertices();
-            for (int i = 0; i < size * 2; i++) {
-                int v = (int) random.nextDouble(size - 1);
-                ants.add(new Ant<>(random, graph, vertices.get(v), target));
+            int length = size * 2;
+            Graph.Vertex<T, W> targetVertex = graph.getVertex(target);
+            for (int i = 0; i < length; i++) {
+                if (source == null) {
+                    int v = (int) random.nextDouble(size - 1);
+                    ants.add(new Ant<>(random, graph, vertices.get(v), targetVertex));
+                } else {
+                    ants.add(new Ant<>(random, graph, graph.getVertex(source), targetVertex));
+                }
             }
         }
 
