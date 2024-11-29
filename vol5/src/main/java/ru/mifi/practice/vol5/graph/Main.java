@@ -32,6 +32,6 @@ public abstract class Main {
         System.out.println("DST: " + distances);
         var path = new AntShortestPath<String, Integer>();
         var shortest = path.shortestPath(graph, "1", "3");
-        System.out.println("SHT: " + shortest);
+        System.out.println("ANT: " + shortest);
     }
 }
