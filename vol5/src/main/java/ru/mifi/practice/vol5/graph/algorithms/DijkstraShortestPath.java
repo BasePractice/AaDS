@@ -1,6 +1,7 @@
 package ru.mifi.practice.vol5.graph.algorithms;
 
 import ru.mifi.practice.vol5.graph.Graph;
+import ru.mifi.practice.vol5.graph.Weight;
 
 import java.util.Comparator;
 import java.util.HashMap;
@@ -15,12 +16,12 @@ public final class DijkstraShortestPath<T, W extends Number & Comparable<W>>
     implements Algorithms.ShortestDistance<T, W> {
     private final W maxDistance;
     private final W minDistance;
-    private final Sum<W> sum;
+    private final Weight<W> weight;
 
-    public DijkstraShortestPath(W maxDistance, W minDistance, Sum<W> sum) {
+    public DijkstraShortestPath(W maxDistance, W minDistance, Weight<W> weight) {
         this.maxDistance = maxDistance;
         this.minDistance = minDistance;
-        this.sum = sum;
+        this.weight = weight;
     }
 
     @Override
@@ -54,7 +55,7 @@ public final class DijkstraShortestPath<T, W extends Number & Comparable<W>>
                     continue;
                 }
                 W w = distances.get(target);
-                W distance = sum.sum(d.distance, edge.weight());
+                W distance = weight.sum(d.distance, edge.weight());
                 if (distance.compareTo(w) < 0) {
                     distances.put(target, distance);
                     pq.offer(new Tuple(target, distance));
@@ -62,10 +63,5 @@ public final class DijkstraShortestPath<T, W extends Number & Comparable<W>>
             }
         }
         return distances;
-    }
-
-    @FunctionalInterface
-    public interface Sum<W> {
-        W sum(W v1, W v2);
     }
 }
