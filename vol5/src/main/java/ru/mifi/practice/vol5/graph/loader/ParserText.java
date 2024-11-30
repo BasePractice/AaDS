@@ -26,7 +26,7 @@ public final class ParserText<T> implements Graph.Loader<String, T, Integer> {
         while ((ret = stream.read()) != -1) {
             char c = (char) ret;
             if (Character.isWhitespace(c)) {
-                //Nothing
+                continue;
             } else if (c == '{') {
                 source.setLength(0);
                 target.setLength(0);

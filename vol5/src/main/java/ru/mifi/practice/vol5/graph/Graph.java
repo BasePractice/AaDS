@@ -14,6 +14,14 @@ public interface Graph<T, W extends Number & Comparable<W>> {
 
     int size();
 
+    default boolean notEmpty() {
+        return size() > 0;
+    }
+
+    default boolean isEmpty() {
+        return size() == 0;
+    }
+
     Vertex<T, W> addVertex(String label, T value);
 
     Vertex<T, W> getVertex(String source);
