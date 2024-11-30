@@ -24,12 +24,11 @@ public interface Algorithms {
 
     @FunctionalInterface
     interface ShortestDistance<T, W extends Number & Comparable<W>> {
-
-        Map<Graph.Vertex<T, W>, W> distances(Graph<T, W> graph, String source);
+        Map<Graph.Vertex<T, W>, W> distances(Graph<T, W> graph, Graph.Vertex<T, W> source);
     }
 
     @FunctionalInterface
     interface ShortestPath<T, W extends Number & Comparable<W>> {
-        List<Graph.Vertex<T, W>> shortestPath(Graph<T, W> graph, String source, String target);
+        List<Graph.Vertex<T, W>> shortestPath(Graph<T, W> graph, Graph.Vertex<T, W> source, Graph.Vertex<T, W> target);
     }
 }

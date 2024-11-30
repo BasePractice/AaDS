@@ -2,14 +2,21 @@ package ru.mifi.practice.vol5.graph.loader;
 
 import ru.mifi.practice.vol5.graph.Graph;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.function.Function;
 
 @SuppressWarnings({"PMD.EmptyControlStatement", "PMD.CompareObjectsWithEquals"})
-public final class StandardWeightLoader<T> implements Graph.Loader<T, Integer> {
+public final class ParserText<T> implements Graph.Loader<String, T, Integer> {
+
+    public Graph<T, Integer> parse(String text, Function<String, T> value) throws IOException {
+        return parse(new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8)), value, Integer::parseInt);
+    }
+
     @Override
-    public Graph<T, Integer> load(InputStream stream, Function<String, T> value) throws IOException {
+    public Graph<T, Integer> parse(InputStream stream, Function<String, T> value, Function<String, Integer> weightFun) throws IOException {
         int ret;
         StringBuilder source = new StringBuilder();
         StringBuilder target = new StringBuilder();
@@ -24,15 +31,17 @@ public final class StandardWeightLoader<T> implements Graph.Loader<T, Integer> {
                 source.setLength(0);
                 target.setLength(0);
                 weight.setLength(0);
-                weight.append("1");
                 current = source;
             } else if (c == '}') {
                 String sourceText = source.toString();
                 String targetText = target.toString();
                 String weightText = weight.toString();
-                graph.createVertex(sourceText, value.apply(sourceText));
-                graph.createVertex(targetText, value.apply(targetText));
-                graph.createEdge(sourceText, targetText, Integer.parseInt(weightText));
+                if (weightText.isEmpty()) {
+                    weightText = "1";
+                }
+                Graph.Vertex<T, Integer> sourceVertex = graph.addVertex(sourceText, value.apply(sourceText));
+                Graph.Vertex<T, Integer> targetVertex = graph.addVertex(targetText, value.apply(targetText));
+                sourceVertex.addEdge(targetVertex, weightFun.apply(weightText));
             } else if (c == ',') {
                 if (current == source) {
                     current = target;

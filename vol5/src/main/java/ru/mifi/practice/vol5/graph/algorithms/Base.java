@@ -2,7 +2,7 @@ package ru.mifi.practice.vol5.graph.algorithms;
 
 import ru.mifi.practice.vol5.graph.Graph;
 
-import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -11,7 +11,6 @@ import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Supplier;
 
 public final class Base<T, W extends Number & Comparable<W>>
     implements Algorithms.CircleSearch<T, W>, Algorithms.FirstSearch<T, W> {
@@ -20,18 +19,18 @@ public final class Base<T, W extends Number & Comparable<W>>
     public void dfs(Graph<T, W> graph, Algorithms.Visitor<T, W> visitor) {
         if (graph.size() > 0) {
             Set<Graph.Vertex<T, W>> visited = new HashSet<>();
-            dfs(graph, graph.ofIndex(0), visitor, visited);
+            dfs(graph.getVertex(0), visitor, visited);
         }
     }
 
-    private void dfs(Graph<T, W> graph, Graph.Vertex<T, W> source, Algorithms.Visitor<T, W> visitor, Set<Graph.Vertex<T, W>> visited) {
+    private void dfs(Graph.Vertex<T, W> source, Algorithms.Visitor<T, W> visitor, Set<Graph.Vertex<T, W>> visited) {
         Objects.requireNonNull(source, "Source is null");
         visited.add(source);
         visitor.visit(source);
-        for (var next : graph.getEdges(source)) {
+        for (var next : source.edges()) {
             Graph.Vertex<T, W> target = next.target();
             if (!visited.contains(target)) {
-                dfs(graph, target, visitor, visited);
+                dfs(target, visitor, visited);
             }
         }
     }
@@ -42,7 +41,7 @@ public final class Base<T, W extends Number & Comparable<W>>
         if (graph.size() == 0) {
             return;
         }
-        var source = graph.ofIndex(0);
+        var source = graph.getVertex(0);
         Queue<Graph.Vertex<T, W>> queue = new LinkedList<>();
         queue.add(source);
         while (!queue.isEmpty()) {
@@ -52,7 +51,7 @@ public final class Base<T, W extends Number & Comparable<W>>
             }
             visited.add(current);
             visitor.visit(current);
-            graph.getEdges(current).forEach(edge -> queue.add(edge.target()));
+            current.edges().forEach(edge -> queue.add(edge.target()));
         }
     }
 
@@ -62,7 +61,7 @@ public final class Base<T, W extends Number & Comparable<W>>
         Set<Graph.Vertex<T, W>> visited = new HashSet<>();
         for (Graph.Vertex<T, W> vertex : graph.getVertices()) {
             if (!visited.contains(vertex)) {
-                var circle = searchCircle(graph, vertex, null, visited, parents);
+                var circle = searchCircle(vertex, null, visited, parents);
                 if (circle.isEmpty()) {
                     continue;
                 }
@@ -72,7 +71,7 @@ public final class Base<T, W extends Number & Comparable<W>>
         return List.of();
     }
 
-    private List<Graph.Vertex<T, W>> searchCircle(Graph<T, W> graph, Graph.Vertex<T, W> vertex, Graph.Vertex<T, W> parent,
+    private List<Graph.Vertex<T, W>> searchCircle(Graph.Vertex<T, W> vertex, Graph.Vertex<T, W> parent,
                                                   Set<Graph.Vertex<T, W>> visited, Map<Graph.Vertex<T, W>, Graph.Vertex<T, W>> parents) {
         if (visited.contains(vertex)) {
             return buildCircle(vertex, parent, parents);
@@ -81,12 +80,12 @@ public final class Base<T, W extends Number & Comparable<W>>
         if (parent != null) {
             parents.put(vertex, parent);
         }
-        for (var edge : graph.getEdges(vertex)) {
+        for (var edge : vertex.edges()) {
             var target = edge.target();
             if (target.equals(parent)) {
                 continue;
             }
-            List<Graph.Vertex<T, W>> circle = searchCircle(graph, target, vertex, visited, parents);
+            List<Graph.Vertex<T, W>> circle = searchCircle(target, vertex, visited, parents);
             if (!circle.isEmpty()) {
                 return circle;
             }
@@ -96,12 +95,11 @@ public final class Base<T, W extends Number & Comparable<W>>
 
     private List<Graph.Vertex<T, W>> buildCircle(Graph.Vertex<T, W> vertex, Graph.Vertex<T, W> parent,
                                                  Map<Graph.Vertex<T, W>, Graph.Vertex<T, W>> parents) {
-        List<Graph.Vertex<T, W>> circle = new ArrayList<>();
+        Deque<Graph.Vertex<T, W>> circle = new LinkedList<>();
         circle.add(parent);
-        Supplier<Graph.Vertex<T, W>> lastElement = () -> circle.get(circle.size() - 1);
-        while (!lastElement.get().equals(vertex)) {
-            circle.add(parents.get(lastElement.get()));
+        while (!circle.getLast().equals(vertex)) {
+            circle.add(parents.get(circle.getLast()));
         }
-        return circle;
+        return List.copyOf(circle);
     }
 }
