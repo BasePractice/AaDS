@@ -21,12 +21,12 @@ public abstract class Main {
         System.out.println();
         var circle = algorithms.searchCircle(graph);
         System.out.println("CRL: " + circle);
-        var dist = new DijkstraShortestPath<String, Integer>(Integer.MAX_VALUE, 0, Integer::sum);
+        var dist = new DijkstraShortestPath<String, Integer>(Integer.MAX_VALUE, 0, Weight.ofInteger());
         var distances = dist.distances(graph, graph.getVertex("1"));
         System.out.println("DST: " + distances);
         graph = new ParserText<String>()
             .parse(Objects.requireNonNull(Main.class.getResourceAsStream("/standard-weight.graph")), s -> s, Integer::parseInt);
-        dist = new DijkstraShortestPath<>(Integer.MAX_VALUE, 0, Integer::sum);
+        dist = new DijkstraShortestPath<>(Integer.MAX_VALUE, 0, Weight.ofInteger());
         distances = dist.distances(graph, graph.getVertex("1"));
         System.out.println("DST: " + distances);
         var path = new AntShortestPath<String, Integer>();

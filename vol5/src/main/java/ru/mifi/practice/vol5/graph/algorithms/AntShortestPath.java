@@ -221,5 +221,4 @@ public final class AntShortestPath<T, W extends Number & Comparable<W>> implemen
             }
         }
     }
-
 }
