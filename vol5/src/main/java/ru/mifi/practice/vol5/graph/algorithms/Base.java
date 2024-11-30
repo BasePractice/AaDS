@@ -17,7 +17,7 @@ public final class Base<T, W extends Number & Comparable<W>>
 
     @Override
     public void dfs(Graph<T, W> graph, Algorithms.Visitor<T, W> visitor) {
-        if (graph.size() > 0) {
+        if (graph.notEmpty()) {
             Set<Graph.Vertex<T, W>> visited = new HashSet<>();
             dfs(graph.getVertex(0), visitor, visited);
         }
@@ -38,7 +38,7 @@ public final class Base<T, W extends Number & Comparable<W>>
     @Override
     public void bfs(Graph<T, W> graph, Algorithms.Visitor<T, W> visitor) {
         Set<Graph.Vertex<T, W>> visited = new HashSet<>();
-        if (graph.size() == 0) {
+        if (graph.isEmpty()) {
             return;
         }
         var source = graph.getVertex(0);
