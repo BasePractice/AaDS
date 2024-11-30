@@ -3,7 +3,6 @@ package ru.mifi.practice.vol5.graph;
 import ru.mifi.practice.vol5.graph.algorithms.AntShortestPath;
 import ru.mifi.practice.vol5.graph.algorithms.Base;
 import ru.mifi.practice.vol5.graph.algorithms.DijkstraShortestPath;
-import ru.mifi.practice.vol5.graph.loader.StandardLoader;
 import ru.mifi.practice.vol5.graph.loader.StandardWeightLoader;
 
 import java.io.IOException;
@@ -11,7 +10,7 @@ import java.util.Objects;
 
 public abstract class Main {
     public static void main(String[] args) throws IOException {
-        Graph<String, Integer> graph = new StandardLoader<String>()
+        Graph<String, Integer> graph = new StandardWeightLoader<String>()
             .load(Objects.requireNonNull(Main.class.getResourceAsStream("/standard.graph")), s -> s);
         var algorithms = new Base<String, Integer>();
         System.out.print("DFS: ");
