@@ -61,7 +61,7 @@ public interface PathTree<K, V> {
         public void add(K[] elements, V value) {
             int index = 0;
             K element = transformer.transform(elements[index]);
-            Node<K, V> node = nodes.computeIfAbsent(element, e -> new Node<>(null, e, value));
+            Node<K, V> node = nodes.computeIfAbsent(element, e -> new Node<>(null, e));
             add(node, elements, index + 1, value);
         }
 
@@ -71,28 +71,33 @@ public interface PathTree<K, V> {
             }
             K element = transformer.transform(elements[index]);
             Map<K, Node<K, V>> nodes = parent.nodes;
-            Node<K, V> node = nodes.computeIfAbsent(element, e -> new Node<>(parent, e, value));
+            Node<K, V> node = nodes.computeIfAbsent(element, e -> new Node<>(parent, e));
             if (index + 1 < elements.length) {
                 add(node, elements, index + 1, value);
+            } else {
+                if (node.value == null) {
+                    node.value = value;
+                } else if (!node.value.equals(value)) {
+                    System.err.println("Node. Expected = " + node.value + " but assignee = " + value);
+                }
             }
         }
 
         @Override
         public Optional<V> match(K[] key) {
-            return search(key).map(Node::value);
+            return search(key).filter(n -> n.value != null).map(Node::value);
         }
     }
 
     final class Node<K, V> {
         private final K key;
-        private final V value;
+        private V value;
         private final Node<K, V> parent;
         private final Map<K, Node<K, V>> nodes;
 
-        private Node(Node<K, V> parent, K key, V value) {
+        private Node(Node<K, V> parent, K key) {
             this.key = key;
             this.parent = parent;
-            this.value = value;
             this.nodes = new HashMap<>();
         }
 
