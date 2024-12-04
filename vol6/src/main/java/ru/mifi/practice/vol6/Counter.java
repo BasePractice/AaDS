@@ -1,15 +1,15 @@
-package ru.mifi.practice.vol5;
+package ru.mifi.practice.vol6;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
 public interface Counter {
-    void increment();
-
-    void reset();
-
     static Counter create() {
         return new Default();
     }
+
+    void increment();
+
+    void reset();
 
     final class Default implements Counter {
         private final AtomicInteger count = new AtomicInteger(0);
