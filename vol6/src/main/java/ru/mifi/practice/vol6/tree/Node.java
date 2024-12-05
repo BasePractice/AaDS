@@ -49,6 +49,9 @@ public interface Node<T> extends Visitor.Visit<T> {
 
         @Override
         public Node<T> left(T value) {
+            if (value == null) {
+                return left;
+            }
             return left = new Default<>(this, value);
         }
 
@@ -59,6 +62,9 @@ public interface Node<T> extends Visitor.Visit<T> {
 
         @Override
         public Node<T> right(T value) {
+            if (value == null) {
+                return right;
+            }
             return right = new Default<>(this, value);
         }
 
@@ -79,6 +85,11 @@ public interface Node<T> extends Visitor.Visit<T> {
         @Override
         public void visit(Visitor<T> visitor, VisitorStrategy<T> strategy) {
             strategy.visit(this, visitor, strategy);
+        }
+
+        @Override
+        public String toString() {
+            return "(" + value + ")";
         }
     }
 }

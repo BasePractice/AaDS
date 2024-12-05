@@ -10,9 +10,10 @@ public interface VisitorStrategy<T> {
             if (node == null) {
                 return;
             }
-            visitor.visit(node);
+            visitor.enterNode(node);
             strategy.visit(node.left(), visitor, strategy);
             strategy.visit(node.right(), visitor, strategy);
+            visitor.exitNode(node);
         }
     }
 
@@ -24,7 +25,8 @@ public interface VisitorStrategy<T> {
             }
             strategy.visit(node.left(), visitor, strategy);
             strategy.visit(node.right(), visitor, strategy);
-            visitor.visit(node);
+            visitor.enterNode(node);
+            visitor.exitNode(node);
         }
     }
 
@@ -35,8 +37,9 @@ public interface VisitorStrategy<T> {
                 return;
             }
             strategy.visit(node.left(), visitor, strategy);
-            visitor.visit(node);
+            visitor.enterNode(node);
             strategy.visit(node.right(), visitor, strategy);
+            visitor.exitNode(node);
         }
     }
 }
