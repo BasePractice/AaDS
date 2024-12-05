@@ -1,7 +1,8 @@
 package ru.mifi.practice.vol6.tree;
 
 public interface Visitor<T> {
-    void visit(Node<T> node);
+    void enterNode(Node<T> node);
+    void exitNode(Node<T> node);
 
     void empty();
 
@@ -13,13 +14,18 @@ public interface Visitor<T> {
     final class Stdout<T> implements Visitor<T> {
 
         @Override
-        public void visit(Node<T> node) {
-            System.out.println(node);
+        public void enterNode(Node<T> node) {
+            System.out.print(node);
+        }
+
+        @Override
+        public void exitNode(Node<T> node) {
+
         }
 
         @Override
         public void empty() {
-            System.out.println("empty");
+            System.out.print("empty");
         }
     }
 }
