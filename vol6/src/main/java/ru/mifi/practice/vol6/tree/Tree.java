@@ -14,6 +14,10 @@ public interface Tree<T> extends Visitor.Visit<T> {
     @Override
     void visit(Visitor<T> visitor, VisitorStrategy<T> strategy);
 
+    void delete(T value);
+
+    Tree<T> copy(Function<? super T, ? extends T> copyFunction);
+
     interface Loader<T> {
         Tree<T> parse(InputStream stream, Function<String, T> value, Comparator<T> comparator) throws IOException;
     }
@@ -74,6 +78,52 @@ public interface Tree<T> extends Visitor.Visit<T> {
                 return null;
             }
             return root.search(element);
+        }
+
+        @SuppressWarnings("PMD.EmptyControlStatement")
+        @Override
+        public void delete(T value) {
+            Node<T> node = find(value);
+            if (node == null) {
+                //None
+            } else if (node.parent() != null) {
+                var parent = node.parent();
+                if (parent.left() != null && parent.left().value().equals(value)) {
+                    parent.left(null);
+                } else if (parent.right() != null && parent.right().value().equals(value)) {
+                    parent.right(null);
+                }
+            }
+        }
+
+        @Override
+        public Tree<T> copy(Function<? super T, ? extends T> copyFunction) {
+            Standard<T> tree = new Standard<>(comparator);
+            this.visit(new Visitor<T>() {
+                @Override
+                public void enterNode(Node<T> node) {
+                    Node<T> find = tree.find(node.value());
+                    T left = node.left() == null ? null : copyFunction.apply(node.left().value());
+                    T right = node.right() == null ? null : copyFunction.apply(node.right().value());
+                    if (find == null) {
+                        tree.add(node.value(), left, right);
+                    } else {
+                        find.left(left);
+                        find.right(right);
+                    }
+                }
+
+                @Override
+                public void exitNode(Node<T> node) {
+                    //None
+                }
+
+                @Override
+                public void empty() {
+                    //None
+                }
+            }, new VisitorStrategy.PreOrder<>());
+            return tree;
         }
     }
 }

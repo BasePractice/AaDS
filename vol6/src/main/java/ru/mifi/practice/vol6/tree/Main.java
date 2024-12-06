@@ -47,6 +47,9 @@ public abstract class Main {
         System.out.print("EULER: ");
         tree.visit(euler, new VisitorStrategy.PreOrder<>());
         System.out.println(euler);
-        System.out.println(tree);
+        Center<Integer> center = new Center<>();
+        List<Node<Integer>> centered = center.center(tree, integer -> integer);
+        System.out.print("CENTR: ");
+        System.out.println(centered);
     }
 }
