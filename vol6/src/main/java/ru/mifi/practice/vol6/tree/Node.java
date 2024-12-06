@@ -79,7 +79,7 @@ public interface Node<T> extends Visitor.Visit<T> {
             Node<T> it = search(element);
             while (it != null) {
                 path.push(it);
-                if (it == this) {
+                if (it.equals(this)) {
                     break;
                 }
                 it = it.parent();
@@ -100,7 +100,8 @@ public interface Node<T> extends Visitor.Visit<T> {
         @Override
         public Node<T> left(T value) {
             if (value == null) {
-                return left;
+                left = null;
+                return null;
             }
             return left = new Default<>(this, value);
         }
@@ -113,7 +114,8 @@ public interface Node<T> extends Visitor.Visit<T> {
         @Override
         public Node<T> right(T value) {
             if (value == null) {
-                return right;
+                right = null;
+                return null;
             }
             return right = new Default<>(this, value);
         }

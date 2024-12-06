@@ -22,8 +22,8 @@ public interface VisitorStrategy<T> {
             }
             visited.add(node);
             visitor.enterNode(node);
-            strategy.visit(node.left(), visitor, strategy);
-            strategy.visit(node.right(), visitor, strategy);
+            this.strategy.visit(node.left(), visitor, strategy);
+            this.strategy.visit(node.right(), visitor, strategy);
             visitor.exitNode(node);
         }
     }

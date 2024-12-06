@@ -21,7 +21,7 @@ public final class Diameter<T> {
         }
         if (maxNode != null) {
             VisitorStrategy.AlreadyVisited<T> alreadyVisited = new VisitorStrategy.AlreadyVisited<>(strategy);
-            Node<T> start = maxNode;
+            final Node<T> start = maxNode;
             Node<T> it = maxNode;
             int distance = 0;
             vDistance.clear();

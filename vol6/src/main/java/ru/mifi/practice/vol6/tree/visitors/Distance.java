@@ -37,6 +37,6 @@ public final class Distance<T> implements Visitor<T> {
 
     @Override
     public void empty() {
-
+        //None
     }
 }

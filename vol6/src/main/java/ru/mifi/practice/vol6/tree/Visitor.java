@@ -2,6 +2,7 @@ package ru.mifi.practice.vol6.tree;
 
 public interface Visitor<T> {
     void enterNode(Node<T> node);
+
     void exitNode(Node<T> node);
 
     void empty();
@@ -20,7 +21,7 @@ public interface Visitor<T> {
 
         @Override
         public void exitNode(Node<T> node) {
-
+            //None
         }
 
         @Override
