@@ -30,4 +30,9 @@ public final class Count<T> implements Visitor<T> {
     public void empty() {
         //None
     }
+
+    @Override
+    public String toString() {
+        return String.valueOf(count.intValue());
+    }
 }

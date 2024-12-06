@@ -22,9 +22,13 @@ public interface VisitorStrategy<T> {
             }
             visited.add(node);
             visitor.enterNode(node);
-            this.strategy.visit(node.left(), visitor, strategy);
-            this.strategy.visit(node.right(), visitor, strategy);
+            strategy.visit(node.left(), visitor, this.strategy);
+            strategy.visit(node.right(), visitor, this.strategy);
             visitor.exitNode(node);
+        }
+
+        public void put(Node<T> node) {
+            visited.add(node);
         }
     }
 
