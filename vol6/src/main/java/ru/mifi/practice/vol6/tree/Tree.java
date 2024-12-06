@@ -3,13 +3,13 @@ package ru.mifi.practice.vol6.tree;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.Queue;
 import java.util.function.Function;
 
 public interface Tree<T> extends Visitor.Visit<T> {
 
     void add(T element);
+
+    Node<T> find(T element);
 
     @Override
     void visit(Visitor<T> visitor, VisitorStrategy<T> strategy);
@@ -59,7 +59,7 @@ public interface Tree<T> extends Visitor.Visit<T> {
                 root.left(left);
                 root.right(right);
             } else {
-                Node<T> find = search(root, owner);
+                Node<T> find = root.search(owner);
                 if (find == null) {
                     throw new IllegalArgumentException("No such element: " + owner);
                 }
@@ -68,26 +68,12 @@ public interface Tree<T> extends Visitor.Visit<T> {
             }
         }
 
-        private Node<T> search(Node<T> root, T element) {
-            if (root != null) {
-                Queue<Node<T>> queue = new LinkedList<>();
-                queue.add(root);
-                while (!queue.isEmpty()) {
-                    Node<T> node = queue.poll();
-                    if (node.value() != null && node.value().equals(element)) {
-                        return node;
-                    }
-                    if (node.left() != null) {
-                        queue.add(node.left());
-                    }
-                    if (node.right() != null) {
-                        queue.add(node.right());
-                    }
-                }
+        @Override
+        public Node<T> find(T element) {
+            if (root == null) {
+                return null;
             }
-            return null;
+            return root.search(element);
         }
-
-        ;
     }
 }

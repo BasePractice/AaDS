@@ -35,6 +35,14 @@ public final class OnSubTree<T> implements Visitor<T> {
         }
     }
 
+    public int in(Node<T> node) {
+        return stepsIn.get(node);
+    }
+
+    public int out(Node<T> node) {
+        return stepsOut.get(node);
+    }
+
     @SuppressWarnings("checked")
     public List<Node<T>> times() {
         List<Node<T>> result = new ArrayList<>();
