@@ -1,5 +1,7 @@
 package ru.mifi.practice.vol6.tree;
 
+import java.util.Arrays;
+
 public interface Heap<T extends Comparable<T>> {
 
     T deleteRoot();
@@ -12,9 +14,11 @@ public interface Heap<T extends Comparable<T>> {
 
     void print();
 
+    int size();
+
     final class Minimum<T extends Comparable<T>> implements Heap<T> {
         public static final String FORMAT = "%5s %5s %5s%n";
-        private static final int TOP = 1;
+        private static final int TOP = 0;
         private final Object[] heap;
         private final int capacity;
         private int size;
@@ -66,8 +70,9 @@ public interface Heap<T extends Comparable<T>> {
             if (size >= capacity) {
                 return this;
             }
-            heap[++size] = value;
+            heap[size] = value;
             int current = size;
+            ++size;
 
             while (compare(current, positionParent(current)) < 0) {
                 swap(current, positionParent(current));
@@ -86,8 +91,9 @@ public interface Heap<T extends Comparable<T>> {
         @SuppressWarnings("unchecked")
         @Override
         public T deleteRoot() {
-            T pop = (T) heap[TOP];
-            heap[TOP] = heap[size--];
+            final T pop = (T) heap[TOP];
+            heap[TOP] = heap[size];
+            --size;
             heapify(TOP);
             return pop;
         }
@@ -95,15 +101,20 @@ public interface Heap<T extends Comparable<T>> {
         @SuppressWarnings("unchecked")
         @Override
         public T top() {
-            return (T) heap[0];
+            return (T) heap[TOP];
         }
 
         @Override
         public void print() {
             System.out.printf(FORMAT, "top", "left", "right");
             for (int k = TOP; k <= size / 2; k++) {
-                System.out.printf(FORMAT, nullable(heap[k]), nullable(heap[2 * k]), nullable(heap[2 * k + 1]));
+                System.out.printf(FORMAT, nullable(heap[k]), nullable(heap[positionLeft(k) + 1]), nullable(heap[positionRight(k) + 1]));
             }
+        }
+
+        @Override
+        public int size() {
+            return size;
         }
 
         @SuppressWarnings("unchecked")
@@ -126,6 +137,11 @@ public interface Heap<T extends Comparable<T>> {
                 return "-";
             }
             return value;
+        }
+
+        @Override
+        public String toString() {
+            return Arrays.toString(heap);
         }
     }
 }

@@ -70,10 +70,12 @@ public abstract class Main {
             .add(21);
         heap.refresh();
         heap.print();
-        System.out.print("  MIN: ");
-        System.out.println(heap.top());
-        System.out.print("  DEL: ");
-        System.out.println(heap.deleteRoot());
-        heap.print();
+        for (int i = 0; i < 5; i++) {
+            System.out.print("  MIN: ");
+            System.out.println(heap.top());
+            System.out.print("  DEL: ");
+            System.out.println(heap.deleteRoot());
+            heap.print();
+        }
     }
 }
