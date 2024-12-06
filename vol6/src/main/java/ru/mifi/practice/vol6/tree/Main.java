@@ -51,5 +51,9 @@ public abstract class Main {
         List<Node<Integer>> centered = center.center(tree, integer -> integer);
         System.out.print("CENTR: ");
         System.out.println(centered);
+        Centroid<Integer> centroid = new Centroid<>();
+        var c = centroid.centroid(tree);
+        System.out.print("CEOID: ");
+        System.out.println(c);
     }
 }
