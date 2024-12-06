@@ -6,12 +6,26 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Queue;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 
-public interface Node<T> extends Visitor.Visit<T> {
+public interface Node<T> extends Visitor.Visit<T>, Hashable {
     static <T> Node<T> root(T value) {
-        return new Default<>(null, value);
+        return new Default<>(null, value, new Supplier<>() {
+            private final AtomicInteger counter = new AtomicInteger(0);
+
+            @Override
+            public Integer get() {
+                return counter.incrementAndGet();
+            }
+        });
     }
+
+    int hash();
+
+    int index();
 
     Node<T> parent();
 
@@ -29,7 +43,6 @@ public interface Node<T> extends Visitor.Visit<T> {
 
     Node<T> right(T value);
 
-
     Node<T> deleteLeft(T value);
 
     Node<T> deleteRight(T value);
@@ -38,15 +51,31 @@ public interface Node<T> extends Visitor.Visit<T> {
     void visit(Visitor<T> visitor, VisitorStrategy<T> strategy);
 
     @EqualsAndHashCode(of = "value")
-    final class Default<T> implements Node<T> {
+    final class Default<T> implements Node<T>, Comparable<Node<T>> {
         private final T value;
         private final Node<T> parent;
+        private final int index;
+        private final Supplier<Integer> generator;
         private Node<T> left;
         private Node<T> right;
 
-        private Default(Node<T> parent, T value) {
+        private Default(Node<T> parent, T value, Supplier<Integer> generator) {
             this.value = value;
             this.parent = parent;
+            this.index = generator.get();
+            this.generator = generator;
+        }
+
+        @Override
+        public int hash() {
+            int left = left() != null ? (int) Math.log(left().hash()) : 0;
+            int right = right() != null ? (int) Math.log(right().hash()) : 0;
+            return Objects.hash(value) + left + right;
+        }
+
+        @Override
+        public int index() {
+            return index;
         }
 
         @Override
@@ -103,7 +132,7 @@ public interface Node<T> extends Visitor.Visit<T> {
                 left = null;
                 return null;
             }
-            return left = new Default<>(this, value);
+            return left = new Default<>(this, value, generator);
         }
 
         @Override
@@ -117,7 +146,7 @@ public interface Node<T> extends Visitor.Visit<T> {
                 right = null;
                 return null;
             }
-            return right = new Default<>(this, value);
+            return right = new Default<>(this, value, generator);
         }
 
         @Override
@@ -142,6 +171,11 @@ public interface Node<T> extends Visitor.Visit<T> {
         @Override
         public String toString() {
             return "(" + value + ")";
+        }
+
+        @Override
+        public int compareTo(Node<T> o) {
+            return Integer.compare(index(), o.index());
         }
     }
 }
