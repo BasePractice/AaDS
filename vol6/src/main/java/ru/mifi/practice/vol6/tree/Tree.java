@@ -5,7 +5,7 @@ import java.io.InputStream;
 import java.util.Comparator;
 import java.util.function.Function;
 
-public interface Tree<T> extends Visitor.Visit<T> {
+public interface Tree<T> extends Visitor.Visit<T>, Hashable {
 
     void add(T element);
 
@@ -124,6 +124,11 @@ public interface Tree<T> extends Visitor.Visit<T> {
                 }
             }, new VisitorStrategy.PreOrder<>());
             return tree;
+        }
+
+        @Override
+        public int hash() {
+            return root == null ? 0 : root.hash();
         }
     }
 }

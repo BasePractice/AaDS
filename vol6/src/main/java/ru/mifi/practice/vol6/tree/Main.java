@@ -55,5 +55,7 @@ public abstract class Main {
         var c = centroid.centroid(tree);
         System.out.print("CEOID: ");
         System.out.println(c);
+        System.out.print("HASH : ");
+        System.out.println(tree.hash());
     }
 }
