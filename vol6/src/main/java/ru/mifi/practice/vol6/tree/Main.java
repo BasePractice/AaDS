@@ -57,5 +57,23 @@ public abstract class Main {
         System.out.println(c);
         System.out.print("HASH : ");
         System.out.println(tree.hash());
+        System.out.println("HEAP : ");
+        Heap<Integer> heap = new Heap.Minimum<>(10);
+        heap
+            .add(20)
+            .add(3)
+            .add(25)
+            .add(5)
+            .add(7)
+            .add(10)
+            .add(15)
+            .add(21);
+        heap.refresh();
+        heap.print();
+        System.out.print("  MIN: ");
+        System.out.println(heap.top());
+        System.out.print("  DEL: ");
+        System.out.println(heap.deleteRoot());
+        heap.print();
     }
 }
