@@ -15,7 +15,7 @@
         <maven.compiler.target>17</maven.compiler.target>
         <version.junit>1.11.3</version.junit>
         <version.jupiter>5.11.3</version.jupiter>
-        <version.pmd>7.7.0</version.pmd>
+        <version.pmd>7.8.0</version.pmd>
     </properties>
 
     <scm>
@@ -114,7 +114,7 @@
                     <dependency>
                         <groupId>com.puppycrawl.tools</groupId>
                         <artifactId>checkstyle</artifactId>
-                        <version>10.20.1</version>
+                        <version>10.20.2</version>
                     </dependency>
                 </dependencies>
                 <configuration>
