@@ -21,7 +21,7 @@ public final class Tree {
         return new Compressed(root, encoded.toString());
     }
 
-    private static void buildCodes(Node node, String code, Map<Character, String> codes) {
+    static void buildCodes(Node node, String code, Map<Character, String> codes) {
         if (node == null) {
             return;
         }
@@ -36,6 +36,7 @@ public final class Tree {
     private static Node buildTree(Map<Character, Integer> frequency) {
         PriorityQueue<Node> min = new PriorityQueue<>();
         frequency.forEach((k, v) -> min.add(new Node(k, v, null, null)));
+
         while (min.size() > 1) {
             Node left = Objects.requireNonNull(min.poll());
             Node right = Objects.requireNonNull(min.poll());
