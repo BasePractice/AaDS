@@ -2,7 +2,7 @@ package ru.mifi.practice.vol6.tree;
 
 import ru.mifi.practice.vol6.tree.visitors.Count;
 
-@SuppressWarnings("PMD.SingularField")
+@SuppressWarnings({"PMD.SingularField", "PMD.UnusedPrivateMethod"})
 public final class Centroid<T> implements Visitor<T> {
     private Node<T> centroid = null;
     private int vertexes = 0;
