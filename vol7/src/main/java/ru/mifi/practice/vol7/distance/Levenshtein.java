@@ -7,7 +7,7 @@ import java.util.Arrays;
 public interface Levenshtein extends Distance {
 
     abstract class AbstractLevenshtein implements Levenshtein {
-        protected static int costOfSubstitution(char a, char b) {
+        protected static int cost(char a, char b) {
             return a == b ? 0 : 1;
         }
 
@@ -29,7 +29,7 @@ public interface Levenshtein extends Distance {
             }
             counter.increment();
             int substitution = distance(s1.substring(1), s2.substring(1), counter)
-                + costOfSubstitution(s1.charAt(0), s2.charAt(0));
+                + cost(s1.charAt(0), s2.charAt(0));
             int insertion = distance(s1, s2.substring(1), counter) + 1;
             int deletion = distance(s1.substring(1), s2, counter) + 1;
 
@@ -37,7 +37,7 @@ public interface Levenshtein extends Distance {
         }
     }
 
-    final class LevenshteinDynamicus extends AbstractLevenshtein {
+    final class VagnerFisherDynamicus extends AbstractLevenshtein {
         @Override
         public int distance(String s1, String s2, Counter counter) {
             int[][] table = new int[s1.length() + 1][s2.length() + 1];
@@ -51,8 +51,7 @@ public interface Levenshtein extends Distance {
                     } else if (j == 0) {
                         table[i][j] = i;
                     } else {
-                        table[i][j] = min(table[i - 1][j - 1]
-                                + costOfSubstitution(s1.charAt(i - 1), s2.charAt(j - 1)),
+                        table[i][j] = min(table[i - 1][j - 1] + cost(s1.charAt(i - 1), s2.charAt(j - 1)),
                             table[i - 1][j] + 1,
                             table[i][j - 1] + 1);
                     }
