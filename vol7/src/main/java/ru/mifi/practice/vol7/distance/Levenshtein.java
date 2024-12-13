@@ -4,8 +4,7 @@ import ru.mifi.practice.vol7.Counter;
 
 import java.util.Arrays;
 
-public interface Levenshtein {
-    int distance(String s1, String s2, Counter counter);
+public interface Levenshtein extends Distance {
 
     abstract class AbstractLevenshtein implements Levenshtein {
         protected static int costOfSubstitution(char a, char b) {
