@@ -16,7 +16,11 @@ public interface Backpack {
         }
     }
 
-    record Classic(int maxWeight) implements Backpack {
+    record Classic(int maxWeight, boolean debug) implements Backpack {
+
+        public Classic(int maxWeight) {
+            this(maxWeight, false);
+        }
 
         @Override
         public List<Item> putting(List<Item> items) {
@@ -30,19 +34,37 @@ public interface Backpack {
                         states[i][j] = items.get(0).weight() < j ? new State(List.of(items.get(0))) : new State(List.of());
                     } else {
                         Item item = items.get(i - 1);
+                        if (debug) {
+                            System.out.printf("[%2d][%2d]: ", i, j);
+                        }
                         if (item.weight() > j) {
                             //NOTICE: Если предмет не влезает, записываем предыдущий
                             states[i][j] = states[i - 1][j];
+                            if (debug) {
+                                System.out.printf("Item weight %2d more then %2d, set last items %s%n",
+                                    item.weight(), j, states[i - 1][j].items);
+                            }
                         } else {
-                            int needed = item.needed() + states[i - 1][j - item.weight()].needed();
+                            State state = states[i - 1][j - item.weight()];
+                            int needed = item.needed() + state.needed();
                             if (states[i - 1][j].needed() > needed) {
                                 //NOTICE: Если предыдущий максимум больше, оставляем его
                                 states[i][j] = states[i - 1][j];
+                                if (debug) {
+                                    System.out.printf(
+                                        "State[%2d][%2d](%2d) but it more then State[%2d][%2d] + %2d(%2d), set last items %s %n",
+                                        i - 1, j, states[i - 1][j].needed(), i - 1, j - item.weight(), item.weight(),
+                                        needed, states[i - 1][j].items);
+                                }
                             } else {
                                 //NOTICE: Записываем новый максимум
-                                List<Item> list = new ArrayList<>(states[i - 1][j - item.weight()].items());
+                                List<Item> list = new ArrayList<>(state.items());
                                 list.add(item);
                                 states[i][j] = new State(list);
+                                if (debug) {
+                                    System.out.printf("State[%2d][%2d](%2d) less then State[%2d][%2d] + %2d(%2d), set items %s %n",
+                                        i - 1, j, states[i - 1][j].needed(), i - 1, j - item.weight(), item.weight(), needed, list);
+                                }
                             }
                         }
                     }
