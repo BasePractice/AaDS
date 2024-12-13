@@ -24,7 +24,7 @@ public abstract class Main {
             new Backpack.Item("Пиво", 6, 4)
         );
         List<Backpack.Item> putting = backpack.putting(items);
-        System.out.println("          Backpack: " + putting);
+        System.out.println("         Backpack : " + putting);
         levenshteinDistance("Recursion", new Levenshtein.LevenshteinRecursion(), "boobs", "bomb");
         levenshteinDistance("Dynamicus", new Levenshtein.LevenshteinDynamicus(), "boobs", "bomb");
     }
