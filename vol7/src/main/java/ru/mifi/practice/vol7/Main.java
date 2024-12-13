@@ -7,6 +7,7 @@ import ru.mifi.practice.vol7.fibonacci.Fibonacci;
 import ru.mifi.practice.vol7.fibonacci.FibonacciDynamicus;
 import ru.mifi.practice.vol7.fibonacci.FibonacciMemorized;
 import ru.mifi.practice.vol7.fibonacci.FibonacciRecursion;
+import ru.mifi.practice.vol7.subsequence.LongestCommonSubsequence;
 
 import java.util.List;
 
@@ -27,7 +28,8 @@ public abstract class Main {
         List<Backpack.Item> putting = backpack.putting(items);
         System.out.println("         Backpack : " + putting);
         distance("Lev.Recur", new Levenshtein.LevenshteinRecursion(), "boobs", "bomb");
-        distance("Lev.Dynam", new Levenshtein.LevenshteinDynamicus(), "boobs", "bomb");
+        distance("Lev.Dynam", new Levenshtein.VagnerFisherDynamicus(), "boobs", "bomb");
+        lcs("Sub.Commo", new LongestCommonSubsequence.Default(), "mouse", "house");
     }
 
     private static void fibonacci(String name, Fibonacci fibonacci) {
@@ -44,6 +46,14 @@ public abstract class Main {
         Counter counter = new Counter.Default();
         String prefix = String.format("Dis.%s.", name);
         int d = distance.distance(word1, word2, counter);
+        System.out.println(prefix + "Val : " + d);
+        System.out.println(prefix + "Cnt : " + counter);
+    }
+
+    private static void lcs(String name, LongestCommonSubsequence subsequence, String word1, String word2) {
+        Counter counter = new Counter.Default();
+        String prefix = String.format("LCS.%s.", name);
+        int d = subsequence.longestCommonSubsequence(word1, word2, counter);
         System.out.println(prefix + "Val : " + d);
         System.out.println(prefix + "Cnt : " + counter);
     }
