@@ -8,6 +8,7 @@ import ru.mifi.practice.vol7.fibonacci.FibonacciDynamicus;
 import ru.mifi.practice.vol7.fibonacci.FibonacciMemorized;
 import ru.mifi.practice.vol7.fibonacci.FibonacciRecursion;
 import ru.mifi.practice.vol7.subsequence.LongestCommonSubsequence;
+import ru.mifi.practice.vol7.wildcard.Match;
 
 import java.util.List;
 
@@ -30,6 +31,8 @@ public abstract class Main {
         distance("Lev.Recur", new Levenshtein.LevenshteinRecursion(), "boobs", "bomb");
         distance("Lev.Dynam", new Levenshtein.VagnerFisherDynamicus(), "boobs", "bomb");
         lcs("Sub.Commo", new LongestCommonSubsequence.Default(), "mouse", "house");
+        match("Dyn.Regex", new Match.DefaultMatch(), "non? po?", "none pop");
+        match("Dyn.Aggrv", new Match.AbbreviationMatch(), "Algorithm and Data Structure", "ADS");
     }
 
     private static void fibonacci(String name, Fibonacci fibonacci) {
@@ -55,6 +58,14 @@ public abstract class Main {
         String prefix = String.format("LCS.%s.", name);
         int d = subsequence.longestCommonSubsequence(word1, word2, counter);
         System.out.println(prefix + "Val : " + d);
+        System.out.println(prefix + "Cnt : " + counter);
+    }
+
+    private static void match(String name, Match match, String pattern, String text) {
+        Counter counter = new Counter.Default();
+        String prefix = String.format("Rex.%s.", name);
+        var m = match.isMatch(pattern, text, counter);
+        System.out.println(prefix + "Val : " + m);
         System.out.println(prefix + "Cnt : " + counter);
     }
 }
