@@ -37,7 +37,7 @@ public interface Levenshtein extends Distance {
         }
     }
 
-    final class VagnerFisherDynamicus extends AbstractLevenshtein {
+    final class VagnerFisherDynamited extends AbstractLevenshtein {
         @Override
         public int distance(String s1, String s2, Counter counter) {
             int[][] table = new int[s1.length() + 1][s2.length() + 1];

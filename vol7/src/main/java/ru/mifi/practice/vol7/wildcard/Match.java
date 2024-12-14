@@ -40,6 +40,7 @@ public interface Match {
         }
     }
 
+    //FIXME: Можно ли реализовать проще?
     final class AbbreviationMatch implements Match {
 
         @Override

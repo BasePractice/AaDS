@@ -4,9 +4,6 @@ import ru.mifi.practice.vol7.backpack.Backpack;
 import ru.mifi.practice.vol7.distance.Distance;
 import ru.mifi.practice.vol7.distance.Levenshtein;
 import ru.mifi.practice.vol7.fibonacci.Fibonacci;
-import ru.mifi.practice.vol7.fibonacci.FibonacciDynamicus;
-import ru.mifi.practice.vol7.fibonacci.FibonacciMemorized;
-import ru.mifi.practice.vol7.fibonacci.FibonacciRecursion;
 import ru.mifi.practice.vol7.subsequence.LongestCommonSubsequence;
 import ru.mifi.practice.vol7.wildcard.Match;
 
@@ -14,9 +11,9 @@ import java.util.List;
 
 public abstract class Main {
     public static void main(String[] args) {
-        fibonacci("Recursion", new FibonacciRecursion());
-        fibonacci("Memorized", new FibonacciMemorized());
-        fibonacci("Dynamicus", new FibonacciDynamicus());
+        fibonacci("Recursion", new Fibonacci.Recursion());
+        fibonacci("Memorized", new Fibonacci.Memorized());
+        fibonacci("Dynamicus", new Fibonacci.Dynamited());
         Backpack backpack = new Backpack.Classic(10);
         List<Backpack.Item> items = List.of(
             new Backpack.Item("Кирпич", 1, 1),
@@ -29,7 +26,7 @@ public abstract class Main {
         List<Backpack.Item> putting = backpack.putting(items);
         System.out.println("         Backpack : " + putting);
         distance("Lev.Recur", new Levenshtein.LevenshteinRecursion(), "boobs", "bomb");
-        distance("Lev.Dynam", new Levenshtein.VagnerFisherDynamicus(), "boobs", "bomb");
+        distance("Lev.Dynam", new Levenshtein.VagnerFisherDynamited(), "boobs", "bomb");
         lcs("Sub.Commo", new LongestCommonSubsequence.Default(), "mouse", "house");
         match("Dyn.Regex", new Match.DefaultMatch(), "non? po?", "none pop");
         match("Dyn.Aggrv", new Match.AbbreviationMatch(), "Algorithm and Data Structure", "ADS");
@@ -63,7 +60,7 @@ public abstract class Main {
 
     private static void match(String name, Match match, String pattern, String text) {
         Counter counter = new Counter.Default();
-        String prefix = String.format("Rex.%s.", name);
+        String prefix = String.format("Mch.%s.", name);
         var m = match.isMatch(pattern, text, counter);
         System.out.println(prefix + "Val : " + m);
         System.out.println(prefix + "Cnt : " + counter);
