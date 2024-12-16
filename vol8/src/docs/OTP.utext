@@ -1,0 +1,42 @@
+@startuml
+[*] --> CheckSend
+CheckSend: Проверка отсылки
+CheckSend --> Send: Возможна
+CheckSend --> Blocking: Запрещена
+CheckSend --> Waiting: Не возможна
+note right of CheckSend: Проверка времени последней отсылки\nПроверка количества отсылок\nПроверка количества ошибочных вводов кода
+Blocking: Блокировка
+Blocking -> Blocking: Не разблокирован
+Blocking -> CheckSend: Разблокирован
+note left of Blocking: Установка времени снятия автоматической блокировки\nЭкран блокировки
+Waiting -> Waiting: Отсылка невозможна
+Waiting -> CheckSend: Таймаут
+Waiting: Ожидание
+note left of Waiting: Проверка времени ожидания\nЭкран ожидания\nСообщение ожидания
+Send: Отсылка кода
+Send --> Sent: Отправлен успешно
+note left of Sent: Увеличение счетчика отсылок,\nУстановка времени отсылки\nСброс счетчика попыток ввода\nЭкран ввода кода
+Sent: Проверка кода
+Sent --> Verified: Правильный
+note right of Verified: Сброс счетчиков,\nСброс меток времени
+Sent --> FailedVerified: Не правильный
+Sent --> ExpiredCode: Просрочен
+Sent --> CheckSend: Явная попытка
+FailedVerified --> FailedVerified: Не правильный
+FailedVerified --> Verified: Правильный
+FailedVerified --> CheckSend: Новый код
+FailedVerified --> CheckSend: Счетчик попыток превышен
+FailedVerified --> ExpiredCode: Просрочен
+FailedVerified: Код не совпадает
+note left of FailedVerified: Увеличение счетчика ошибочного ввода кода\nЭкран ввода кода + ошибка
+ExpiredCode: Код просрочен
+ExpiredCode --> CheckSend: Всегда
+note left of ExpiredCode: Экран код просрочен
+Send --> UnSent: Ошибка отправки
+UnSent: Не удалось отослать
+UnSent --> UnSent: Ожидание
+UnSent --> CheckSend: Таймаут
+note left of UnSent: Экран ожидания
+Verified --> [*]
+Verified: Проверен
+@enduml

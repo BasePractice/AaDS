@@ -12,8 +12,7 @@ import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
 
-public final class DijkstraShortestPath<T, W extends Number & Comparable<W>>
-    implements Algorithms.ShortestDistance<T, W> {
+public final class DijkstraShortestPath<T, W extends Number & Comparable<W>> implements Algorithms.ShortestDistance<T, W> {
     private final W maxDistance;
     private final W minDistance;
     private final Weight<W> weight;
