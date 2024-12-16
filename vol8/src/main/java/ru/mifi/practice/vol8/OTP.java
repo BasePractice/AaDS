@@ -1,5 +1,8 @@
 package ru.mifi.practice.vol8;
 
+import ru.mifi.practice.vol8.Machine.Context;
+import ru.mifi.practice.vol8.Machine.Handler;
+
 public enum OTP implements Machine.State {
     INITIATE("Инициализация", true),
     CHECK_SEND("Проверка", false),
@@ -21,33 +24,33 @@ public enum OTP implements Machine.State {
     }
 
     @Override
-    public Machine.State next(Machine.Context context, Machine.Handler handler) {
+    public Machine.State next(Context context, Handler handler) {
         switch (this) {
             case INITIATE -> {
                 return CHECK_SEND;
             }
             case CHECK_SEND -> {
-                if (context.isSentCodeAttemptsOverflow()) {
-                    context.setBlockingTimeout();
-                    context.setBlockingReason("Превышено количество отосланных");
+                if (OTPKey.SEND_CODE_ATTEMPTS.isOverflow(context, OTPKey.MAX_SEND_CODE_ATTEMPTS)) {
+                    OTPKey.BLOCKING_TIME_EXPIRED.setTimeSecond(context, OTPKey.BLOCKING_TIME_EXPIRED_SECOND);
+                    OTPKey.BLOCKING_REASON.set(context, "Превышено количество отосланных");
                     return BLOCKING;
-                } else if (context.isVerificationCodeAttemptsOverflow()) {
-                    context.setWaitingTimeout();
-                    context.setWaitingReason("Превышено количество не ");
+                } else if (OTPKey.VERIFICATION_CODE_ATTEMPTS.isOverflow(context, OTPKey.MAX_VERIFICATION_CODE_ATTEMPTS)) {
+                    OTPKey.WAITING_TIME_EXPIRED.setTimeSecond(context, OTPKey.WAITING_TIME_EXPIRED_SECOND);
+                    OTPKey.WAITING_REASON.set(context, "Превышено количество не ");
                     return WAITING;
                 }
                 return SEND;
             }
             case WAITING -> {
-                if (context.isWaitingTimeoutExpired()) {
-                    context.clear();
+                if (OTPKey.WAITING_TIME_EXPIRED.isExpired(context)) {
+                    context.clear(OTPKey.WAITING_REASON, OTPKey.WAITING_TIME_EXPIRED);
                     return CHECK_SEND;
                 }
                 return WAITING;
             }
             case BLOCKING -> {
-                if (context.isBlockingTimeoutExpired()) {
-                    context.clear();
+                if (OTPKey.BLOCKING_TIME_EXPIRED.isExpired(context)) {
+                    context.clear(OTPKey.BLOCKING_REASON, OTPKey.BLOCKING_TIME_EXPIRED);
                     return CHECK_SEND;
                 }
                 return BLOCKING;
@@ -55,18 +58,19 @@ public enum OTP implements Machine.State {
             case SEND -> {
                 boolean sent = handler.sendNextCode(context);
                 if (sent) {
-                    context.incrementAttemptsSentCode();
+                    OTPKey.CODE_TIME_EXPIRED.setTimeSecond(context, OTPKey.CODE_TIME_EXPIRED_SECOND);
+                    OTPKey.SEND_CODE_ATTEMPTS.increment(context);
                     return WAS_SENT;
                 }
-                context.setUnSetWaitingTimeout();
+                OTPKey.UNSENT_TIME_EXPIRED.setTimeNow(context);
                 return UN_SENT;
             }
             case WAS_SENT -> {
-                if (context.isMustResend()) {
+                if (OTPKey.RESENT.is(context)) {
                     return CHECK_SEND;
                 }
-                if (context.isCodeEquals()) {
-                    if (context.isCodeExpired()) {
+                if (handler.isCodeEquals(context, OTPKey.CODE)) {
+                    if (OTPKey.CODE_TIME_EXPIRED.isExpired(context)) {
                         return FAILED_EXPIRED_CODE;
                     }
                     return VERIFIED;
@@ -74,30 +78,30 @@ public enum OTP implements Machine.State {
                 return FAILED_VERIFIED;
             }
             case UN_SENT -> {
-                if (context.isUnSendTimeoutExpired()) {
-                    context.clear();
+                if (OTPKey.UNSENT_TIME_EXPIRED.isExpired(context)) {
+                    context.clear(OTPKey.UNSENT_REASON, OTPKey.UNSENT_TIME_EXPIRED);
                     return CHECK_SEND;
                 }
                 return UN_SENT;
             }
             case FAILED_EXPIRED_CODE -> {
-                context.incrementAttemptsVerificationCode();
+                OTPKey.VERIFICATION_CODE_ATTEMPTS.increment(context);
                 return CHECK_SEND;
             }
             case FAILED_VERIFIED -> {
-                if (context.isMustResend()) {
-                    context.clearVerificationCodeAttempts();
+                if (OTPKey.RESENT.is(context)) {
+                    OTPKey.VERIFICATION_CODE_ATTEMPTS.clear(context);
                     return CHECK_SEND;
-                } else if (context.isVerificationCodeAttemptsOverflow()) {
+                } else if (OTPKey.VERIFICATION_CODE_ATTEMPTS.isOverflow(context, OTPKey.MAX_VERIFICATION_CODE_ATTEMPTS)) {
                     return CHECK_SEND;
                 }
-                if (context.isCodeEquals()) {
-                    if (context.isCodeExpired()) {
+                if (handler.isCodeEquals(context, OTPKey.CODE)) {
+                    if (OTPKey.CODE_TIME_EXPIRED.isExpired(context)) {
                         return FAILED_EXPIRED_CODE;
                     }
                     return VERIFIED;
                 }
-                context.incrementAttemptsVerificationCode();
+                OTPKey.VERIFICATION_CODE_ATTEMPTS.increment(context);
                 return FAILED_VERIFIED;
             }
             case VERIFIED -> {
@@ -123,7 +127,12 @@ public enum OTP implements Machine.State {
     }
 
     @Override
-    public void handle(Machine.Handler handler) {
-        //Empty
+    public void handle(Handler handler) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public String toString() {
+        return title();
     }
 }
