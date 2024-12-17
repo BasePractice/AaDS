@@ -48,25 +48,25 @@ public interface Tree {
 
         void enter(And and);
 
-        void exit(And and);
-
         void enter(Or or);
-
-        void exit(Or or);
 
         void enter(Unary unary);
 
-        void exit(Unary unary);
-
         void enter(Group group);
-
-        void exit(Group group);
 
         void enter(Range range);
 
-        void exit(Range range);
-
         void enter(Set set);
+
+        void exit(And and);
+
+        void exit(Or or);
+
+        void exit(Unary unary);
+
+        void exit(Group group);
+
+        void exit(Range range);
 
         void exit(Set set);
 
@@ -186,19 +186,11 @@ public interface Tree {
 
         @Override
         public String toText() {
-            switch (operator) {
-                case STAR: {
-                    return "[" + node.toText() + "]";
-                }
-                case PLUS: {
-                    return node.toText() + ",[" + node.toText() + "]";
-                }
-                case QUESTION: {
-                    return "{" + node.toText() + "}";
-                }
-                default:
-                    throw new IllegalStateException("Unexpected value: " + operator);
-            }
+            return switch (operator) {
+                case STAR -> "{" + node.toText() + "}";
+                case PLUS -> node.toText() + ",{" + node.toText() + "}";
+                case QUESTION -> "[" + node.toText() + "]";
+            };
         }
     }
 
