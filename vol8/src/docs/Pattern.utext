@@ -1,0 +1,3 @@
+@startebnf
+pattern = a,b,{c},[d] | a,b,c,e | a,[b],e,i | a,b,c,d,e,(c|e|i),{c|e|i} | d,[(c|e|i)],i;
+@endebnf

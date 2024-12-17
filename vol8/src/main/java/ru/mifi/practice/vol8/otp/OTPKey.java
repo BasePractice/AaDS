@@ -1,5 +1,6 @@
-package ru.mifi.practice.vol8;
+package ru.mifi.practice.vol8.otp;
 
+import ru.mifi.practice.vol8.Machine;
 import ru.mifi.practice.vol8.Machine.Context;
 
 import java.time.LocalDateTime;
