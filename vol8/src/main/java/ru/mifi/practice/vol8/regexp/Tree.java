@@ -39,8 +39,6 @@ public interface Tree {
         default boolean isEmpty() {
             return false;
         }
-
-        String toText();
     }
 
     interface Visitor {
@@ -75,6 +73,14 @@ public interface Tree {
         void end();
 
         void any();
+
+        void nextOr();
+
+        void nextAnd();
+
+        void nextSet();
+
+        void nextRange();
     }
 
     record Empty() implements Node {
@@ -82,22 +88,12 @@ public interface Tree {
         public boolean isEmpty() {
             return true;
         }
-
-        @Override
-        public String toText() {
-            return "";
-        }
     }
 
     record Char(char ch) implements Node {
         @Override
         public void visit(Visitor visitor) {
             visitor.visit(this);
-        }
-
-        @Override
-        public String toText() {
-            return "" + ch;
         }
 
         @Override
@@ -111,11 +107,6 @@ public interface Tree {
         public String toString() {
             return "\\" + ch;
         }
-
-        @Override
-        public String toText() {
-            return "\\" + ch;
-        }
     }
 
     record And(Node left, Node right) implements Node {
@@ -123,13 +114,9 @@ public interface Tree {
         public void visit(Visitor visitor) {
             visitor.enter(this);
             left.visit(visitor);
+            visitor.nextAnd();
             right.visit(visitor);
             visitor.exit(this);
-        }
-
-        @Override
-        public String toText() {
-            return left.toText() + "," + right.toText();
         }
 
         @Override
@@ -156,13 +143,11 @@ public interface Tree {
         @Override
         public void visit(Visitor visitor) {
             visitor.enter(this);
-            nodes.forEach(node -> node.visit(visitor));
+            nodes.forEach(node -> {
+                visitor.nextOr();
+                node.visit(visitor);
+            });
             visitor.exit(this);
-        }
-
-        @Override
-        public String toText() {
-            return nodes.stream().map(Node::toText).collect(Collectors.joining("|"));
         }
 
         @Override
@@ -183,15 +168,6 @@ public interface Tree {
             node.visit(visitor);
             visitor.exit(this);
         }
-
-        @Override
-        public String toText() {
-            return switch (operator) {
-                case STAR -> "{" + node.toText() + "}";
-                case PLUS -> node.toText() + ",{" + node.toText() + "}";
-                case QUESTION -> "[" + node.toText() + "]";
-            };
-        }
     }
 
     record Group(Node node) implements Node {
@@ -206,11 +182,6 @@ public interface Tree {
             node.visit(visitor);
             visitor.exit(this);
         }
-
-        @Override
-        public String toText() {
-            return node.toText();
-        }
     }
 
     record Range(Node start, Node end) implements Node {
@@ -223,13 +194,9 @@ public interface Tree {
         public void visit(Visitor visitor) {
             visitor.enter(this);
             start.visit(visitor);
+            visitor.nextRange();
             end.visit(visitor);
             visitor.exit(this);
-        }
-
-        @Override
-        public String toText() {
-            return start.toText() + "-" + end.toText();
         }
     }
 
@@ -242,13 +209,11 @@ public interface Tree {
         @Override
         public void visit(Visitor visitor) {
             visitor.enter(this);
-            nodes.forEach(node -> node.visit(visitor));
+            nodes.forEach(node -> {
+                visitor.nextSet();
+                node.visit(visitor);
+            });
             visitor.exit(this);
-        }
-
-        @Override
-        public String toText() {
-            return "(" + nodes.stream().map(Node::toText).collect(Collectors.joining("|")) + ")";
         }
     }
 
@@ -261,11 +226,6 @@ public interface Tree {
         @Override
         public void visit(Visitor visitor) {
             visitor.any();
-        }
-
-        @Override
-        public String toText() {
-            return ".";
         }
     }
 
@@ -394,6 +354,7 @@ public interface Tree {
             while (!eof() && peekChar() != ']') {
                 set.nodes.add(parseSetElement());
             }
+            expect(']');
             return set;
         }
 
