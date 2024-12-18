@@ -1,5 +1,6 @@
 package ru.mifi.practice.vol8.regexp;
 
+import lombok.Getter;
 import lombok.experimental.UtilityClass;
 import ru.mifi.practice.vol8.regexp.visitor.MatchGenerator;
 
@@ -14,33 +15,34 @@ import static ru.mifi.practice.vol8.regexp.Mach.Input.StringInput;
 
 public interface Mach {
 
-    boolean match(String input);
-
     static Mach of(State start) {
         return new DefaultMach(start);
     }
 
-    @UtilityClass
-    final class Compiler {
-        public Mach compile(String pattern) {
-            MatchGenerator generator = new MatchGenerator();
-            new Tree.Default(pattern).visit(generator);
-            return generator.getMach();
-        }
+    static State matched(char character) {
+        return new Matched(character);
     }
 
-    final class DefaultMach implements Mach {
-        private final State start;
+    static State sequence() {
+        return new Sequence();
+    }
 
-        private DefaultMach(State start) {
-            this.start = start;
-        }
+    static State epsilon(boolean isEnd) {
+        return new Epsilon(isEnd);
+    }
 
-        @Override
-        public boolean match(String text) {
-            StringInput input = new StringInput(text);
-            return new Result(Match.MATCHED, start).match(input);
-        }
+    static State epsilon() {
+        return epsilon(false);
+    }
+
+    boolean match(String input);
+
+    enum Match {
+        MATCHED, SKIPPED, UNMATCHED
+    }
+
+    enum Type {
+        SEQUENCE, PARALLELISM
     }
 
     interface Input {
@@ -90,20 +92,72 @@ public interface Mach {
         }
     }
 
+    @UtilityClass
+    final class Compiler {
+        public Mach compile(String pattern) {
+            MatchGenerator generator = new MatchGenerator();
+            new Tree.Default(pattern).visit(generator);
+            return generator.getMach();
+        }
+    }
+
+    final class DefaultMach implements Mach {
+        private final State start;
+
+        private DefaultMach(State start) {
+            this.start = start;
+        }
+
+        @Override
+        public boolean match(String text) {
+            StringInput input = new StringInput(text);
+            return new Result(Match.MATCHED, start).match(input);
+        }
+    }
+
     @SuppressWarnings("PMD.UnusedPrivateMethod")
     abstract class State {
-        protected final Set<State> transitions = new HashSet<>();
+        protected final List<State> transitions = new ArrayList<>();
 
-        private void add(State state) {
+        protected static String toString(State print, Set<State> visited) {
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < print.transitions.size(); i++) {
+                State state = print.transitions.get(i);
+                if (visited.contains(state)) {
+                    continue;
+                }
+                visited.add(state);
+                if (i > 0) {
+                    builder.append(",");
+                }
+                builder.append("->").append(state.toString());
+            }
+            return builder.toString();
+        }
+
+        @Override
+        public String toString() {
+            return toString(this, new HashSet<>());
+        }
+
+        public void add(State state) {
             transitions.add(state);
         }
 
         protected abstract Match match(Input input);
 
         protected abstract Result next(Input input);
+
+        public boolean isEnd() {
+            return false;
+        }
     }
 
     final class Sequence extends State {
+        private Sequence() {
+            //Nothing
+        }
+
         @Override
         protected Match match(Input input) {
             return Match.SKIPPED;
@@ -125,7 +179,39 @@ public interface Mach {
         }
     }
 
+    @Getter
+    final class Block extends State {
+        private final State start = epsilon();
+        private final State end = epsilon(false);
+        private State current = start;
+
+        @Override
+        protected Match match(Input input) {
+            return current.match(input);
+        }
+
+        @Override
+        protected Result next(Input input) {
+            throw new UnsupportedOperationException();
+        }
+    }
+
     final class Epsilon extends State {
+        private final boolean isEnd;
+
+        private Epsilon(boolean isEnd) {
+            this.isEnd = isEnd;
+        }
+
+        private Epsilon() {
+            this(false);
+        }
+
+        @Override
+        public boolean isEnd() {
+            return isEnd;
+        }
+
         @Override
         protected Match match(Input input) {
             return Match.SKIPPED;
@@ -134,6 +220,11 @@ public interface Mach {
         @Override
         protected Result next(Input input) {
             return new Result(Match.SKIPPED, transitions.toArray(new State[0]));
+        }
+
+        @Override
+        public String toString() {
+            return isEnd ? "{END}" : toString(this, new HashSet<>());
         }
     }
 
@@ -161,6 +252,11 @@ public interface Mach {
             });
             return new Result(states.isEmpty() ? Match.UNMATCHED : Match.MATCHED, states.toArray(new State[0]));
         }
+
+        @Override
+        public String toString() {
+            return character.toString() + toString(this, new HashSet<>());
+        }
     }
 
     record Result(Match match, State... next) {
@@ -183,13 +279,5 @@ public interface Mach {
             }
             return results.stream().anyMatch(r -> r.match(input));
         }
-    }
-
-    enum Match {
-        MATCHED, SKIPPED, UNMATCHED
-    }
-
-    enum Type {
-        SEQUENCE, PARALLELISM
     }
 }
