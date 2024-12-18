@@ -5,7 +5,7 @@ import ru.mifi.practice.vol8.regexp.Tree;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-public final class TextVisitor extends AbstractStringVisitor {
+public final class OriginalTextGenerator extends AbstractStringVisitor {
     private final Deque<Boolean> nextOr = new ArrayDeque<>();
 
     @Override

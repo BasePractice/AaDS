@@ -5,7 +5,7 @@ import ru.mifi.practice.vol8.regexp.Tree;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
-public final class UTextVisitor extends AbstractStringVisitor {
+public final class PlantUmlTextGenerator extends AbstractStringVisitor {
     private final Deque<Boolean> nextOr = new ArrayDeque<>();
     private final Deque<Boolean> nextSet = new ArrayDeque<>();
 

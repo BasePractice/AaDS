@@ -1,19 +1,20 @@
 //https://plantuml.com/ru/ebnf
 @startebnf
-RE            = union | simple_re;
-union         = RE, "|", simple_re;
-simple_re     = concatenation | basic_re;
-concatenation = simple_re, basic_re;
+regexp        = or | simple_re;
+or            = regexp, "|", simple_re;
+simple_re     = add | basic_re;
+add           = simple_re, basic_re;
 basic_re      = star | plus | elementary_re;
 star          = elementary_re, "*";
 plus          = elementary_re, "+";
 elementary_re = groups | "." | "$" | char | set;
-groups        = "(", RE, ")";
-char          = "characters" | "\", "characters";
-set           =  positive_set | negative_set;
-positive_set  =  "[", set_items, "]";
-negative_set  =  "[^", set_items, "]";
-set_items     =  set_item | set_item, set_items;
-set_item      =  range | char;
-range         =  char, "-", char;
+groups        = "(", regexp, ")";
+char          = characters | "\", characters;
+set           = positive_set | negative_set;
+positive_set  = "[", set_items, "]";
+negative_set  = "[^", set_items, "]";
+set_items     = set_item | set_item, set_items;
+set_item      = range | char;
+range         = char, "-", char;
+characters    = (a-z|A-Z);
 @endebnf
