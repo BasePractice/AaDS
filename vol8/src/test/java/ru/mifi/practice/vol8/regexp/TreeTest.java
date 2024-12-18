@@ -4,10 +4,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import ru.mifi.practice.vol8.regexp.visitor.TextVisitor;
+import ru.mifi.practice.vol8.regexp.visitor.UTextVisitor;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -30,10 +30,11 @@ class TreeTest {
         Tree.Default tree = new Tree.Default(text);
         Tree.Node node = tree.root();
         assertEquals(text, node.toString());
-        StringBuilder buffer = new StringBuilder();
-        buffer.append("@startebnf").append('\n');
-        buffer.append("pattern = ").append(node.toText()).append(";").append('\n');
-        buffer.append("@endebnf").append('\n');
-        Files.writeString(Path.of(name), buffer);
+        UTextVisitor uTextVisitor = new UTextVisitor();
+        TextVisitor textVisitor = new TextVisitor();
+        tree.visit(uTextVisitor);
+        uTextVisitor.writeFile(name);
+        tree.visit(textVisitor);
+        assertEquals(textVisitor.toString(), node.toString());
     }
 }
