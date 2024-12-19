@@ -16,5 +16,5 @@ negative_set  = "[^", set_items, "]";
 set_items     = set_item | set_item, set_items;
 set_item      = range | char;
 range         = char, "-", char;
-characters    = (a-z|A-Z);
+characters    = (a-z|A-Z|0-9|_);
 @endebnf

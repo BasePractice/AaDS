@@ -4,6 +4,10 @@ import java.util.Optional;
 
 public interface Input {
 
+    static Input of(String text) {
+        return new StringInput(text);
+    }
+
     Marker mark();
 
     void reset(Marker marker);
@@ -12,6 +16,8 @@ public interface Input {
 
     void next();
 
+    Input copy();
+
     record Marker(int pos) {
     }
 
@@ -19,8 +25,13 @@ public interface Input {
         private final char[] chars;
         private int it;
 
-        public StringInput(String text) {
+        private StringInput(String text) {
             this.chars = text.toCharArray();
+        }
+
+        private StringInput(char[] chars, int it) {
+            this.chars = chars;
+            this.it = it;
         }
 
         @Override
@@ -46,6 +57,11 @@ public interface Input {
             if (it < chars.length) {
                 it++;
             }
+        }
+
+        @Override
+        public Input copy() {
+            return new StringInput(chars, it);
         }
     }
 }
