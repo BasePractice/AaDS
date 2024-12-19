@@ -21,9 +21,7 @@ class MachineTest extends AbstractPatternTest {
         tree.visit(generator);
         assertNotNull(generator.getState());
         PlantUmlTextGenerator plantUml = new PlantUmlTextGenerator();
-        plantUml.start();
-        generator.getState().visit(plantUml);
-        plantUml.end();
+        plantUml.start(generator.getState());
         plantUml.writeFile(String.format("%s.fsm.utext", name));
     }
 }
