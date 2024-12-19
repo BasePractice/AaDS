@@ -23,7 +23,7 @@ class TreeTest extends AbstractPatternTest {
         PlantUmlTextGenerator uTextVisitor = new PlantUmlTextGenerator();
         OriginalTextGenerator textVisitor = new OriginalTextGenerator();
         tree.visit(uTextVisitor);
-        uTextVisitor.writeFile(name);
+        uTextVisitor.writeFile(String.format("%s.utext", name));
         tree.visit(textVisitor);
         assertEquals(textVisitor.toString(), node.toString());
     }

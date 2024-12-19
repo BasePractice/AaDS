@@ -2,7 +2,7 @@ package ru.mifi.practice.vol8.regexp.visitor;
 
 import ru.mifi.practice.vol8.regexp.Tree;
 
-abstract class AbstractVisitor implements Tree.Visitor {
+public abstract class AbstractVisitor implements Tree.Visitor {
     @Override
     public void visit(Tree.Char ch) {
         //Nothing
