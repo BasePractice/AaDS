@@ -9,6 +9,7 @@ import java.util.List;
 public abstract class State {
     final Manager manager;
     final int index;
+    protected State parent;
     protected State next;
 
     protected State(Manager manager, int index) {
@@ -64,8 +65,8 @@ public abstract class State {
     }
 
     public static final class Sequence extends State {
+        State last;
         private State start;
-        private State last;
 
         private Sequence(Manager manager, int index) {
             super(manager, index);
@@ -81,6 +82,7 @@ public abstract class State {
         }
 
         void add(State state) {
+            state.parent = this;
             if (start == null) {
                 start = state;
             } else {
@@ -95,7 +97,13 @@ public abstract class State {
         }
     }
 
-    public static final class Parallel extends State {
+    public static final class Epsilon extends Parallel {
+        private Epsilon(Manager manager, int index) {
+            super(manager, index);
+        }
+    }
+
+    public static class Parallel extends State {
         final List<State> states = new ArrayList<>();
 
         private Parallel(Manager manager, int index) {
@@ -114,6 +122,7 @@ public abstract class State {
         }
 
         void add(State state) {
+            state.parent = this;
             states.add(state);
         }
 

@@ -48,6 +48,14 @@ public final class MachineGenerator extends AbstractVisitor {
 
     @Override
     public void enter(Tree.Or or) {
+        if (states.isEmpty()) {
+            states.add(manager.newState(State.Parallel.class));
+            return;
+        }
+        State last = states.getLast();
+        if (last instanceof State.Parallel) {
+            return;
+        }
         states.add(manager.newState(State.Parallel.class));
     }
 

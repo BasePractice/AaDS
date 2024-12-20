@@ -7,6 +7,9 @@ import ru.mifi.practice.vol8.regexp.AbstractPatternTest;
 import ru.mifi.practice.vol8.regexp.tree.Tree;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -23,5 +26,15 @@ class MachineTest extends AbstractPatternTest {
         PlantUmlTextGenerator plantUml = new PlantUmlTextGenerator();
         plantUml.start(generator.getState());
         plantUml.writeFile(String.format("%s.fsm.utext", name));
+
+        StringBuilder builder = new StringBuilder();
+        builder.append("@startregex").append("\n");
+        builder.append(text).append("\n");
+        builder.append("@endregex").append("\n");
+        Files.writeString(Path.of(String.format("%s.rgx.utext", name)), builder, StandardCharsets.UTF_8);
+
+        OptimizationGenerator optimization = new OptimizationGenerator();
+        optimization.start(generator.getState());
+        System.out.println(optimization);
     }
 }

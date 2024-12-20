@@ -8,12 +8,13 @@ public final class PlantUmlTextGenerator extends Visitor.AbstractStringVisitor {
     private final Set<String> printed = new HashSet<>();
     private final Set<String> declared = new HashSet<>();
 
-    private String name(String name) {
-        if (!declared.contains(name)) {
-            declared.add(name);
-            buffer.append("state \"Epsilon\" as ").append(name).append("\n");
+    private static State getLastState(State state) {
+        if (state instanceof State.Sequence sequence) {
+            return sequence.last;
+        } else if (state instanceof State.Parallel parallel) {
+            return state;
         }
-        return name;
+        return state.next;
     }
 
     private String name(State state) {
@@ -62,16 +63,14 @@ public final class PlantUmlTextGenerator extends Visitor.AbstractStringVisitor {
             print(nextName, name(state.next));
             print(stateName, name(state.next));
         } else if (state instanceof State.OneOrMore) {
-            String middleName = name(stateName + nextName);
-            print(nextName, middleName);
-            print(middleName, name(state.next));
-            print(middleName, stateName);
-            print(middleName, nextName);
-        } else if (state instanceof State.NoneOrMore) {
-            print(stateName, name(state.next));
-            print(nextName, nextName);
             print(nextName, name(state.next));
-            print(name(state.next), stateName);
+            State inner = ((State.OneOrMore) state).state;
+            State lastState = getLastState(inner);
+            print(name(lastState), name(inner));
+        } else if (state instanceof State.NoneOrMore) {
+            State inner = ((State.NoneOrMore) state).state;
+            print(name(inner), name(inner));
+            print(nextName, name(state.next));
         }
     }
 
