@@ -1,10 +1,9 @@
-package ru.mifi.practice.vol8.regexp;
+package ru.mifi.practice.vol8.regexp.tree;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import ru.mifi.practice.vol8.regexp.visitor.OriginalTextGenerator;
-import ru.mifi.practice.vol8.regexp.visitor.PlantUmlTextGenerator;
+import ru.mifi.practice.vol8.regexp.AbstractPatternTest;
 
 import java.io.IOException;
 

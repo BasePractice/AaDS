@@ -1,7 +1,7 @@
 package ru.mifi.practice.vol8.regexp.machine;
 
-import ru.mifi.practice.vol8.regexp.Tree;
-import ru.mifi.practice.vol8.regexp.visitor.AbstractVisitor;
+import ru.mifi.practice.vol8.regexp.tree.Tree;
+import ru.mifi.practice.vol8.regexp.tree.AbstractVisitor;
 
 import java.util.LinkedList;
 

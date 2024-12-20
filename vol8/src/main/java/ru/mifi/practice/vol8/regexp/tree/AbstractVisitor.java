@@ -1,6 +1,4 @@
-package ru.mifi.practice.vol8.regexp.visitor;
-
-import ru.mifi.practice.vol8.regexp.Tree;
+package ru.mifi.practice.vol8.regexp.tree;
 
 public abstract class AbstractVisitor implements Tree.Visitor {
     @Override
