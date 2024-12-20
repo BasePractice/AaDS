@@ -1,4 +1,4 @@
-package ru.mifi.practice.vol8.regexp;
+package ru.mifi.practice.vol8.regexp.tree;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -4,7 +4,7 @@ import org.junit.jupiter.params.provider.Arguments;
 
 import java.util.stream.Stream;
 
-abstract class AbstractPatternTest {
+public abstract class AbstractPatternTest {
     protected static Stream<Arguments> patternText() {
         return Stream.of(
             Arguments.of("1", "abc*d?|abce|ab?ei|a(bcde[cei])+|d(c|e|i)?i"),
