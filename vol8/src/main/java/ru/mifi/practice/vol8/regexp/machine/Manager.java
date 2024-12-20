@@ -14,6 +14,8 @@ public interface Manager {
 
     Optional<State> of(int index);
 
+    void reset();
+
     @SuppressWarnings("PMD.AvoidAccessibilityAlteration")
     final class Default implements Manager {
         private final AtomicInteger counter = new AtomicInteger();
@@ -50,6 +52,12 @@ public interface Manager {
                 return Optional.empty();
             }
             return Optional.of(states.get(index));
+        }
+
+        @Override
+        public void reset() {
+            counter.set(0);
+            states.clear();
         }
     }
 }

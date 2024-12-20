@@ -7,9 +7,13 @@ users.json
 sudoku.log
 vol8/1.utext
 vol8/1.fsm.utext
+vol8/1.rgx.utext
 vol8/2.utext
 vol8/2.fsm.utext
+vol8/2.rgx.utext
 vol8/3.utext
 vol8/3.fsm.utext
+vol8/3.rgx.utext
 vol8/4.utext
 vol8/4.fsm.utext
+vol8/4.rgx.utext
