@@ -142,6 +142,14 @@ public interface Duplicate {
     final class Default implements Duplicate {
         private static final XMLInputFactory XML_INPUT_FACTORY = XMLInputFactory.newInstance();
 
+        private static String readString(StartElement element, String name) {
+            return element.getAttributeByName(new QName(name)).getValue();
+        }
+
+        private static int readInt(StartElement element, String name) throws XMLStreamException {
+            return Integer.parseInt(readString(element, name));
+        }
+
         public static String readValue(XMLEventReader reader) throws XMLStreamException {
             if (reader.hasNext()) {
                 XMLEvent event = reader.nextEvent();
@@ -150,14 +158,6 @@ public interface Duplicate {
                 }
             }
             return null;
-        }
-
-        private static String readString(StartElement element, String name) {
-            return element.getAttributeByName(new QName(name)).getValue();
-        }
-
-        private static int readInt(StartElement element, String name) throws XMLStreamException {
-            return Integer.parseInt(readString(element, name));
         }
 
         public static String readValue(XMLEventReader reader, String stopTag) throws XMLStreamException {
