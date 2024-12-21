@@ -19,6 +19,9 @@ public final class OriginalTextGenerator extends AbstractStringVisitor {
     @Override
     public void enter(Tree.Set set) {
         buffer.append("[");
+        if (!set.positive()) {
+            buffer.append("^");
+        }
     }
 
     @Override
