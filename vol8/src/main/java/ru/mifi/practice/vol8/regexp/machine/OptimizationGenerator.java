@@ -2,6 +2,7 @@ package ru.mifi.practice.vol8.regexp.machine;
 
 import java.util.LinkedList;
 
+//FIXME: Реализовать оптимизацию автомата
 @SuppressWarnings({"PMD.LooseCoupling", "PMD.UnusedPrivateField", "PMD.UnusedLocalVariable"})
 public final class OptimizationGenerator extends Visitor.AbstractVisitor {
     private final Manager manager;
