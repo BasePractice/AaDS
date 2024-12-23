@@ -13,7 +13,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <version.junit>1.11.3</version.junit>
+        <version.junit>1.11.4</version.junit>
         <version.jupiter>5.11.4</version.jupiter>
         <version.pmd>7.8.0</version.pmd>
     </properties>
@@ -116,7 +116,7 @@
                     <dependency>
                         <groupId>com.puppycrawl.tools</groupId>
                         <artifactId>checkstyle</artifactId>
-                        <version>10.20.2</version>
+                        <version>10.21.0</version>
                     </dependency>
                 </dependencies>
                 <configuration>
