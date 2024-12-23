@@ -5,6 +5,7 @@ import lombok.EqualsAndHashCode;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings("PMD.SimplifyBooleanReturnss")
 @EqualsAndHashCode(of = "index")
 public abstract class State {
     final Manager manager;
@@ -61,7 +62,7 @@ public abstract class State {
                 }
                 return true;
             }
-            return input.hasNext();
+            return false;
         }
 
         @Override
@@ -249,7 +250,6 @@ public abstract class State {
                 } else if (next != null && next.accept(copy)) {
                     return next.match(input);
                 }
-                return input.hasNext();
             }
             return false;
         }
@@ -341,17 +341,16 @@ public abstract class State {
                 boolean matched = state.match(copy);
                 if (matched) {
                     Input prev = copy;
-                    while (matched) {
+                    boolean next = true;
+                    while (next) {
                         prev = copy.copy();
-                        matched = state.match(copy);
+                        next = state.match(copy);
                     }
                     copy = prev;
-                    if (next != null && next.accept(copy)) {
-                        return next.match(copy);
+                    if (this.next != null && this.next.accept(copy)) {
+                        return this.next.match(copy);
                     }
-                }
-                if (next != null && next.accept(copy)) {
-                    return next.match(copy);
+                    return true;
                 }
             }
             return false;
