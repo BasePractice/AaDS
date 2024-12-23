@@ -18,6 +18,8 @@ public interface Input {
 
     Input copy();
 
+    boolean hasNext();
+
     record Marker(int pos) {
     }
 
@@ -25,7 +27,7 @@ public interface Input {
         private final char[] chars;
         private int it;
 
-        private StringInput(String text) {
+        public StringInput(String text) {
             this.chars = text.toCharArray();
         }
 
@@ -62,6 +64,11 @@ public interface Input {
         @Override
         public Input copy() {
             return new StringInput(chars, it);
+        }
+
+        @Override
+        public boolean hasNext() {
+            return it < chars.length;
         }
     }
 }

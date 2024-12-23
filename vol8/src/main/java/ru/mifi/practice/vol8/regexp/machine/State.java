@@ -23,6 +23,10 @@ public abstract class State {
         this.next = next;
     }
 
+    public boolean accept(Input input) {
+        return false;
+    }
+
     @Override
     public String toString() {
         if (next != null) {
@@ -31,12 +35,33 @@ public abstract class State {
         return "";
     }
 
+    public boolean match(Input input) {
+        return false;
+    }
+
     public static final class Symbol extends State {
         final char symbol;
 
         private Symbol(Manager manager, int index, Character symbol) {
             super(manager, index);
             this.symbol = symbol;
+        }
+
+        @Override
+        public boolean accept(Input input) {
+            return input.peek().map(c -> c == symbol).orElse(false);
+        }
+
+        @Override
+        public boolean match(Input input) {
+            if (accept(input)) {
+                input.next();
+                if (next != null && next.accept(input)) {
+                    return next.match(input);
+                }
+                return true;
+            }
+            return input.hasNext();
         }
 
         @Override
@@ -73,6 +98,23 @@ public abstract class State {
         }
 
         @Override
+        public boolean accept(Input input) {
+            return start.accept(input);
+        }
+
+        @Override
+        public boolean match(Input input) {
+            if (accept(input)) {
+                boolean matched = start.match(input);
+                if (matched && next != null && next.accept(input)) {
+                    return next.match(input);
+                }
+                return matched;
+            }
+            return false;
+        }
+
+        @Override
         public void visit(Visitor visitor) {
             visitor.visit(this, start);
             start.visit(visitor);
@@ -86,6 +128,7 @@ public abstract class State {
             if (start == null) {
                 start = state;
             } else {
+                state.parent = last;
                 last.setNext(state);
             }
             last = state;
@@ -101,6 +144,11 @@ public abstract class State {
         private Epsilon(Manager manager, int index) {
             super(manager, index);
         }
+
+        @Override
+        public boolean accept(Input input) {
+            return true;
+        }
     }
 
     public static class Parallel extends State {
@@ -108,6 +156,36 @@ public abstract class State {
 
         private Parallel(Manager manager, int index) {
             super(manager, index);
+        }
+
+        @Override
+        public boolean accept(Input input) {
+            List<State> accepted = getAccepted(input);
+            return !accepted.isEmpty();
+        }
+
+        @Override
+        public boolean match(Input input) {
+            if (accept(input)) {
+                List<State> accepted = getAccepted(input);
+                for (State next : accepted) {
+                    Input copy = input.copy();
+                    boolean accept = next.match(copy);
+                    //TODO: Реализовать для всех оставшихся путей
+                    if (accept) {
+                        if (this.next != null && next.accept(copy)) {
+                            return next.match(copy);
+                        }
+                        return true;
+                    }
+                }
+                return false;
+            }
+            return super.match(input);
+        }
+
+        private List<State> getAccepted(Input input) {
+            return states.stream().filter(c -> c.accept(input)).toList();
         }
 
         @Override
@@ -152,6 +230,30 @@ public abstract class State {
             super(manager, index, state);
         }
 
+        //FIXME: Проверить правильность
+        @Override
+        public boolean accept(Input input) {
+            return true;
+        }
+
+        @Override
+        public boolean match(Input input) {
+            if (accept(input)) {
+                Input copy = input.copy();
+                if (state.accept(copy)) {
+                    boolean matched = state.match(copy);
+                    if (matched && next != null && next.accept(copy)) {
+                        return next.match(input);
+                    }
+                    return matched;
+                } else if (next != null && next.accept(copy)) {
+                    return next.match(input);
+                }
+                return input.hasNext();
+            }
+            return false;
+        }
+
         @Override
         public void visit(Visitor visitor) {
             visitor.visit(this, state);
@@ -174,6 +276,39 @@ public abstract class State {
         }
 
         @Override
+        public boolean accept(Input input) {
+            return true;
+        }
+
+        @Override
+        public boolean match(Input input) {
+            if (accept(input)) {
+                Input copy = input.copy();
+                if (state.accept(copy)) {
+                    boolean matched = state.match(copy);
+                    if (matched) {
+                        Input prev = copy;
+                        while (matched) {
+                            prev = copy.copy();
+                            matched = state.match(copy);
+                        }
+                        copy = prev;
+                        if (next != null && next.accept(copy)) {
+                            return next.match(copy);
+                        }
+                    }
+                    if (next != null && next.accept(copy)) {
+                        return next.match(copy);
+                    }
+                } else if (next != null && next.accept(copy)) {
+                    return next.match(copy);
+                }
+                return input.hasNext();
+            }
+            return false;
+        }
+
+        @Override
         public void visit(Visitor visitor) {
             visitor.visit(this, state);
             state.visit(visitor);
@@ -192,6 +327,34 @@ public abstract class State {
     public static final class OneOrMore extends SingleState {
         private OneOrMore(Manager manager, int index, State state) {
             super(manager, index, state);
+        }
+
+        @Override
+        public boolean accept(Input input) {
+            return state.accept(input);
+        }
+
+        @Override
+        public boolean match(Input input) {
+            if (accept(input)) {
+                Input copy = input.copy();
+                boolean matched = state.match(copy);
+                if (matched) {
+                    Input prev = copy;
+                    while (matched) {
+                        prev = copy.copy();
+                        matched = state.match(copy);
+                    }
+                    copy = prev;
+                    if (next != null && next.accept(copy)) {
+                        return next.match(copy);
+                    }
+                }
+                if (next != null && next.accept(copy)) {
+                    return next.match(copy);
+                }
+            }
+            return false;
         }
 
         @Override
