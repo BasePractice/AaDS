@@ -28,7 +28,6 @@ class MatchTest {
         );
     }
 
-    @Disabled
     @ParameterizedTest
     @MethodSource("patternMatching")
     void match(boolean isMatch, String input, String pattern) {
