@@ -15,6 +15,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
+import java.nio.file.FileSystems;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,7 +27,12 @@ import java.util.Set;
 public interface Duplicate {
     int MINIMUM_LINES = 50;
     int MINIMUM_RELATIONS = 2;
-    String DIRECTORY = "/Users/pastor/github/algorithms-and-data-structures-2024";
+    //    String DIRECTORY = "/Users/pastor/github/algorithms-and-data-structures-2024";
+    String FILE_SEPARATOR = FileSystems.getDefault().getSeparator();
+//    String REGEXP_SEPARATOR = "/";
+    String REGEXP_SEPARATOR = "\\\\";
+    String DIRECTORY = "E:\\GitHub\\algorithms-and-data-structures-2024";
+    String DIRECTORY_STUDENTS = DIRECTORY + FILE_SEPARATOR + "students" + FILE_SEPARATOR;
 
     static void main(String[] args) throws XMLStreamException, IOException {
         Default duplicate = new Default();
@@ -115,7 +121,7 @@ public interface Duplicate {
         }
 
         String code() {
-            return path.split("/")[0];
+            return path.split(REGEXP_SEPARATOR)[0];
         }
 
         @Override
@@ -134,7 +140,7 @@ public interface Duplicate {
 
         @Override
         public String toString() {
-            String[] parts = path.split("/");
+            String[] parts = path.split(REGEXP_SEPARATOR);
             return lines + ":" + parts[parts.length - 1];
         }
     }
@@ -224,7 +230,7 @@ public interface Duplicate {
                     String localPart = element.getName().getLocalPart();
                     if ("file".equals(localPart)) {
                         CodeFile file = new CodeFile(
-                            readString(element, "path").replace(DIRECTORY + "/students/", ""),
+                            readString(element, "path").replace(DIRECTORY_STUDENTS, ""),
                             readInt(element, "line"),
                             readInt(element, "endline")
                         );
