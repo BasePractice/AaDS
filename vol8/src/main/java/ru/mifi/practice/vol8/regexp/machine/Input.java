@@ -10,7 +10,11 @@ public interface Input {
 
     Marker mark();
 
-    void reset(Marker marker);
+    default void reset(Marker marker) {
+        reset(marker.pos());
+    }
+
+    void reset(int pos);
 
     Optional<Character> peek();
 
@@ -20,12 +24,14 @@ public interface Input {
 
     boolean hasNext();
 
+    int index();
+
     record Marker(int pos) {
     }
 
     final class StringInput implements Input {
         private final char[] chars;
-        private int it;
+        private int index;
 
         public StringInput(String text) {
             this.chars = text.toCharArray();
@@ -33,42 +39,52 @@ public interface Input {
 
         private StringInput(char[] chars, int it) {
             this.chars = chars;
-            this.it = it;
+            this.index = it;
         }
 
         @Override
         public Marker mark() {
-            return new Marker(it);
+            return new Marker(index);
         }
 
         @Override
-        public void reset(Marker marker) {
-            it = marker.pos();
+        public void reset(int pos) {
+            index = pos;
         }
 
         @Override
         public Optional<Character> peek() {
-            if (it >= chars.length) {
+            if (index >= chars.length) {
                 return Optional.empty();
             }
-            return Optional.of(chars[it]);
+            return Optional.of(chars[index]);
         }
 
         @Override
         public void next() {
-            if (it < chars.length) {
-                it++;
+            if (index < chars.length) {
+                index++;
             }
         }
 
         @Override
         public Input copy() {
-            return new StringInput(chars, it);
+            return new StringInput(chars, index);
         }
 
         @Override
         public boolean hasNext() {
-            return it < chars.length;
+            return index < chars.length;
+        }
+
+        @Override
+        public int index() {
+            return index;
+        }
+
+        @Override
+        public String toString() {
+            return index + ":" + peek().orElse(' ');
         }
     }
 }

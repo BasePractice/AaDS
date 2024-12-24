@@ -17,14 +17,14 @@ public interface Match {
         @Override
         public boolean match(String text) {
             Input input = new Input.StringInput(text);
-            return match(state, input);
+            return match(state, input).ok();
         }
 
-        private static boolean match(State state, Input input) {
+        private static State.Match match(State state, Input input) {
             if (state.accept(input)) {
                 return state.match(input);
             }
-            return false;
+            return new State.Match(false, input.copy());
         }
     }
 }

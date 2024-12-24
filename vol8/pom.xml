@@ -12,4 +12,10 @@
     <name>vol8</name>
     <description>Модуль №8. Конечные автоматы</description>
 
+    <dependencies>
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
+    </dependencies>
 </project>

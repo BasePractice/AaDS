@@ -36,8 +36,20 @@ public abstract class State {
         return "";
     }
 
-    public boolean match(Input input) {
-        return false;
+    public Match match(Input input) {
+        return new Match(false, input.copy());
+    }
+
+    public record Match(boolean ok, Input input) {
+
+        static Match ok(Input input) {
+            return new Match(true, input.copy());
+        }
+
+        static Match failure(Input input) {
+            return new Match(false, input.copy());
+        }
+
     }
 
     public static final class Symbol extends State {
@@ -54,15 +66,15 @@ public abstract class State {
         }
 
         @Override
-        public boolean match(Input input) {
+        public Match match(Input input) {
             if (accept(input)) {
                 input.next();
                 if (next != null && next.accept(input)) {
                     return next.match(input);
                 }
-                return true;
+                return Match.ok(input);
             }
-            return false;
+            return Match.failure(input);
         }
 
         @Override
@@ -104,15 +116,15 @@ public abstract class State {
         }
 
         @Override
-        public boolean match(Input input) {
+        public Match match(Input input) {
             if (accept(input)) {
-                boolean matched = start.match(input);
-                if (matched && next != null && next.accept(input)) {
-                    return next.match(input);
+                var matched = start.match(input);
+                if (matched.ok() && next != null && next.accept(matched.input)) {
+                    return next.match(matched.input);
                 }
                 return matched;
             }
-            return false;
+            return Match.failure(input);
         }
 
         @Override
@@ -166,23 +178,22 @@ public abstract class State {
         }
 
         @Override
-        public boolean match(Input input) {
+        public Match match(Input input) {
             if (accept(input)) {
                 List<State> accepted = getAccepted(input);
                 for (State next : accepted) {
                     Input copy = input.copy();
-                    boolean accept = next.match(copy);
+                    var accept = next.match(copy);
                     //TODO: Реализовать для всех оставшихся путей
-                    if (accept) {
-                        if (this.next != null && next.accept(copy)) {
-                            return next.match(copy);
+                    if (accept.ok()) {
+                        if (this.next != null && next.accept(accept.input)) {
+                            return next.match(accept.input);
                         }
-                        return true;
+                        return accept;
                     }
                 }
-                return false;
             }
-            return super.match(input);
+            return Match.failure(input);
         }
 
         private List<State> getAccepted(Input input) {
@@ -238,20 +249,20 @@ public abstract class State {
         }
 
         @Override
-        public boolean match(Input input) {
+        public Match match(Input input) {
             if (accept(input)) {
                 Input copy = input.copy();
                 if (state.accept(copy)) {
-                    boolean matched = state.match(copy);
-                    if (matched && next != null && next.accept(copy)) {
-                        return next.match(input);
+                    var matched = state.match(copy);
+                    if (matched.ok() && next != null && next.accept(matched.input)) {
+                        return next.match(matched.input);
                     }
                     return matched;
                 } else if (next != null && next.accept(copy)) {
-                    return next.match(input);
+                    return next.match(copy);
                 }
             }
-            return false;
+            return Match.failure(input);
         }
 
         @Override
@@ -281,15 +292,15 @@ public abstract class State {
         }
 
         @Override
-        public boolean match(Input input) {
+        public Match match(Input input) {
             if (accept(input)) {
                 Input copy = input.copy();
                 if (state.accept(copy)) {
-                    boolean matched = state.match(copy);
-                    if (matched) {
+                    var matched = state.match(copy);
+                    if (matched.ok()) {
                         Input prev = copy;
-                        while (matched) {
-                            prev = copy.copy();
+                        while (matched.ok()) {
+                            prev = matched.input;
                             matched = state.match(copy);
                         }
                         copy = prev;
@@ -297,15 +308,15 @@ public abstract class State {
                             return next.match(copy);
                         }
                     }
-                    if (next != null && next.accept(copy)) {
-                        return next.match(copy);
+                    if (next != null && next.accept(matched.input)) {
+                        return next.match(matched.input);
                     }
                 } else if (next != null && next.accept(copy)) {
                     return next.match(copy);
                 }
-                return input.hasNext();
+                return Match.ok(input);
             }
-            return false;
+            return Match.failure(input);
         }
 
         @Override
@@ -335,25 +346,25 @@ public abstract class State {
         }
 
         @Override
-        public boolean match(Input input) {
+        public Match match(Input input) {
             if (accept(input)) {
                 Input copy = input.copy();
-                boolean matched = state.match(copy);
-                if (matched) {
+                var matched = state.match(copy);
+                if (matched.ok()) {
                     Input prev = copy;
-                    boolean next = true;
-                    while (next) {
-                        prev = copy.copy();
-                        next = state.match(copy);
+                    Match next = matched;
+                    while (next.ok()) {
+                        prev = next.input;
+                        next = state.match(next.input);
                     }
                     copy = prev;
                     if (this.next != null && this.next.accept(copy)) {
                         return this.next.match(copy);
                     }
-                    return true;
+                    return matched;
                 }
             }
-            return false;
+            return Match.failure(input);
         }
 
         @Override
