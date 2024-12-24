@@ -28,7 +28,7 @@
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
 
     //Read the data
-    d3.csv("/AaDS/duplicate.csv").then(function (data) {
+    d3.csv("http://127.0.0.1:8000/duplicate.csv").then(function (data) {
 
         // Labels of row and columns -> unique identifier of the column called 'group' and 'variable'
         const mSource = Array.from(new Set(data.map(d => d.Source)))
