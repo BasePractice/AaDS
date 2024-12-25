@@ -17,7 +17,8 @@ public interface Match {
         @Override
         public boolean match(String text) {
             Input input = new Input.StringInput(text);
-            return match(state, input).ok();
+            State.Match match = match(state, input);
+            return match.ok() && match.isCompleted();
         }
 
         private static State.Match match(State state, Input input) {

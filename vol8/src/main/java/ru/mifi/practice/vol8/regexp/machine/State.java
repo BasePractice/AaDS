@@ -5,6 +5,7 @@ import lombok.EqualsAndHashCode;
 import java.util.ArrayList;
 import java.util.List;
 
+//FIXME: Переписать проверку в FSM не через рекурсию
 @SuppressWarnings("PMD.SimplifyBooleanReturnss")
 @EqualsAndHashCode(of = "index")
 public abstract class State {
@@ -50,19 +51,22 @@ public abstract class State {
             return new Match(false, input.copy());
         }
 
+        boolean isCompleted() {
+            return !input.hasNext();
+        }
     }
 
     public static final class Symbol extends State {
-        final char symbol;
+        final Object symbol;
 
-        private Symbol(Manager manager, int index, Character symbol) {
+        private Symbol(Manager manager, int index, Object symbol) {
             super(manager, index);
             this.symbol = symbol;
         }
 
         @Override
         public boolean accept(Input input) {
-            return input.peek().map(c -> c == symbol).orElse(false);
+            return input.peek().map(c -> c.equals(symbol)).orElse(false);
         }
 
         @Override
@@ -160,7 +164,7 @@ public abstract class State {
 
         @Override
         public boolean accept(Input input) {
-            return true;
+            return input.hasNext();
         }
     }
 
@@ -245,7 +249,7 @@ public abstract class State {
         //FIXME: Проверить правильность
         @Override
         public boolean accept(Input input) {
-            return true;
+            return input.hasNext();
         }
 
         @Override
@@ -288,7 +292,7 @@ public abstract class State {
 
         @Override
         public boolean accept(Input input) {
-            return true;
+            return input.hasNext();
         }
 
         @Override
@@ -351,17 +355,16 @@ public abstract class State {
                 Input copy = input.copy();
                 var matched = state.match(copy);
                 if (matched.ok()) {
-                    Input prev = copy;
+                    Match prev = matched;
                     Match next = matched;
                     while (next.ok()) {
-                        prev = next.input;
+                        prev = next;
                         next = state.match(next.input);
                     }
-                    copy = prev;
-                    if (this.next != null && this.next.accept(copy)) {
-                        return this.next.match(copy);
+                    if (this.next != null && this.next.accept(prev.input)) {
+                        return this.next.match(prev.input);
                     }
-                    return matched;
+                    return prev;
                 }
             }
             return Match.failure(input);

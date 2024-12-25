@@ -4,7 +4,6 @@ import lombok.SneakyThrows;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -16,10 +15,24 @@ public interface Manager {
 
     void reset();
 
+    @FunctionalInterface
+    interface CharacterMapper<T> {
+        T map(Character c);
+    }
+
     @SuppressWarnings("PMD.AvoidAccessibilityAlteration")
     final class Default implements Manager {
         private final AtomicInteger counter = new AtomicInteger();
         private final List<State> states = new ArrayList<>();
+        private final CharacterMapper<?> characterMapper;
+
+        public Default(CharacterMapper<?> characterMapper) {
+            this.characterMapper = characterMapper;
+        }
+
+        public Default() {
+            this(c -> c);
+        }
 
         @SneakyThrows
         @Override
@@ -31,6 +44,8 @@ public interface Manager {
                 Class<?> aClass = arg.getClass();
                 if (arg instanceof State) {
                     paramsClass.add(State.class);
+                } else if (arg instanceof Character) {
+                    paramsClass.add(Object.class);
                 } else {
                     paramsClass.add(aClass);
                 }
@@ -40,7 +55,13 @@ public interface Manager {
             List<Object> params = new ArrayList<>();
             params.add(this);
             params.add(counter.getAndIncrement());
-            Collections.addAll(params, args);
+            for (Object arg : args) {
+                if (arg instanceof Character ch) {
+                    params.add(map(ch));
+                } else {
+                    params.add(arg);
+                }
+            }
             S newed = constructor.newInstance(params.toArray(new Object[0]));
             states.add(newed);
             return newed;
@@ -52,6 +73,11 @@ public interface Manager {
                 return Optional.empty();
             }
             return Optional.of(states.get(index));
+        }
+
+        @SuppressWarnings("unchecked")
+        private <O> O map(Character c) {
+            return (O) characterMapper.map(c);
         }
 
         @Override

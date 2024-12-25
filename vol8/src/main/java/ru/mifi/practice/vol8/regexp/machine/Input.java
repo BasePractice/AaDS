@@ -16,7 +16,7 @@ public interface Input {
 
     void reset(int pos);
 
-    Optional<Character> peek();
+    Optional<Object> peek();
 
     void next();
 
@@ -53,7 +53,7 @@ public interface Input {
         }
 
         @Override
-        public Optional<Character> peek() {
+        public Optional<Object> peek() {
             if (index >= chars.length) {
                 return Optional.empty();
             }
