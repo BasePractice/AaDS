@@ -3,21 +3,21 @@ package ru.mifi.practice.vol8.regexp.machine;
 import ru.mifi.practice.vol8.regexp.machine.Input.StringInput;
 import ru.mifi.practice.vol8.regexp.tree.Tree;
 
-public interface Match {
+public interface Matcher {
     default boolean match(String text) {
         return match(new StringInput(text));
     }
 
     boolean match(Input input);
 
-    final class Machine implements Match {
+    final class Default implements Matcher {
         private final State state;
 
-        public Machine(Tree tree) {
+        public Default(Tree tree) {
             this(tree, new Manager.Default());
         }
 
-        public Machine(Tree tree, Manager manager) {
+        public Default(Tree tree, Manager manager) {
             MachineGenerator generator = new MachineGenerator(manager);
             tree.visit(generator);
             this.state = generator.getState();

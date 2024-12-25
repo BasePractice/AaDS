@@ -8,11 +8,10 @@ import ru.mifi.practice.vol8.regexp.tree.Tree;
 
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @DisplayName("Match")
-class MatchTest {
+class MatcherTest {
 
     protected static Stream<Arguments> patternMatching() {
         return Stream.of(
@@ -33,12 +32,8 @@ class MatchTest {
     @MethodSource("patternMatching")
     void match(boolean isMatch, String input, String pattern) {
         Tree tree = new Tree.Default(pattern);
-        Match match = new Match.Machine(tree);
+        Matcher match = new Matcher.Default(tree);
         boolean matched = match.match(input);
-        if (isMatch) {
-            assertTrue(matched);
-        } else {
-            assertFalse(matched);
-        }
+        assertEquals(isMatch, matched);
     }
 }

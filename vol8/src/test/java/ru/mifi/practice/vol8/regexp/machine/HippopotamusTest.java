@@ -10,11 +10,9 @@ import ru.mifi.practice.vol8.regexp.tree.Tree;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 //NOTICE: Специально для Сергея
 @DisplayName("Hippopotamus")
@@ -27,7 +25,9 @@ public final class HippopotamusTest {
         return Stream.of(
             Arguments.of(true, List.of(A), "a|b"),
             Arguments.of(true, List.of(B), "a|b"),
-            Arguments.of(false, List.of(C), "a|b")
+            Arguments.of(false, List.of(C), "a|b"),
+            Arguments.of(true, List.of(A, B), "ab|c"),
+            Arguments.of(false, List.of(A, B, C), "ab|c")
         );
     }
 
@@ -42,14 +42,10 @@ public final class HippopotamusTest {
     @MethodSource("patternMatching")
     void match(boolean isMatch, List<Hippopotamus> hippopotamuses, String pattern) {
         Tree tree = new Tree.Default(pattern);
-        Match match = new Match.Machine(tree, new Manager.Default(mapper));
+        Matcher match = new Matcher.Default(tree, new Manager.Default(mapper));
         Input input = new HippopotamusInput(hippopotamuses);
         boolean matched = match.match(input);
-        if (isMatch) {
-            assertTrue(matched);
-        } else {
-            assertFalse(matched);
-        }
+        assertEquals(isMatch, matched);
     }
 
     private record HippopotamusMapper(Map<Character, Hippopotamus> map)
@@ -82,57 +78,18 @@ public final class HippopotamusTest {
         }
     }
 
-    private static final class HippopotamusInput implements Input {
-        private final List<Hippopotamus> hippopotamuses;
-        private int index;
-
-        public HippopotamusInput(List<Hippopotamus> hippopotamuses, int index) {
-            this.hippopotamuses = List.copyOf(hippopotamuses);
-            this.index = index;
-        }
-
+    private static final class HippopotamusInput extends Input.ObjectsInput {
         public HippopotamusInput(List<Hippopotamus> hippopotamuses) {
-            this(hippopotamuses, 0);
+            super(hippopotamuses.toArray());
         }
 
-        @Override
-        public Marker mark() {
-            return new Marker(index);
-        }
-
-        @Override
-        public void reset(int pos) {
-            index = pos;
-        }
-
-        @Override
-        public Optional<Object> peek() {
-            if (hasNext()) {
-                return Optional.of(hippopotamuses.get(index));
-            }
-            return Optional.empty();
-        }
-
-        @Override
-        public void next() {
-            if (hasNext()) {
-                index++;
-            }
+        private HippopotamusInput(Object[] hippopotamuses, int index) {
+            super(hippopotamuses, index);
         }
 
         @Override
         public Input copy() {
-            return new HippopotamusInput(hippopotamuses, index);
-        }
-
-        @Override
-        public boolean hasNext() {
-            return index < hippopotamuses.size();
-        }
-
-        @Override
-        public int index() {
-            return index;
+            return new HippopotamusInput(objects, index());
         }
     }
 }
