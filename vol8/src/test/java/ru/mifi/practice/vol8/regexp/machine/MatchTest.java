@@ -34,10 +34,11 @@ class MatchTest {
     void match(boolean isMatch, String input, String pattern) {
         Tree tree = new Tree.Default(pattern);
         Match match = new Match.Machine(tree);
+        boolean matched = match.match(input);
         if (isMatch) {
-            assertTrue(match.match(input));
+            assertTrue(matched);
         } else {
-            assertFalse(match.match(input));
+            assertFalse(matched);
         }
     }
 }

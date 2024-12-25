@@ -1,22 +1,30 @@
 package ru.mifi.practice.vol8.regexp.machine;
 
+import ru.mifi.practice.vol8.regexp.machine.Input.StringInput;
 import ru.mifi.practice.vol8.regexp.tree.Tree;
 
 public interface Match {
-    boolean match(String text);
+    default boolean match(String text) {
+        return match(new StringInput(text));
+    }
+
+    boolean match(Input input);
 
     final class Machine implements Match {
         private final State state;
 
         public Machine(Tree tree) {
-            MachineGenerator generator = new MachineGenerator();
+            this(tree, new Manager.Default());
+        }
+
+        public Machine(Tree tree, Manager manager) {
+            MachineGenerator generator = new MachineGenerator(manager);
             tree.visit(generator);
             this.state = generator.getState();
         }
 
         @Override
-        public boolean match(String text) {
-            Input input = new Input.StringInput(text);
+        public boolean match(Input input) {
             State.Match match = match(state, input);
             return match.ok() && match.isCompleted();
         }

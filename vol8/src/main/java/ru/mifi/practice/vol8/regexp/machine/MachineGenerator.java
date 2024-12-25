@@ -1,7 +1,7 @@
 package ru.mifi.practice.vol8.regexp.machine;
 
-import ru.mifi.practice.vol8.regexp.tree.Tree;
 import ru.mifi.practice.vol8.regexp.tree.AbstractVisitor;
+import ru.mifi.practice.vol8.regexp.tree.Tree;
 
 import java.util.LinkedList;
 
@@ -21,11 +21,6 @@ public final class MachineGenerator extends AbstractVisitor {
     @Override
     public void start() {
         states.clear();
-    }
-
-    @Override
-    public void end() {
-        System.out.println(getState());
     }
 
     @Override
