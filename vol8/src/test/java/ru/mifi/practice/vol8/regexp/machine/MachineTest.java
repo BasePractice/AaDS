@@ -32,9 +32,5 @@ class MachineTest extends AbstractPatternTest {
         builder.append(text).append("\n");
         builder.append("@endregex").append("\n");
         Files.writeString(Path.of(String.format("%s.rgx.utext", name)), builder, StandardCharsets.UTF_8);
-
-        OptimizationGenerator optimization = new OptimizationGenerator();
-        optimization.start(generator.getState());
-        System.out.println(optimization);
     }
 }

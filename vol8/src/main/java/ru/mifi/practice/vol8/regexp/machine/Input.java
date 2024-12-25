@@ -8,14 +8,6 @@ public interface Input {
         return new StringInput(text);
     }
 
-    Marker mark();
-
-    default void reset(Marker marker) {
-        reset(marker.pos());
-    }
-
-    void reset(int pos);
-
     Optional<Object> peek();
 
     void next();
@@ -26,55 +18,37 @@ public interface Input {
 
     int index();
 
-    record Marker(int pos) {
-    }
-
-    final class StringInput implements Input {
-        private final char[] chars;
+    abstract class ObjectsInput implements Input {
+        protected final Object[] objects;
         private int index;
 
-        public StringInput(String text) {
-            this.chars = text.toCharArray();
+        protected ObjectsInput(Object[] objects) {
+            this(objects, 0);
         }
 
-        private StringInput(char[] chars, int it) {
-            this.chars = chars;
-            this.index = it;
-        }
-
-        @Override
-        public Marker mark() {
-            return new Marker(index);
-        }
-
-        @Override
-        public void reset(int pos) {
-            index = pos;
+        protected ObjectsInput(Object[] objects, int index) {
+            this.objects = objects;
+            this.index = index;
         }
 
         @Override
         public Optional<Object> peek() {
-            if (index >= chars.length) {
+            if (index >= objects.length) {
                 return Optional.empty();
             }
-            return Optional.of(chars[index]);
+            return Optional.of(objects[index]);
         }
 
         @Override
         public void next() {
-            if (index < chars.length) {
+            if (index < objects.length) {
                 index++;
             }
         }
 
         @Override
-        public Input copy() {
-            return new StringInput(chars, index);
-        }
-
-        @Override
         public boolean hasNext() {
-            return index < chars.length;
+            return index < objects.length;
         }
 
         @Override
@@ -85,6 +59,25 @@ public interface Input {
         @Override
         public String toString() {
             return index + ":" + peek().orElse(' ');
+        }
+    }
+
+    final class StringInput extends ObjectsInput {
+        public StringInput(String text) {
+            this(text, 0);
+        }
+
+        public StringInput(String text, int index) {
+            super(text.chars().mapToObj(i -> (char) i).toArray(), index);
+        }
+
+        public StringInput(Object[] objects, int index) {
+            super(objects, index);
+        }
+
+        @Override
+        public Input copy() {
+            return new StringInput(objects, index());
         }
     }
 }
