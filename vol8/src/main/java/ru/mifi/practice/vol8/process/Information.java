@@ -16,18 +16,18 @@ import java.util.Set;
 public abstract class Information {
     private static final Set<String> ACCEPTING = Set.of("КАБО-01-23", "КАБО-02-23", "КВБО-01-23");
 
-    private record Student(String code, String group, String fio) implements Comparable<Student> {
+    public record Student(String code, String group, String fio) implements Comparable<Student> {
         @Override
         public int compareTo(Student o) {
             return code.compareTo(o.code);
         }
     }
 
-    public static void main(String[] args) throws IOException {
-        String fileName = "C:\\Users\\Pastor\\Downloads\\courseid_9687_participants.csv";
-        String output = ".output";
-        Statistics statistics = new Statistics.Default("E:\\GitHub\\algorithms-and-data-structures-2024\\students");
-        final Map<String, Statistics.Information> scanned = statistics.scan();
+    static Map<String, List<Student>> parseStudents(String fileName) throws IOException {
+        return parseStudents(fileName, ACCEPTING);
+    }
+
+    static Map<String, List<Student>> parseStudents(String fileName, Set<String> accepting) throws IOException {
         Map<String, List<Student>> students = new HashMap<>();
         try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
             String line;
@@ -39,6 +39,9 @@ public abstract class Information {
                 String code = values[2].trim().toUpperCase(Locale.ROOT).replaceAll("\"", "")
                     .replace('К', 'K').replace('Л', 'L').replace('Р', 'R');
                 String group = values[4].trim().toUpperCase(Locale.ROOT).replaceAll("\"", "");
+                if (!accepting.contains(group)) {
+                    continue;
+                }
                 if (!code.isEmpty()) {
                     String reduced = String.join(".", io.chars().filter(Character::isUpperCase).mapToObj(Character::toString).reduce("",
                         (a, b) -> a + b, (a, b) -> a + b).split("")) + ".";
@@ -48,12 +51,18 @@ public abstract class Information {
             }
         }
         students.forEach((k, v) -> v.sort(Student::compareTo));
+        return students;
+    }
+
+    public static void main(String[] args) throws IOException {
+        String fileName = "C:\\Users\\Pastor\\Downloads\\courseid_9687_participants.csv";
+        String output = ".output";
+        Statistics statistics = new Statistics.Default("E:\\GitHub\\algorithms-and-data-structures-2024\\students");
+        final Map<String, Statistics.Information> scanned = statistics.scan();
+        Map<String, List<Student>> students = parseStudents(fileName, ACCEPTING);
         File outputFile = new File(output);
         outputFile.mkdirs();
         for (Map.Entry<String, List<Student>> entry : students.entrySet()) {
-            if (!ACCEPTING.contains(entry.getKey())) {
-                continue;
-            }
             try (BufferedWriter bw = new BufferedWriter(new FileWriter(new File(outputFile, entry.getKey() + ".adoc")))) {
                 bw.append(":stem: latexmath").append("\n\n");
                 bw.append("= `").append(entry.getKey()).append("`\n").append("\n");
