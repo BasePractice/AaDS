@@ -74,7 +74,7 @@ public final class HippopotamusTest {
 
         @Override
         public String toString() {
-            return String.valueOf(index);
+            return "Hippo{" + index + "}";
         }
     }
 
