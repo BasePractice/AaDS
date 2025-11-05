@@ -13,9 +13,9 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <version.junit>1.11.4</version.junit>
+        <version.junit>1.12.0</version.junit>
         <version.jupiter>5.11.4</version.jupiter>
-        <version.pmd>7.9.0</version.pmd>
+        <version.pmd>7.10.0</version.pmd>
     </properties>
 
     <scm>
@@ -42,7 +42,7 @@
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
-                <version>33.3.1-jre</version>
+                <version>33.4.8-jre</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -117,7 +117,7 @@
                     <dependency>
                         <groupId>com.puppycrawl.tools</groupId>
                         <artifactId>checkstyle</artifactId>
-                        <version>10.21.1</version>
+                        <version>10.23.0</version>
                     </dependency>
                 </dependencies>
                 <configuration>
