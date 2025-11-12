@@ -15,6 +15,10 @@ public interface Array<T> {
         return delete(size() - 1);
     }
 
+    default T deleteFirst() {
+        return delete(0);
+    }
+
     default void push(T element) {
         addLast(element);
     }
