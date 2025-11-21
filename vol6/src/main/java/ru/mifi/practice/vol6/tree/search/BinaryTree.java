@@ -16,6 +16,7 @@ public interface BinaryTree<T extends Comparable<T>> {
         return new Node<>(value);
     }
 
+    @SuppressWarnings("PMD.OverrideBothEqualsAndHashCodeOnComparable")
     final class Node<T extends Comparable<T>> implements Comparable<Node<T>> {
         T value;
         Node<T> left;

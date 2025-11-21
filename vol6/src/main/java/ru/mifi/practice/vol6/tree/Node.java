@@ -50,6 +50,7 @@ public interface Node<T> extends Visitor.Visit<T>, Hashable {
     @Override
     void visit(Visitor<T> visitor, VisitorStrategy<T> strategy);
 
+    @SuppressWarnings("PMD.OverrideBothEqualsAndHashCodeOnComparable")
     @EqualsAndHashCode(of = "value")
     final class Default<T> implements Node<T>, Comparable<Node<T>> {
         private final T value;
@@ -132,7 +133,8 @@ public interface Node<T> extends Visitor.Visit<T>, Hashable {
                 left = null;
                 return null;
             }
-            return left = new Default<>(this, value, generator);
+            left = new Default<>(this, value, generator);
+            return left;
         }
 
         @Override
@@ -146,7 +148,8 @@ public interface Node<T> extends Visitor.Visit<T>, Hashable {
                 right = null;
                 return null;
             }
-            return right = new Default<>(this, value, generator);
+            right = new Default<>(this, value, generator);
+            return right;
         }
 
         @Override
