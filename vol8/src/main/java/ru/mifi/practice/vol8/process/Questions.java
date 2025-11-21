@@ -61,7 +61,8 @@ public abstract class Questions {
                 int count = 0;
                 for (String[] question : QUESTIONS) {
                     w.append("\n");
-                    w.append("|").append(String.valueOf(count++)).append("\n");
+                    w.append("|").append(String.valueOf(count)).append("\n");
+                    ++count;
                     w.append("|**").append(question[0]).append("**\n");
                     w.append("|").append(question[1]).append("\n");
                     w.append("|").append("\n");

@@ -16,6 +16,7 @@ import java.util.Set;
 public abstract class Information {
     private static final Set<String> ACCEPTING = Set.of("КАБО-01-23", "КАБО-02-23", "КВБО-01-23");
 
+    @SuppressWarnings("PMD.OverrideBothEqualsAndHashCodeOnComparable")
     public record Student(String code, String group, String fio) implements Comparable<Student> {
         @Override
         public int compareTo(Student o) {
@@ -73,7 +74,8 @@ public abstract class Information {
                 int count = 1;
                 for (Student student : entry.getValue()) {
                     bw.append("\n");
-                    bw.append("|").append(String.valueOf(count++)).append("\n");
+                    bw.append("|").append(String.valueOf(count)).append("\n");
+                    ++count;
                     bw.append("|**").append(student.code).append("**\n");
                     bw.append("|").append(student.fio).append("\n");
                     Statistics.Information information = scanned.get(student.code.toUpperCase(Locale.ROOT));
