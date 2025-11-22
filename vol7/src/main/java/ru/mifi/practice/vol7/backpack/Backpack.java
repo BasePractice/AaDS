@@ -1,5 +1,7 @@
 package ru.mifi.practice.vol7.backpack;
 
+import lombok.NonNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,6 +12,7 @@ public interface Backpack {
     List<Item> putting(List<Item> items);
 
     record Item(String name, int weight, int needed) {
+        @NonNull
         @Override
         public String toString() {
             return name;
