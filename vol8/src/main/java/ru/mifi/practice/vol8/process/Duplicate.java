@@ -55,6 +55,7 @@ public interface Duplicate {
 
     List<CodeSegment> parse(String fileName) throws XMLStreamException, IOException;
 
+    @SuppressWarnings("PMD.OverrideBothEqualsAndHashCodeOnComparable")
     @EqualsAndHashCode(of = "code")
     final class Student implements Comparable<Student> {
         private final Map<Student, Relation> relations = new HashMap<>();

@@ -1,5 +1,7 @@
 package ru.mifi.practice.voln.logic;
 
+import lombok.NonNull;
+
 public interface Updatable {
     void update(Context context);
 
@@ -19,6 +21,7 @@ public interface Updatable {
     }
 
     record View(Type type, Object element) {
+        @NonNull
         @Override
         public String toString() {
             return "[" + type.toString() + "]" + (element == null ? "" : element.toString());

@@ -76,7 +76,8 @@ public interface Stage2 {
                 if (parent != null) {
                     parent.hasNext = true;
                 }
-                steps[index++] = next;
+                steps[index] = next;
+                ++index;
                 parent = next;
             }
         }

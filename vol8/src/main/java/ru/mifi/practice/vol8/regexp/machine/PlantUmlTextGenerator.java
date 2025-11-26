@@ -12,7 +12,7 @@ public final class PlantUmlTextGenerator extends Visitor.AbstractStringVisitor {
         if (state instanceof State.Sequence sequence) {
             return sequence.last;
         } else if (state instanceof State.Parallel parallel) {
-            return state;
+            return parallel;
         }
         return state.next;
     }

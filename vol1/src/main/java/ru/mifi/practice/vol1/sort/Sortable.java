@@ -106,9 +106,11 @@ public interface Sortable<T extends Comparable<T>> {
 
             for (int i = destLow, p = low, q = mid; i < destHigh; i++) {
                 if (q >= high || p < mid && src[p].compareTo(src[q]) <= 0) {
-                    dest[i] = src[p++];
+                    dest[i] = src[p];
+                    ++p;
                 } else {
-                    dest[i] = src[q++];
+                    dest[i] = src[q];
+                    ++q;
                 }
             }
         }
