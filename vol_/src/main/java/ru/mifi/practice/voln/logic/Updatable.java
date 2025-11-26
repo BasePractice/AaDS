@@ -3,6 +3,10 @@ package ru.mifi.practice.voln.logic;
 public interface Updatable {
     void update(Context context);
 
+    enum Type {
+        ENEMY, EMPTY, ITEM, PLAYER
+    }
+
     interface Context {
 
         void died(Person person);
@@ -19,9 +23,5 @@ public interface Updatable {
         public String toString() {
             return "[" + type.toString() + "]" + (element == null ? "" : element.toString());
         }
-    }
-
-    enum Type {
-        ENEMY, EMPTY, ITEM, PLAYER
     }
 }

@@ -29,7 +29,7 @@ public interface Duplicate {
     int MINIMUM_RELATIONS = 2;
     //    String DIRECTORY = "/Users/pastor/github/algorithms-and-data-structures-2024";
     String FILE_SEPARATOR = FileSystems.getDefault().getSeparator();
-//    String REGEXP_SEPARATOR = "/";
+    //    String REGEXP_SEPARATOR = "/";
     String REGEXP_SEPARATOR = "\\\\";
     String DIRECTORY = "E:\\GitHub\\algorithms-and-data-structures-2024";
     String DIRECTORY_STUDENTS = DIRECTORY + FILE_SEPARATOR + "students" + FILE_SEPARATOR;

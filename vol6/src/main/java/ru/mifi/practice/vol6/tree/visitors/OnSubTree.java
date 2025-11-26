@@ -43,17 +43,17 @@ public final class OnSubTree<T> implements Visitor<T> {
         return stepsOut.get(node);
     }
 
-    @SuppressWarnings("checked")
+    @SuppressWarnings({"checked", "unchecked"})
     public List<Node<T>> times() {
         List<Node<T>> result = new ArrayList<>();
-        Node[] nodes = new Node[stepsIn.size() * 2 + 1];
+        Node<T>[] nodes = new Node[stepsIn.size() * 2 + 1];
         for (var key : stepsIn.keySet()) {
             int in = stepsIn.get(key);
             int out = stepsOut.get(key);
             nodes[in] = key;
             nodes[out] = key;
         }
-        for (Node node : nodes) {
+        for (Node<T> node : nodes) {
             if (node == null) {
                 continue;
             }
@@ -61,7 +61,6 @@ public final class OnSubTree<T> implements Visitor<T> {
         }
         return result;
     }
-
 
     @Override
     public void empty() {

@@ -3,6 +3,7 @@ package ru.mifi.practice.vol3;
 import java.util.List;
 
 import static ru.mifi.practice.vol3.NumberGenerator.MAX_GENERATED_ELEMENT_VALUE;
+import static ru.mifi.practice.vol3.NumberGenerator.generateSlice;
 
 public abstract class MainSort {
     /**
@@ -10,9 +11,9 @@ public abstract class MainSort {
      */
     public static void main(String[] args) {
         final boolean debug = false;
-//        List<Integer> slice = generateSlice(10000);
+        List<Integer> slice = generateSlice(10000);
 //        List<Integer> slice = generateSlice(100);
-        List<Integer> slice = List.of(7, 8, 2, 0, 5, 2, 7, 0);
+//        List<Integer> slice = List.of(7, 8, 2, 0, 5, 2, 7, 0);
         System.out.println("    BAD: " + ((long) slice.size() * slice.size()));
         System.out.println("   MUST: " + Math.round(slice.size() * (Math.log(slice.size()) / Math.log(2))));
         System.out.println("===========");

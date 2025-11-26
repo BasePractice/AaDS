@@ -20,6 +20,7 @@ public final class HippopotamusTest {
     private static final Hippopotamus A = new Hippopotamus(0);
     private static final Hippopotamus B = new Hippopotamus(1);
     private static final Hippopotamus C = new Hippopotamus(2);
+    private HippopotamusMapper mapper;
 
     private static Stream<Arguments> patternMatching() {
         return Stream.of(
@@ -30,8 +31,6 @@ public final class HippopotamusTest {
             Arguments.of(false, List.of(A, B, C), "ab|c")
         );
     }
-
-    private HippopotamusMapper mapper;
 
     @BeforeEach
     void setUp() {

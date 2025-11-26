@@ -42,6 +42,7 @@ public interface HashTable<K, V> {
 
     /**
      * Как можно оптимизировать работу с Entry?
+     *
      * @param <K> - ключ
      * @param <V> - значение
      */
@@ -95,6 +96,7 @@ public interface HashTable<K, V> {
     /**
      * Почему реализация не оптимальна?
      * Как минимум две причины.
+     *
      * @param <K> - ключ
      * @param <V> - значение
      */

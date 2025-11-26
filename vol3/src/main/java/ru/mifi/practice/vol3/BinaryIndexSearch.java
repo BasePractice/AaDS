@@ -4,22 +4,22 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public final class BinaryIndexSearch implements Search<Long, Number> {
-    private final List<Long> array;
+public final class BinaryIndexSearch implements Search<Integer, Number> {
+    private final List<Integer> array;
     private final boolean debug;
 
-    public BinaryIndexSearch(List<Long> array, boolean debug) {
+    public BinaryIndexSearch(List<Integer> array, boolean debug) {
         this.array = array;
         this.debug = debug;
     }
 
-    public Optional<Number> search(Long element, Counter counter) {
-        Range<Long> range = new Range<>(0L, (long) array.size());
+    public Optional<Number> search(Integer element, Counter counter) {
+        Range<Integer> range = new Range<>(0, array.size());
         return search(element, range, index -> array.get(Math.toIntExact(index)), counter);
     }
 
     @Override
-    public Optional<Number> search(Long element, Range<Long> range, Function<Long> function, Counter counter) {
+    public Optional<Number> search(Integer element, Range<Integer> range, Function<Integer> function, Counter counter) {
         var left = range.left;
         var right = range.right;
         while (!Objects.equals(left, right - 1)) {
