@@ -6,15 +6,15 @@ import java.util.Optional;
 
 public interface BinaryTree<T extends Comparable<T>> {
 
+    static <T extends Comparable<T>> Node<T> create(T value) {
+        return new Node<>(value);
+    }
+
     BinaryTree<T> add(T value);
 
     void delete(T value);
 
     Optional<Node<T>> search(T value, Counter counter);
-
-    static <T extends Comparable<T>> Node<T> create(T value) {
-        return new Node<>(value);
-    }
 
     final class Node<T extends Comparable<T>> implements Comparable<Node<T>> {
         T value;

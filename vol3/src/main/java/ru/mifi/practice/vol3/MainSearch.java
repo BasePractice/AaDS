@@ -17,10 +17,10 @@ public abstract class MainSearch {
         System.out.println("RES: " + n);
         System.out.println("OPS: " + counter);
         counter.reset();
-        List<Long> generated = NumberGenerator.generateSlice(1000);
-        generated.sort(Long::compareTo);
+        List<Integer> generated = NumberGenerator.generateSlice(1000);
+        generated.sort(Integer::compareTo);
         var index = new BinaryIndexSearch(generated, debug);
-        n = index.search(10L, counter);
+        n = index.search(10, counter);
         System.out.println("RES: " + n);
         System.out.println("OPS: " + counter);
         counter.reset();

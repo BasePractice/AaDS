@@ -3,7 +3,6 @@ package ru.mifi.practice.vol1.stack;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import ru.mifi.practice.vol1.array.LinkedArray;
 import ru.mifi.practice.vol1.array.StandardArray;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

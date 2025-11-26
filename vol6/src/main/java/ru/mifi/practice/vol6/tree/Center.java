@@ -10,6 +10,7 @@ import java.util.function.Function;
 
 /**
  * Почему реализация не правильная?
+ *
  * @param <T> тип значения в вершине дерева
  */
 public final class Center<T> {

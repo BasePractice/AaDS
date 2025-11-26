@@ -10,6 +10,18 @@ public final class ArrayQueue<T> implements Queue<T> {
         this.array = array;
     }
 
+    public static void main(String[] args) {
+        Queue<Integer> queue = new ArrayQueue<>(new StandardArray<>(100));
+        queue.enqueue(1);
+        queue.enqueue(2);
+        queue.enqueue(3);
+        assert !queue.isEmpty();
+        assert 1 == queue.dequeue();
+        assert 2 == queue.dequeue();
+        assert 3 == queue.dequeue();
+        assert queue.isEmpty();
+    }
+
     @Override
     public void enqueue(T item) {
         array.addLast(item);
@@ -23,17 +35,5 @@ public final class ArrayQueue<T> implements Queue<T> {
     @Override
     public boolean isEmpty() {
         return array.size() == 0;
-    }
-
-    public static void main(String[] args) {
-        Queue<Integer> queue = new ArrayQueue<>(new StandardArray<>(100));
-        queue.enqueue(1);
-        queue.enqueue(2);
-        queue.enqueue(3);
-        assert !queue.isEmpty();
-        assert 1 == queue.dequeue();
-        assert 2 == queue.dequeue();
-        assert 3 == queue.dequeue();
-        assert queue.isEmpty();
     }
 }

@@ -99,8 +99,8 @@ public final class AdventureGame implements Updatable, Updatable.Context {
             return new View(Type.ITEM, item);
         } else if (object instanceof Person.Mob mob) {
             return new View(Type.ENEMY, mob);
-        } else if (object instanceof Person.Player player) {
-            return new View(Type.PLAYER, player);
+        } else if (object instanceof Person.Player p) {
+            return new View(Type.PLAYER, p);
         }
         return new View(Type.EMPTY, null);
     }
@@ -161,7 +161,7 @@ public final class AdventureGame implements Updatable, Updatable.Context {
     public void catchItem() {
         Updatable.View view = playerView();
         if (view.type() == Updatable.Type.ITEM) {
-            player.addInventory((Item)view.element());
+            player.addInventory((Item) view.element());
             gameLine[index + 1] = null;
             forward();
         }
