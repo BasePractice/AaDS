@@ -73,7 +73,7 @@ public final class Tree {
             return result.toString();
         }
     }
-
+    @SuppressWarnings("PMD.OverrideBothEqualsAndHashCodeOnComparable")
     private record Node(char character, int frequency, Node left, Node right) implements Comparable<Node> {
         @Override
         public int compareTo(Node o) {

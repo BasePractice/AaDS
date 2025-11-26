@@ -95,6 +95,7 @@ public interface Stage {
         }
     }
 
+    @SuppressWarnings("AssignmentInOperand")
     final class Generation {
         private final char[] numbers;
         private final Generation parent;
@@ -127,9 +128,15 @@ public interface Stage {
             this.y = y;
             this.z = z;
             this.carrier = carrier;
-            this.gx = this.cx = number(numbers, x, index);
-            this.gy = this.cy = number(numbers, y, index);
-            this.gz = this.cz = number(numbers, z, index);
+            int cxx = number(numbers, x, index);
+            this.gx = cxx;
+            this.cx = cxx;
+            int cyy = number(numbers, y, index);
+            this.cy = cyy;
+            this.gy = cyy;
+            int czz = number(numbers, z, index);
+            this.cz = czz;
+            this.gz = czz;
         }
 
         private static int number(char[] numbers, char[] chars, int index) {
@@ -320,7 +327,8 @@ public interface Stage {
                     sum += 1;
                 }
                 if (sum % 10 == czn && isComplete(x, y, z, cxn, cyn, czn)) {
-                    ix = gx = cxn;
+                    ix = cxn;
+                    gx = cxn;
                     gy = cyn;
                     gz = czn;
                     ++ix;
