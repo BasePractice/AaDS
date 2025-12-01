@@ -7,6 +7,7 @@ import ru.mifi.practice.vol7.fibonacci.Fibonacci;
 import ru.mifi.practice.vol7.subsequence.LongestCommonSubsequence;
 import ru.mifi.practice.vol7.wildcard.Match;
 
+import java.math.BigInteger;
 import java.util.List;
 
 public abstract class Main {
@@ -21,7 +22,7 @@ public abstract class Main {
             new Backpack.Item("Лопата", 1, 3),
             new Backpack.Item("Молот", 10, 1),
             new Backpack.Item("Еда", 3, 3),
-            new Backpack.Item("Пиво", 6, 4)
+            new Backpack.Item("Пиво", 3, 4)
         );
         List<Backpack.Item> putting = backpack.putting(items);
         System.out.println("         Backpack : " + putting);
@@ -29,14 +30,14 @@ public abstract class Main {
         distance("Lev.Dynam", new Levenshtein.VagnerFisherDynamited(), "boobs", "bomb");
         lcs("Sub.Commo", new LongestCommonSubsequence.Default(), "mouse", "house");
         match("Dyn.Regex", new Match.DefaultMatch(), "non? po?", "none pop");
-        match("Dyn.Aggrv", new Match.AbbreviationMatch(), "Algorithm and Data Structure", "ADS");
+        match("Dyn.Abbrv", new Match.AbbreviationMatch(), "Algorithm and Data Structure", "ADS");
     }
 
     private static void fibonacci(String name, Fibonacci fibonacci) {
-        Timed<Long, Void> timed = new Timed.Elapsed<>();
+        Timed<BigInteger, Void> timed = new Timed.Elapsed<>();
         Counter counter = new Counter.Default();
         String prefix = String.format("Fib.%s.", name);
-        long v = timed.timed(prefix + "Time", null, (nothing) -> fibonacci.fibonacci(40, counter));
+        BigInteger v = timed.timed(prefix + "Time", null, (nothing) -> fibonacci.fibonacci(40, counter));
         System.out.println(prefix + "Cnt : " + counter);
         System.out.println(prefix + "Val : " + v);
         counter.reset();
