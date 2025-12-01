@@ -1,5 +1,6 @@
 package ru.mifi.practice.vol8.regexp.machine;
 
+import lombok.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -71,6 +72,7 @@ public final class HippopotamusTest {
             return Objects.hashCode(index);
         }
 
+        @NonNull
         @Override
         public String toString() {
             return "Hippo{" + index + "}";

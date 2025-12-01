@@ -1,4 +1,4 @@
-package ru.mifi.practice.voln.transmit;
+package ru.mifi.practice.voln.games.transmit;
 
 public interface Output {
     void print(String format, Object... args);

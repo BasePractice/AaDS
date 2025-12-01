@@ -1,4 +1,4 @@
-package ru.mifi.practice.voln.logic;
+package ru.mifi.practice.voln.games.logic;
 
 import lombok.Getter;
 

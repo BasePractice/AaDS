@@ -1,7 +1,7 @@
 package ru.mifi.practice.vol6.tree.search;
 
 public final class AVL<T extends Comparable<T>> extends BinaryTree.AbstractBinaryTree<T> {
-    private int height(Node<T> node) {
+    private static <E extends Comparable<E>> int height(Node<E> node) {
         if (node == null) {
             return -1;
         }

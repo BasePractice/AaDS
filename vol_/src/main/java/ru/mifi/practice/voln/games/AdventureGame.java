@@ -1,10 +1,10 @@
-package ru.mifi.practice.voln;
+package ru.mifi.practice.voln.games;
 
 import lombok.Getter;
-import ru.mifi.practice.voln.logic.Item;
-import ru.mifi.practice.voln.logic.Person;
-import ru.mifi.practice.voln.logic.Updatable;
-import ru.mifi.practice.voln.transmit.Output;
+import ru.mifi.practice.voln.games.logic.Item;
+import ru.mifi.practice.voln.games.logic.Person;
+import ru.mifi.practice.voln.games.logic.Updatable;
+import ru.mifi.practice.voln.games.transmit.Output;
 
 import java.util.Arrays;
 import java.util.Date;
