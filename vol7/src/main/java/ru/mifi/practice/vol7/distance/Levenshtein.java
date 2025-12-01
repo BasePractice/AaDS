@@ -4,6 +4,7 @@ import ru.mifi.practice.vol7.Counter;
 
 import java.util.Arrays;
 
+//Расстояние Левенштайна
 public interface Levenshtein extends Distance {
 
     abstract class AbstractLevenshtein implements Levenshtein {
