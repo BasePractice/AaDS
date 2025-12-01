@@ -1,6 +1,6 @@
-package ru.mifi.practice.voln.logic;
+package ru.mifi.practice.voln.games.logic;
 
-import ru.mifi.practice.voln.logic.Updatable.Context;
+import ru.mifi.practice.voln.games.logic.Updatable.Context;
 
 public interface Item {
 

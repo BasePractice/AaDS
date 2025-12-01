@@ -1,4 +1,4 @@
-package ru.mifi.practice.voln.transmit;
+package ru.mifi.practice.voln.games.transmit;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

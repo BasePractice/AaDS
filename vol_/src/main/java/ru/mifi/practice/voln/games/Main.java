@@ -1,9 +1,9 @@
-package ru.mifi.practice.voln;
+package ru.mifi.practice.voln.games;
 
-import ru.mifi.practice.voln.logic.Item;
-import ru.mifi.practice.voln.logic.Person;
-import ru.mifi.practice.voln.logic.Updatable;
-import ru.mifi.practice.voln.transmit.Transmit;
+import ru.mifi.practice.voln.games.logic.Item;
+import ru.mifi.practice.voln.games.logic.Person;
+import ru.mifi.practice.voln.games.logic.Updatable;
+import ru.mifi.practice.voln.games.transmit.Transmit;
 
 import java.util.LinkedList;
 import java.util.List;

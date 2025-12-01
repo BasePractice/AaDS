@@ -5,13 +5,14 @@ import java.util.Map;
 
 public abstract class Main {
     public static void main(String[] args) {
-        String text = "boobs boom";
+        String text = "Она вдруг остановилась с улыбкой насмешки над своею горячностью.";
         Tree.Compressed compressed = Tree.compress(text);
         System.out.println("Original    : " + text);
         System.out.println("Length      : " + text.length());
         System.out.println("Compressed  : " + compressed.text());
         Map<Character, String> codes = new HashMap<>();
         Tree.buildCodes(compressed.tree(), "", codes);
+        System.out.println("Codes count : " + codes.size());
         System.out.println("Codes       : ");
         for (Map.Entry<Character, String> entry : codes.entrySet()) {
             System.out.println("            : " + entry.getKey() + " = " + entry.getValue());

@@ -1,6 +1,7 @@
 package ru.mifi.practice.vol8.process;
 
 import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
@@ -139,6 +140,7 @@ public interface Duplicate {
             return Objects.hashCode(path);
         }
 
+        @NonNull
         @Override
         public String toString() {
             String[] parts = path.split(REGEXP_SEPARATOR);
