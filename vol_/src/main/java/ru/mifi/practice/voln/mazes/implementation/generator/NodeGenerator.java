@@ -1,7 +1,7 @@
-package ru.mifi.practice.voln.maze.implementation.generator;
+package ru.mifi.practice.voln.mazes.implementation.generator;
 
-import ru.mifi.practice.voln.maze.Maze;
-import ru.mifi.practice.voln.maze.implementation.NodeCommon;
+import ru.mifi.practice.voln.mazes.Maze;
+import ru.mifi.practice.voln.mazes.implementation.NodeCommon;
 
 import java.util.Date;
 import java.util.Random;

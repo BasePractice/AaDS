@@ -5,9 +5,22 @@ import ru.mifi.practice.vol8.Machine;
 import java.util.Random;
 
 public final class OTPMachine extends Machine {
+    public static final Key PERSISTENCE_CODE = () -> "persist_code";
+
     public OTPMachine() {
+        super();
+        Context context = getContext();
         context.setCurrentState(OTP.INITIATE);
         context.set(MACHINE_CLASS, OTPMachine.class);
+        context.set(MACHINE_HANDLER, new OTPHandler());
+    }
+
+    @SuppressWarnings("unused")
+    public OTPMachine(Context context) {
+        super(context);
+        context.setCurrentState(OTP.INITIATE);
+        context.set(MACHINE_CLASS, OTPMachine.class);
+        context.set(MACHINE_HANDLER, new OTPHandler());
     }
 
     static final class OTPHandler implements Handler {
@@ -23,6 +36,7 @@ public final class OTPMachine extends Machine {
         @Override
         public boolean sendNextCode(Context context) {
             code = String.valueOf(new Random().nextInt(9999) + 1000);
+            context.set(PERSISTENCE_CODE, code);
             debugf("[%15s] %s%n", "Код", code);
             return true;
         }
@@ -35,10 +49,6 @@ public final class OTPMachine extends Machine {
         @Override
         public void persist(Context context) {
             this.context = context.copy();
-        }
-
-        String getCode() {
-            return code;
         }
     }
 }

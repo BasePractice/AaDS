@@ -1,5 +1,7 @@
 package ru.mifi.practice.vol8;
 
+import lombok.Getter;
+
 import java.lang.reflect.Constructor;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -8,9 +10,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
+@Getter
 public abstract class Machine {
     public static final Key MACHINE_CLASS = () -> "machine_class";
-    protected final Context context;
+    public static final Key MACHINE_HANDLER = () -> "machine_handler";
+    private final Context context;
 
     protected Machine() {
         this(new Context.Standard());
@@ -31,6 +35,10 @@ public abstract class Machine {
         } catch (Exception ex) {
             return new Standard(context);
         }
+    }
+
+    public State execute() {
+        return execute(context.get(MACHINE_HANDLER, Handler.class).orElseThrow());
     }
 
     public State execute(Handler handler) {

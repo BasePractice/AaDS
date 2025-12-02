@@ -1,15 +1,15 @@
-package ru.mifi.practice.voln.maze;
+package ru.mifi.practice.voln.mazes;
 
-import ru.mifi.practice.voln.maze.implementation.ImageRepresentation;
-import ru.mifi.practice.voln.maze.implementation.finder.NodeFinder;
-import ru.mifi.practice.voln.maze.implementation.generator.NodeGenerator;
+import ru.mifi.practice.voln.mazes.implementation.ImageRepresentation;
+import ru.mifi.practice.voln.mazes.implementation.finder.NodeFinder;
+import ru.mifi.practice.voln.mazes.implementation.generator.NodeGenerator;
 
 public abstract class Main {
     public static void main(String[] args) {
         Maze.Generator generator = new NodeGenerator();
-        Maze.Finder finder = new NodeFinder();
         Maze.Representation representation = new ImageRepresentation();
-        for (int i = 0; i < 9; i++) {
+        Maze.Finder finder = new NodeFinder();
+        for (int i = 0; i < 1; i++) {
             generate(generator, finder, representation, 10, 10, "N" + i);
         }
     }

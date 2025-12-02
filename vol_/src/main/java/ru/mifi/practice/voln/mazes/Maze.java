@@ -1,5 +1,6 @@
-package ru.mifi.practice.voln.maze;
+package ru.mifi.practice.voln.mazes;
 
+import java.awt.Color;
 import java.util.Objects;
 
 @SuppressWarnings("PMD.ConstantsInInterface")
@@ -24,9 +25,10 @@ public interface Maze {
         String serialize(Grid grid);
     }
 
-    @FunctionalInterface
     interface Representation {
         void representation(String name, Grid grid, Point[] path);
+
+        void snapshot(int index, Grid grid, Point[] points, Color color);
     }
 
     record Grid(int cols, int rows, char[][] data) {
