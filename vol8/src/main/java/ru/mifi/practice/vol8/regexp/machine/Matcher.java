@@ -23,17 +23,17 @@ public interface Matcher {
             this.state = generator.getState();
         }
 
-        @Override
-        public boolean match(Input input) {
-            State.Match match = match(state, input);
-            return match.ok() && match.isCompleted();
-        }
-
         private static State.Match match(State state, Input input) {
             if (state.accept(input)) {
                 return state.match(input);
             }
             return new State.Match(false, input.copy());
+        }
+
+        @Override
+        public boolean match(Input input) {
+            State.Match match = match(state, input);
+            return match.ok() && match.isCompleted();
         }
     }
 }

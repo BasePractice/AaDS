@@ -6,7 +6,8 @@ import java.util.function.Consumer;
 
 public abstract class Main {
     public static void main(String[] args) {
-        Consumer<BinaryTree<Integer>> generator = tree -> tree.add(8).add(3).add(6).add(1).add(4).add(7).add(10).add(14).add(13);
+        Consumer<BinaryTree<Integer>> generator = tree -> tree.add(8).add(3).add(6).add(1).add(4)
+            .add(7).add(10).add(14).add(13);
         test("Binary", new BinarySearchTree<>(), generator);
         test("AVL", new AVL<>(), generator);
         System.out.println("Вырожденное дерево");

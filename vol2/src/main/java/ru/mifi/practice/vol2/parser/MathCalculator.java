@@ -4,6 +4,7 @@ import java.util.Optional;
 
 /**
  * Может ли разборщик обработать все правильные математические выражения?
+ *
  * @link <a href="https://github.com/BasePractice/c_fsm/tree/master/math_lang">Реализация на Си</a>
  */
 public interface MathCalculator {

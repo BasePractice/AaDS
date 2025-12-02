@@ -1,5 +1,6 @@
 package ru.mifi.practice.vol8.regexp.machine;
 
+import lombok.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -20,6 +21,7 @@ public final class HippopotamusTest {
     private static final Hippopotamus A = new Hippopotamus(0);
     private static final Hippopotamus B = new Hippopotamus(1);
     private static final Hippopotamus C = new Hippopotamus(2);
+    private HippopotamusMapper mapper;
 
     private static Stream<Arguments> patternMatching() {
         return Stream.of(
@@ -30,8 +32,6 @@ public final class HippopotamusTest {
             Arguments.of(false, List.of(A, B, C), "ab|c")
         );
     }
-
-    private HippopotamusMapper mapper;
 
     @BeforeEach
     void setUp() {
@@ -72,6 +72,7 @@ public final class HippopotamusTest {
             return Objects.hashCode(index);
         }
 
+        @NonNull
         @Override
         public String toString() {
             return "Hippo{" + index + "}";
