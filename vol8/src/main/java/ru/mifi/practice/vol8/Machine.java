@@ -1,7 +1,5 @@
 package ru.mifi.practice.vol8;
 
-import lombok.Getter;
-
 import java.lang.reflect.Constructor;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -10,7 +8,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
-@Getter
 public abstract class Machine {
     public static final Key MACHINE_CLASS = () -> "machine_class";
     public static final Key MACHINE_HANDLER = () -> "machine_handler";
@@ -22,6 +19,10 @@ public abstract class Machine {
 
     protected Machine(Context context) {
         this.context = context;
+    }
+
+    public Context getContext() {
+        return context;
     }
 
     @SuppressWarnings("PMD.AvoidAccessibilityAlteration")

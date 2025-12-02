@@ -1,6 +1,5 @@
 package ru.mifi.practice.voln.mazes.implementation;
 
-import lombok.SneakyThrows;
 import ru.mifi.practice.voln.mazes.Maze;
 
 import javax.imageio.ImageIO;
@@ -11,6 +10,7 @@ import java.awt.RenderingHints;
 import java.awt.Stroke;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 
 import static java.awt.Color.BLUE;
 import static java.awt.Color.DARK_GRAY;
@@ -53,8 +53,8 @@ public record ImageRepresentation(int width,
         for (int row = 0; row < maze.rows(); ++row) {
             for (int col = 0; col < maze.cols(); ++col) {
                 int halfWidth = width / 2;
-                int xCenter = (row * width) + halfWidth;
-                int yCenter = (col * width) + halfWidth;
+                int xCenter = (col * width) + halfWidth;
+                int yCenter = (row * width) + halfWidth;
 
                 g.setColor(Color.RED);
                 drawCenteredCircle(g, xCenter, yCenter, thickness);
@@ -120,19 +120,25 @@ public record ImageRepresentation(int width,
         return result;
     }
 
-    @SneakyThrows
     @Override
     public void representation(String name, Maze.Grid grid, Maze.Point[] path) {
         BufferedImage image = createImage(grid, path);
         File output = new File(String.format("%03dx%03d-%s.png", grid.rows(), grid.cols(), name));
-        ImageIO.write(image, "PNG", output);
+        try {
+            ImageIO.write(image, "PNG", output);
+        } catch (IOException ex) {
+            throw new IllegalStateException("Failed to write representation image to file: " + output, ex);
+        }
     }
 
-    @SneakyThrows
     @Override
     public void snapshot(int index, Maze.Grid grid, Maze.Point[] points, Color color) {
         BufferedImage image = createSnapshot(grid, points, color);
         File output = new File(String.format("%03dx%03d-snapshot-%04d.png", grid.rows(), grid.cols(), index));
-        ImageIO.write(image, "PNG", output);
+        try {
+            ImageIO.write(image, "PNG", output);
+        } catch (IOException ex) {
+            throw new IllegalStateException("Failed to write snapshot image to file: " + output, ex);
+        }
     }
 }
