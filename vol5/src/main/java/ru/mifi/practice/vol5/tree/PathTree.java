@@ -7,15 +7,15 @@ import java.util.Optional;
 
 public interface PathTree<K, V> {
 
-    void add(K[] key, V value);
-
-    Optional<V> match(K[] key);
-
     static <V> PathTree<String, V> create() {
         String skipElement = "{}";
         return new SearchTree<>(
             element -> element.startsWith("{") && element.endsWith("}") ? skipElement : element, skipElement);
     }
+
+    void add(K[] key, V value);
+
+    Optional<V> match(K[] key);
 
     @FunctionalInterface
     interface Transformer<K> {
@@ -91,9 +91,9 @@ public interface PathTree<K, V> {
 
     final class Node<K, V> {
         private final K key;
-        private V value;
         private final Node<K, V> parent;
         private final Map<K, Node<K, V>> nodes;
+        private V value;
 
         private Node(Node<K, V> parent, K key) {
             this.key = key;

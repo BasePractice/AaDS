@@ -40,6 +40,13 @@ public interface Heap<T extends Comparable<T>> {
             return position * 2 + 1;
         }
 
+        private static Object nullable(Object value) {
+            if (value == null) {
+                return "-";
+            }
+            return value;
+        }
+
         private boolean isLeaf(int position) {
             return position >= size / 2 && position <= size;
         }
@@ -130,13 +137,6 @@ public interface Heap<T extends Comparable<T>> {
                 return -1;
             }
             return ((T) left).compareTo((T) right);
-        }
-
-        private static Object nullable(Object value) {
-            if (value == null) {
-                return "-";
-            }
-            return value;
         }
 
         @Override

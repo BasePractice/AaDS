@@ -12,6 +12,14 @@ public abstract class Machine {
     protected static final Key MACHINE_CLASS = () -> "machine_class";
     protected final Context context;
 
+    protected Machine() {
+        this(new Context.Standard());
+    }
+
+    protected Machine(Context context) {
+        this.context = context;
+    }
+
     @SuppressWarnings("PMD.AvoidAccessibilityAlteration")
     public static Machine of(Context context) {
         try {
@@ -23,14 +31,6 @@ public abstract class Machine {
         } catch (Exception ex) {
             return new Standard(context);
         }
-    }
-
-    protected Machine() {
-        this(new Context.Standard());
-    }
-
-    protected Machine(Context context) {
-        this.context = context;
     }
 
     public State execute(Handler handler) {

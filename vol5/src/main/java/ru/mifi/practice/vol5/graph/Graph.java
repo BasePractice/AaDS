@@ -116,31 +116,8 @@ public interface Graph<T, W extends Number & Comparable<W>> {
 
         String id();
 
-        final class Default<T, W extends Number & Comparable<W>> implements Edge<T, W> {
-            private final Vertex<T, W> source;
-            private final Vertex<T, W> target;
-            private final W weight;
-
-            Default(Vertex<T, W> source, Vertex<T, W> target, W weight) {
-                this.source = source;
-                this.target = target;
-                this.weight = weight;
-            }
-
-            @Override
-            public Vertex<T, W> source() {
-                return source;
-            }
-
-            @Override
-            public Vertex<T, W> target() {
-                return target;
-            }
-
-            @Override
-            public W weight() {
-                return weight;
-            }
+        record Default<T, W extends Number & Comparable<W>>(Vertex<T, W> source, Vertex<T, W> target,
+                                                            W weight) implements Edge<T, W> {
 
             @Override
             public String id() {

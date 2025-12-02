@@ -1,6 +1,7 @@
 package ru.mifi.practice.vol8.process;
 
 import lombok.EqualsAndHashCode;
+import lombok.NonNull;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
@@ -29,7 +30,7 @@ public interface Duplicate {
     int MINIMUM_RELATIONS = 2;
     //    String DIRECTORY = "/Users/pastor/github/algorithms-and-data-structures-2024";
     String FILE_SEPARATOR = FileSystems.getDefault().getSeparator();
-//    String REGEXP_SEPARATOR = "/";
+    //    String REGEXP_SEPARATOR = "/";
     String REGEXP_SEPARATOR = "\\\\";
     String DIRECTORY = "E:\\GitHub\\algorithms-and-data-structures-2024";
     String DIRECTORY_STUDENTS = DIRECTORY + FILE_SEPARATOR + "students" + FILE_SEPARATOR;
@@ -139,6 +140,7 @@ public interface Duplicate {
             return Objects.hashCode(path);
         }
 
+        @NonNull
         @Override
         public String toString() {
             String[] parts = path.split(REGEXP_SEPARATOR);

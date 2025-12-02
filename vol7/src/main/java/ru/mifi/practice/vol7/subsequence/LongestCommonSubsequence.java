@@ -2,6 +2,7 @@ package ru.mifi.practice.vol7.subsequence;
 
 import ru.mifi.practice.vol7.Counter;
 
+//Наибольшая общая подпоследовательность
 public interface LongestCommonSubsequence {
     int longestCommonSubsequence(String text1, String text2, Counter counter);
 

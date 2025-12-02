@@ -173,10 +173,6 @@ public interface Stage {
             return false;
         }
 
-        public boolean isComplete() {
-            return !hasLetter(transmute(x)) && !hasLetter(transmute(y)) && !hasLetter(transmute(z));
-        }
-
         private static boolean isComplete(char x, char y, char z, int cx, int cy, int cz) {
             if (cx == cy && x != y) {
                 return false;
@@ -190,6 +186,10 @@ public interface Stage {
                 return false;
             }
             return true;
+        }
+
+        public boolean isComplete() {
+            return !hasLetter(transmute(x)) && !hasLetter(transmute(y)) && !hasLetter(transmute(z));
         }
 
         private String transmute(char[] chars) {
