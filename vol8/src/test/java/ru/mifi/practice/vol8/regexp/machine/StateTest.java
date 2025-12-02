@@ -12,10 +12,10 @@ class StateTest {
     void manager() {
         Manager manager = new Manager.Default();
         var symbol = manager.newState(State.Symbol.class, 'p');
-        assertEquals("(p)", symbol.toString());
+        assertEquals("p", symbol.toString());
         var sequence = manager.newState(State.Sequence.class);
         assertEquals("", sequence.toString());
         var parallel = manager.newState(State.Parallel.class);
-        assertEquals("", parallel.toString());
+        assertEquals("[]", parallel.toString());
     }
 }
