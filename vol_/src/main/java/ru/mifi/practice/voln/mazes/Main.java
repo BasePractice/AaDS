@@ -9,8 +9,8 @@ public abstract class Main {
         Maze.Generator generator = new NodeGenerator();
         Maze.Representation representation = new ImageRepresentation();
         Maze.Finder finder = new NodeFinder();
-        for (int i = 0; i < 1; i++) {
-            generate(generator, finder, representation, 10, 10, "N" + i);
+        for (int i = 0; i < 10; i++) {
+            generate(generator, finder, representation, 20, 20, "N" + i);
         }
     }
 

@@ -3,51 +3,90 @@ package ru.mifi.practice.voln.mazes.implementation.generator;
 import ru.mifi.practice.voln.mazes.Maze;
 import ru.mifi.practice.voln.mazes.implementation.NodeCommon;
 
-import java.util.Date;
-import java.util.Random;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
+/**
+ * Depth-first (iterative backtracker) maze generator.
+ * Produces a perfect maze with a single unique path between any two cells.
+ */
 public final class NodeGenerator extends NodeCommon implements Maze.Generator {
-    private final Random random = new Random(new Date().getTime());
 
     @Override
     public Maze.Grid generate(int rows, int cols) {
         Node[][] nodes = new Node[rows][cols];
-        for (int j = 0; j < cols; j++) {
-            for (int i = 0; i < rows; i++) {
-                Node nc = new Node(i, j);
-                if (j == 0) {
-                    nc.right = false;
-                    nc.left = false;
-                    nc.up = true;
-                } else {
-                    nc.up = true;
-                    nc.down = true;
-                    nc.right = true;
-                    if (random.nextBoolean() || i == 0) {
-                        nc.up = false;
-                        nc.left = true;
-                        nodes[i][j - 1].down = false;
-                    } else {
-                        nc.left = false;
-                        nodes[i - 1][j].right = false;
-                    }
-                }
-
-                if (j == rows - 1) {
-                    nc.down = true;
-                }
-
-                if (i == cols - 1) {
-                    nc.right = true;
-                }
-                nodes[i][j] = nc;
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
+                Node n = new Node(c, r);
+                n.up = true;
+                n.down = true;
+                n.left = true;
+                n.right = true;
+                nodes[r][c] = n;
             }
         }
 
-        Maze.Grid grid = new Maze.Grid(rows, cols);
-        for (int x = 0; x < rows; x++) {
-            for (int y = 0; y < cols; y++) {
-                grid.set(x, y, nodes[x][y].value());
+        boolean[][] visited = new boolean[rows][cols];
+        Deque<int[]> stack = new ArrayDeque<>();
+        visited[0][0] = true;
+        stack.push(new int[]{0, 0});
+
+        while (!stack.isEmpty()) {
+            int[] cur = stack.peek();
+            int r = cur[0];
+            int c = cur[1];
+
+            // collect unvisited neighbors
+            List<int[]> neighbors = new ArrayList<>(4);
+            if (r > 0 && !visited[r - 1][c]) {
+                neighbors.add(new int[]{r - 1, c});
+            }
+            if (r + 1 < rows && !visited[r + 1][c]) {
+                neighbors.add(new int[]{r + 1, c});
+            }
+            if (c > 0 && !visited[r][c - 1]) {
+                neighbors.add(new int[]{r, c - 1});
+            }
+            if (c + 1 < cols && !visited[r][c + 1]) {
+                neighbors.add(new int[]{r, c + 1});
+            }
+
+            if (neighbors.isEmpty()) {
+                stack.pop();
+                continue;
+            }
+
+            int idx = ThreadLocalRandom.current().nextInt(neighbors.size());
+            int[] nxt = neighbors.get(idx);
+            int nr = nxt[0];
+            int nc = nxt[1];
+
+            // carve passage between (r,c) and (nr,nc)
+            if (nr == r - 1) { // up
+                nodes[r][c].up = false;
+                nodes[nr][nc].down = false;
+            } else if (nr == r + 1) { // down
+                nodes[r][c].down = false;
+                nodes[nr][nc].up = false;
+            } else if (nc == c - 1) { // left
+                nodes[r][c].left = false;
+                nodes[nr][nc].right = false;
+            } else if (nc == c + 1) { // right
+                nodes[r][c].right = false;
+                nodes[nr][nc].left = false;
+            }
+
+            visited[nr][nc] = true;
+            stack.push(new int[]{nr, nc});
+        }
+
+        Maze.Grid grid = new Maze.Grid(cols, rows);
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
+                grid.set(r, c, nodes[r][c].value());
             }
         }
         return grid;

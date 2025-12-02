@@ -4,11 +4,12 @@ import ru.mifi.practice.voln.mazes.Maze;
 import ru.mifi.practice.voln.mazes.implementation.NodeCommon;
 
 import java.awt.Color;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Deque;
 import java.util.List;
-import java.util.Set;
 
+//BFS
 public final class NodeFinder extends NodeCommon implements Maze.Finder {
     private final Maze.Representation repr;
 
@@ -20,63 +21,102 @@ public final class NodeFinder extends NodeCommon implements Maze.Finder {
         this(null);
     }
 
-    private static Node getNearest(List<Node> neighbors) {
-        neighbors.sort((o1, o2) -> {
-            Integer d1 = o1.distance;
-            Integer d2 = o2.distance;
-            return d1.compareTo(d2);
-        });
-        for (Node node : neighbors) {
-            if (node.distance != -1) {
-                return node;
-            }
-        }
-        return null;
-    }
-
     @Override
     public Maze.Point[] findPath(Maze.Grid maze) {
-        Node[][] nodes = new Node[maze.rows()][maze.cols()];
-        Set<Node> nodeSet = new HashSet<>();
-        for (int y = 0; y < maze.rows(); y++) {
-            for (int x = 0; x < maze.cols(); x++) {
-                Node node = new Node(x, y, maze.data(x, y));
-                nodes[x][y] = node;
-                nodeSet.add(node);
+        final int rows = maze.rows();
+        final int cols = maze.cols();
+
+        int[][] dist = new int[rows][cols];
+        for (int r = 0; r < rows; r++) {
+            for (int c = 0; c < cols; c++) {
+                dist[r][c] = -1;
+            }
+        }
+        int[][] pr = new int[rows][cols];
+        int[][] pc = new int[rows][cols];
+
+        final Deque<int[]> q = new ArrayDeque<>();
+        dist[0][0] = 0;
+        pr[0][0] = -1;
+        pc[0][0] = -1;
+        q.add(new int[]{0, 0}); // (row, col)
+
+        int snapshotIndex = 0;
+        List<Maze.Point> discoveredPoints = repr != null ? new ArrayList<>() : null;
+
+        while (!q.isEmpty()) {
+            int[] cur = q.poll();
+            int r = cur[0];
+            int c = cur[1];
+            if (r == rows - 1 && c == cols - 1) {
+                break;
+            }
+
+            char data = maze.data(r, c);
+            // Up
+            if (r > 0 && (data & Maze.SQUARE_UP) == 0 && (maze.data(r - 1, c) & Maze.SQUARE_DOWN) == 0 && dist[r - 1][c] == -1) {
+                dist[r - 1][c] = dist[r][c] + 1;
+                pr[r - 1][c] = r;
+                pc[r - 1][c] = c;
+                q.add(new int[]{r - 1, c});
+                if (repr != null) {
+                    discoveredPoints.add(new Maze.Point(c, r - 1));
+                    repr.snapshot(snapshotIndex, maze, discoveredPoints.toArray(new Maze.Point[0]), Color.ORANGE);
+                    snapshotIndex++;
+                }
+            }
+            // Down
+            if (r + 1 < rows && (data & Maze.SQUARE_DOWN) == 0 && (maze.data(r + 1, c) & Maze.SQUARE_UP) == 0 && dist[r + 1][c] == -1) {
+                dist[r + 1][c] = dist[r][c] + 1;
+                pr[r + 1][c] = r;
+                pc[r + 1][c] = c;
+                q.add(new int[]{r + 1, c});
+                if (repr != null) {
+                    discoveredPoints.add(new Maze.Point(c, r + 1));
+                    repr.snapshot(snapshotIndex, maze, discoveredPoints.toArray(new Maze.Point[0]), Color.ORANGE);
+                    snapshotIndex++;
+                }
+            }
+            // Left
+            if (c > 0 && (data & Maze.SQUARE_LEFT) == 0 && (maze.data(r, c - 1) & Maze.SQUARE_RIGHT) == 0 && dist[r][c - 1] == -1) {
+                dist[r][c - 1] = dist[r][c] + 1;
+                pr[r][c - 1] = r;
+                pc[r][c - 1] = c;
+                q.add(new int[]{r, c - 1});
+                if (repr != null) {
+                    discoveredPoints.add(new Maze.Point(c - 1, r));
+                    repr.snapshot(snapshotIndex, maze, discoveredPoints.toArray(new Maze.Point[0]), Color.ORANGE);
+                    snapshotIndex++;
+                }
+            }
+            // Right
+            if (c + 1 < cols && (data & Maze.SQUARE_RIGHT) == 0 && (maze.data(r, c + 1) & Maze.SQUARE_LEFT) == 0 && dist[r][c + 1] == -1) {
+                dist[r][c + 1] = dist[r][c] + 1;
+                pr[r][c + 1] = r;
+                pc[r][c + 1] = c;
+                q.add(new int[]{r, c + 1});
+                if (repr != null) {
+                    discoveredPoints.add(new Maze.Point(c + 1, r));
+                    repr.snapshot(snapshotIndex, maze, discoveredPoints.toArray(new Maze.Point[0]), Color.ORANGE);
+                    snapshotIndex++;
+                }
             }
         }
 
-        Node start = nodes[0][0];
-        start.distance = 0;
-        Node finish = nodes[maze.rows() - 1][maze.cols() - 1];
-        int wave = 0;
-        int index = 0;
-        List<Maze.Point> points = new ArrayList<>();
-        do {
-            for (Node node : nodeSet) {
-                if (node.distance == wave) {
-                    List<Node> neighbors = node.neighbors(nodeSet);
-                    for (Node neighbor : neighbors) {
-                        if (neighbor.distance == -1) {
-                            points.add(new Maze.Point(neighbor.x, neighbor.y));
-                            neighbor.distance = wave + 1;
-                            if (repr != null) {
-                                repr.snapshot(index, maze, points.toArray(new Maze.Point[0]), Color.ORANGE);
-                                ++index;
-                            }
-                        }
-                    }
-                }
-            }
-            wave++;
-        } while (finish.distance == -1);
-        List<Node> path = new ArrayList<>();
-        path.add(finish);
-        Node node = finish;
-        while (!path.contains(start) && node != null) {
-            node = getNearest(node.neighbors(nodeSet));
-            path.add(node);
+        // reconstruct path
+        List<Maze.Point> path = new ArrayList<>();
+        int r = rows - 1;
+        int c = cols - 1;
+        if (dist[r][c] == -1) {
+            return new Maze.Point[0]; // no path
         }
-        return path.stream().map(p -> new Maze.Point(p.x, p.y)).toArray(Maze.Point[]::new);
+        while (r != -1 && c != -1) {
+            path.add(0, new Maze.Point(c, r)); // prepend
+            int tr = pr[r][c];
+            int tc = pc[r][c];
+            r = tr;
+            c = tc;
+        }
+        return path.toArray(new Maze.Point[0]);
     }
 }
