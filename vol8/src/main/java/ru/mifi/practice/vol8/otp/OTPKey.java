@@ -59,7 +59,7 @@ public enum OTPKey implements Machine.Key {
     }
 
     public void setTimeSecond(Context context, OTPKey seconds) {
-        context.set(this, LocalDateTime.now().plusSeconds(seconds.get(context).map(v -> ((Number) v).longValue()).orElse(0L)));
+        context.set(this, LocalDateTime.now().plusSeconds(seconds.get(context).map(v -> ((Number) v).longValue()).orElse(3200L)));
     }
 
     public boolean isExpired(Context context) {

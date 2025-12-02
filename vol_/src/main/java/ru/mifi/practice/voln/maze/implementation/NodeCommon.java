@@ -9,8 +9,8 @@ import java.util.stream.Collectors;
 @SuppressWarnings("PMD.AbstractClassWithoutAnyMethod")
 public abstract class NodeCommon {
     protected static final class Node {
-        public final int row;
-        public final int col;
+        public final int x;
+        public final int y;
 
         public boolean up;
         public boolean down;
@@ -18,14 +18,14 @@ public abstract class NodeCommon {
         public boolean right;
         public int distance = -1;
 
-        public Node(int row, int col) {
-            this.row = row;
-            this.col = col;
+        public Node(int x, int y) {
+            this.x = x;
+            this.y = y;
         }
 
-        public Node(int row, int col, char c) {
-            this.row = row;
-            this.col = col;
+        public Node(int x, int y, char c) {
+            this.x = x;
+            this.y = y;
             if ((c & Maze.SQUARE_LEFT) == Maze.SQUARE_LEFT) {
                 this.left = true;
             }
@@ -58,14 +58,14 @@ public abstract class NodeCommon {
         }
 
         private boolean isNeighbor(Node node) {
-            return Math.abs(this.row - node.row) + Math.abs(this.col - node.col) == 1;
+            return Math.abs(this.x - node.x) + Math.abs(this.y - node.y) == 1;
         }
 
         private boolean canMoveTo(Node to) {
             if (this.isNeighbor(to)) {
-                switch (this.row - to.row) {
+                switch (this.x - to.x) {
                     case 0: {
-                        switch (this.col - to.col) {
+                        switch (this.y - to.y) {
                             case 1: {
                                 if (!this.up && !to.down) {
                                     return true;

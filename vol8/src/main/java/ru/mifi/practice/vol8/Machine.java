@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Optional;
 
 public abstract class Machine {
-    protected static final Key MACHINE_CLASS = () -> "machine_class";
+    public static final Key MACHINE_CLASS = () -> "machine_class";
     protected final Context context;
 
     protected Machine() {
@@ -42,12 +42,12 @@ public abstract class Machine {
         if (state == null) {
             throw new IllegalStateException("No state available");
         }
-        handler.debugf("[%10s] start%n", state);
+        handler.debugf("[%15s] start%n", state);
         State next = state.next(context, handler);
-        handler.debugf("[%10s] next%n", next);
+        handler.debugf("[%15s] next%n", next);
         while (!next.isTerminated()) {
             next = next.next(context, handler);
-            handler.debugf("[%10s] next%n", next);
+            handler.debugf("[%15s] next%n", next);
         }
         next.handle(handler);
         context.setCurrentState(next);
@@ -90,6 +90,8 @@ public abstract class Machine {
         <T> void set(Key key, T value);
 
         <T> Optional<T> get(Key key, Class<T> valueClass);
+
+        Context copy();
 
         final class Standard implements Context {
             private static final DateTimeFormatter DATE_TIME_FORMATTER =
@@ -146,6 +148,13 @@ public abstract class Machine {
                     }
                     return null;
                 }));
+            }
+
+            @Override
+            public Context copy() {
+                Standard standard = new Standard();
+                standard.values.putAll(values);
+                return standard;
             }
         }
     }

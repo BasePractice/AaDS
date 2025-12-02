@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Set;
 
 public final class NodeFinder extends NodeCommon implements Maze.Finder {
-    private static Node getClosed(List<Node> neighbors) {
+    private static Node getNearest(List<Node> neighbors) {
         neighbors.sort((o1, o2) -> {
             Integer d1 = o1.distance;
             Integer d2 = o2.distance;
@@ -57,16 +57,9 @@ public final class NodeFinder extends NodeCommon implements Maze.Finder {
         Node node = finish;
         while (!path.contains(start)) {
             assert node != null;
-            node = getClosed(node.neighbors(nodeSet));
+            node = getNearest(node.neighbors(nodeSet));
             path.add(node);
         }
-
-        Maze.Point[] pathPoints = new Maze.Point[path.size()];
-        for (int i = 0; i < pathPoints.length; i++) {
-            pathPoints[i] = new Maze.Point(path.get(i).row, path.get(i).col);
-        }
-
-        return pathPoints;
-
+        return path.stream().map(p -> new Maze.Point(p.x, p.y)).toArray(Maze.Point[]::new);
     }
 }
