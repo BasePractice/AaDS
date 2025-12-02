@@ -146,7 +146,7 @@ public enum OTP implements State {
 
     @Override
     public void handle(Handler handler) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        //Nothing
     }
 
     @Override

@@ -10,18 +10,20 @@ public final class OTPMachine extends Machine {
         context.set(MACHINE_CLASS, OTPMachine.class);
     }
 
-    private static final class OTPHandler implements Handler {
+    static final class OTPHandler implements Handler {
         private String code;
+        @SuppressWarnings({"unused", "PMD.UnusedPrivateField"})
+        private Context context;
 
         @Override
         public void printf(String format, Object... args) {
-            System.out.printf(format + "%n", args);
+            System.out.printf(format, args);
         }
 
         @Override
         public boolean sendNextCode(Context context) {
             code = String.valueOf(new Random().nextInt(9999) + 1000);
-            debugf("code: %s", code);
+            debugf("[%15s] %s%n", "Код", code);
             return true;
         }
 
@@ -32,7 +34,11 @@ public final class OTPMachine extends Machine {
 
         @Override
         public void persist(Context context) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            this.context = context.copy();
+        }
+
+        String getCode() {
+            return code;
         }
     }
 }

@@ -50,7 +50,6 @@ public final class NodeGenerator extends NodeCommon implements Maze.Generator {
                 grid.set(x, y, nodes[x][y].value());
             }
         }
-
         return grid;
     }
 }
