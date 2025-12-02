@@ -2,22 +2,20 @@ package ru.mifi.practice.vol8.otp;
 
 import ru.mifi.practice.vol8.Machine;
 
-import static ru.mifi.practice.vol8.Machine.MACHINE_CLASS;
 import static ru.mifi.practice.vol8.otp.OTPKey.CODE;
+import static ru.mifi.practice.vol8.otp.OTPMachine.PERSISTENCE_CODE;
 
 public abstract class Main {
     public static void main(String[] args) {
-        Machine.Context context = new Machine.Context.Standard();
-        context.setCurrentState(OTP.INITIATE);
-        context.set(MACHINE_CLASS, OTPMachine.class);
-        Machine machine = Machine.of(context);
-        OTPMachine.OTPHandler handler = new OTPMachine.OTPHandler();
-        Machine.State state = machine.execute(handler);
-        System.out.println(state);
+        Machine machine = new OTPMachine();
+        Machine.Context context = machine.getContext();
+        Machine.State state = machine.execute();
         if (state.equals(OTP.WAS_SENT)) {
-            context.set(CODE, handler.getCode());
+            context.set(CODE, context.get(PERSISTENCE_CODE, String.class).orElseThrow());
         }
-        state = machine.execute(handler);
-        System.out.println(state);
+        state = machine.execute();
+        if (!state.equals(OTP.VERIFIED)) {
+            throw new IllegalStateException();
+        }
     }
 }

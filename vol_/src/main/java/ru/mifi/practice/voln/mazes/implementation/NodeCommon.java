@@ -1,6 +1,6 @@
-package ru.mifi.practice.voln.maze.implementation;
+package ru.mifi.practice.voln.mazes.implementation;
 
-import ru.mifi.practice.voln.maze.Maze;
+import ru.mifi.practice.voln.mazes.Maze;
 
 import java.util.List;
 import java.util.Set;

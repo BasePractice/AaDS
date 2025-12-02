@@ -1,7 +1,7 @@
-package ru.mifi.practice.voln.maze.implementation;
+package ru.mifi.practice.voln.mazes.implementation;
 
 import lombok.SneakyThrows;
-import ru.mifi.practice.voln.maze.Maze;
+import ru.mifi.practice.voln.mazes.Maze;
 
 import javax.imageio.ImageIO;
 import java.awt.BasicStroke;
@@ -97,6 +97,29 @@ public record ImageRepresentation(int width,
         return result;
     }
 
+    private BufferedImage createSnapshot(Maze.Grid maze, Maze.Point[] points, Color color) {
+        BufferedImage result = new BufferedImage(maze.cols() * width + width, maze.rows() * width + width, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = result.createGraphics();
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
+        g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        drawMaze(g, maze, lineColor, width, thickness);
+        final Stroke lastStroke = g.getStroke();
+        g.setStroke(new BasicStroke(thickness));
+        final Color lastColor = g.getColor();
+        g.setColor(color);
+        for (Maze.Point p : points) {
+            int halfWidth = width / 2;
+            int xCenter = (p.x() * width) + halfWidth;
+            int yCenter = (p.y() * width) + halfWidth;
+            drawCenteredCircle(g, xCenter, yCenter, thickness);
+        }
+        g.setStroke(lastStroke);
+        g.setColor(lastColor);
+        return result;
+    }
+
     @SneakyThrows
     @Override
     public void representation(String name, Maze.Grid grid, Maze.Point[] path) {
@@ -105,4 +128,11 @@ public record ImageRepresentation(int width,
         ImageIO.write(image, "PNG", output);
     }
 
+    @SneakyThrows
+    @Override
+    public void snapshot(int index, Maze.Grid grid, Maze.Point[] points, Color color) {
+        BufferedImage image = createSnapshot(grid, points, color);
+        File output = new File(String.format("%03dx%03d-snapshot-%04d.png", grid.rows(), grid.cols(), index));
+        ImageIO.write(image, "PNG", output);
+    }
 }
