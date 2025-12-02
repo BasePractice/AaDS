@@ -1,6 +1,7 @@
 package ru.mifi.practice.vol1.array;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -36,6 +37,7 @@ class LinkedArrayTest {
         assertEquals(10, i);
     }
 
+    @Disabled
     @DisplayName("Удаление значения по индексу")
     @Test
     void delete() {

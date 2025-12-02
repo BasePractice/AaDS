@@ -153,7 +153,11 @@ public abstract class State {
 
         @Override
         public String toString() {
-            return start.toString() + super.toString();
+            String string = "";
+            if (start != null) {
+                string = start.toString();
+            }
+            return string + super.toString();
         }
     }
 
