@@ -13,7 +13,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <flatten-maven-plugin.version>1.7.2</flatten-maven-plugin.version>
+        <flatten-maven-plugin.version>1.7.3</flatten-maven-plugin.version>
         <version.junit>1.12.0</version.junit>
         <version.jupiter>6.0.1</version.jupiter>
         <version.pmd>7.18.0</version.pmd>
@@ -95,7 +95,7 @@
                     <dependency>
                         <groupId>com.puppycrawl.tools</groupId>
                         <artifactId>checkstyle</artifactId>
-                        <version>12.1.1</version>
+                        <version>12.1.2</version>
                     </dependency>
                 </dependencies>
                 <configuration>
@@ -122,7 +122,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-pmd-plugin</artifactId>
-                <version>3.25.0</version>
+                <version>3.28.0</version>
                 <configuration>
                     <analysisCache>true</analysisCache>
                     <analysisCacheLocation>${project.build.directory}/pmd/pmd.cache</analysisCacheLocation>
