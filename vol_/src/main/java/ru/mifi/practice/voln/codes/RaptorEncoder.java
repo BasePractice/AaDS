@@ -17,40 +17,33 @@ import java.util.Set;
  * // ... отправляйте символы sN в произвольном количестве и порядке
  * </pre>
  */
-public final class RaptorEncoder {
+public record RaptorEncoder(RaptorConfiguration config,
+                            int k,
+                            int totalIntermediates,
+                            int symbolSize,
+                            int parityCount,
+                            long seed,
+                            int originalLength,
+                            byte[][] intermediates,
+                            RobustSolitonDistribution distribution) {
     private static final int MIN_PARITY_DEGREE = 2;
 
-    private final RaptorConfig config;
-    private final int k;
-    private final int totalIntermediates; // k + s
-    private final int symbolSize;
-    private final int parityCount;
-    private final long seed;
-    private final int originalLength;
-
-    private final byte[][] intermediates; // 0..k-1 исходные блоки, далее проверки
-    private final RobustSolitonDistribution distribution;
-
-    private RaptorEncoder(RaptorConfig config, byte[][] sources, int originalLength) {
-        this.config = config;
-        this.symbolSize = config.symbolSize();
-        this.parityCount = config.parityCount();
-        this.seed = config.seed();
-        this.k = sources.length;
-        this.totalIntermediates = k + parityCount;
-        this.originalLength = originalLength;
-        this.intermediates = buildIntermediates(sources);
-        this.distribution = new RobustSolitonDistribution(totalIntermediates, config.c(), config.delta());
+    private RaptorEncoder(RaptorConfiguration config, byte[][] sources, int originalLength) {
+        this(config, sources.length, sources.length + config.parityCount(), config.symbolSize(),
+            config.parityCount(), config.seed(), originalLength,
+            buildIntermediates(sources, sources.length, config),
+            new RobustSolitonDistribution(sources.length + config.parityCount(), config.c(), config.delta()));
     }
 
     /**
      * Создаёт энкодер из исходного массива байтов.
      * Паддинг нулями добавляется в последний блок при необходимости.
-     * @param data данные
+     *
+     * @param data   данные
      * @param config конфигурация
      * @return энкодер
      */
-    public static RaptorEncoder fromData(byte[] data, RaptorConfig config) {
+    public static RaptorEncoder fromData(byte[] data, RaptorConfiguration config) {
         if (data == null) {
             throw new IllegalArgumentException("data == null");
         }
@@ -74,25 +67,6 @@ public final class RaptorEncoder {
         return new RaptorEncoder(config, sources, data.length);
     }
 
-    private byte[][] buildIntermediates(byte[][] sources) {
-        int n = k + parityCount;
-        byte[][] interm = new byte[n][];
-        for (int i = 0; i < k; i++) {
-            interm[i] = Arrays.copyOf(sources[i], symbolSize);
-        }
-        int baseDegree = Math.max(MIN_PARITY_DEGREE, (int) Math.round(Math.log(Math.max(2, k))));
-        for (int j = 0; j < parityCount; j++) {
-            int deg = Math.min(baseDegree + (j % 2), k); // чуть варьируем степень
-            Set<Integer> idx = uniqueIndices(k, deg, new DeterministicRandom(seed ^ (0x5EEDL + j)));
-            byte[] acc = BytesXor.zeros(symbolSize);
-            for (int id : idx) {
-                BytesXor.xorInPlace(acc, interm[id]);
-            }
-            interm[k + j] = acc;
-        }
-        return interm;
-    }
-
     private static Set<Integer> uniqueIndices(int bound, int count, DeterministicRandom rnd) {
         Set<Integer> set = new LinkedHashSet<>();
         while (set.size() < count) {
@@ -101,9 +75,29 @@ public final class RaptorEncoder {
         return set;
     }
 
+    private static byte[][] buildIntermediates(byte[][] sources, int k, RaptorConfiguration config) {
+        int n = k + config.parityCount();
+        byte[][] intermediates = new byte[n][];
+        for (int i = 0; i < k; i++) {
+            intermediates[i] = Arrays.copyOf(sources[i], config.symbolSize());
+        }
+        int baseDegree = Math.max(MIN_PARITY_DEGREE, (int) Math.round(Math.log(Math.max(2, k))));
+        for (int j = 0; j < config.parityCount(); j++) {
+            int deg = Math.min(baseDegree + (j % 2), k);
+            Set<Integer> idx = uniqueIndices(k, deg, new DeterministicRandom(config.seed() ^ (0x5EEDL + j)));
+            byte[] acc = BytesXor.zeros(config.symbolSize());
+            for (int id : idx) {
+                BytesXor.xorInPlace(acc, intermediates[id]);
+            }
+            intermediates[k + j] = acc;
+        }
+        return intermediates;
+    }
+
     /**
      * Генерирует очередной LT-символ с заданным идентификатором.
      * Идентификатор влияет на детерминированный выбор соседей.
+     *
      * @param id идентификатор символа (может быть номер по порядку)
      * @return закодированный символ
      */
@@ -117,39 +111,11 @@ public final class RaptorEncoder {
         byte[] acc = BytesXor.zeros(symbolSize);
         int[] neighbors = new int[neigh.size()];
         int i = 0;
-        for (int idx : neigh) {
-            neighbors[i] = idx;
+        for (int index : neigh) {
+            neighbors[i] = index;
             i++;
-            BytesXor.xorInPlace(acc, intermediates[idx]);
+            BytesXor.xorInPlace(acc, intermediates[index]);
         }
         return new EncodedSymbol(id, neighbors, acc);
-    }
-
-    public int k() {
-        return k;
-    }
-
-    public int parityCount() {
-        return parityCount;
-    }
-
-    public int totalIntermediates() {
-        return totalIntermediates;
-    }
-
-    public int symbolSize() {
-        return symbolSize;
-    }
-
-    public long seed() {
-        return seed;
-    }
-
-    public int originalLength() {
-        return originalLength;
-    }
-
-    public RaptorConfig config() {
-        return config;
     }
 }

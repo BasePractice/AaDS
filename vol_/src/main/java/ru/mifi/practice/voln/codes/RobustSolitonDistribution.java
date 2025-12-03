@@ -2,7 +2,6 @@ package ru.mifi.practice.voln.codes;
 
 /**
  * Устойчивое солитонное распределение (Robust Soliton) для выбора степени LT.
- * Реализация следует определению из Luby 2002, в упрощённом виде.
  */
 public final class RobustSolitonDistribution {
     private static final int MIN_DEGREE = 1;

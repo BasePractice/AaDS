@@ -5,7 +5,6 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -16,51 +15,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DisplayName("Джонсон Троттер")
 class JohnsonTrotterTest {
-    @Test
-    @DisplayName("Не правильное количество перестановок")
-    void invalidN() {
-        assertThrows(IllegalArgumentException.class, () -> JohnsonTrotter.permutations(0).iterator().next());
-    }
-
-    @Test
-    @DisplayName("Единичная перестановка")
-    void n1() {
-        List<int[]> list = collect(JohnsonTrotter.permutations(1));
-        assertEquals(1, list.size());
-        assertArrayEquals(new int[]{1}, list.get(0));
-    }
-
-    @Test
-    @DisplayName("Перестановка с 2 до 4")
-    void countAndUniqueness() {
-        for (int n = 2; n <= 4; n++) {
-            List<int[]> list = collect(JohnsonTrotter.permutations(n));
-            assertEquals(fact(n), list.size());
-            Set<String> uniq = new HashSet<>();
-            for (int[] p : list) {
-                uniq.add(key(p));
-                assertTrue(isPermutationOf(n, p));
-            }
-            assertEquals(list.size(), uniq.size());
-        }
-    }
-
-    @Test
-    @DisplayName("Проверка с перестановками")
-    void orderProperty() {
-        int n = 4;
-        List<int[]> list = collect(JohnsonTrotter.permutations(n));
-        assertArrayEquals(identity(n), list.get(0));
-        for (int i = 1; i < list.size(); i++) {
-            assertTrue(isAdjacentSwap(list.get(i - 1), list.get(i)));
-        }
-    }
-
     private static List<int[]> collect(Iterable<int[]> it) {
         List<int[]> list = new ArrayList<>();
-        Iterator<int[]> iter = it.iterator();
-        while (iter.hasNext()) {
-            list.add(iter.next());
+        for (int[] ints : it) {
+            list.add(ints);
         }
         return list;
     }
@@ -128,5 +86,45 @@ class JohnsonTrotterTest {
             return false;
         }
         return a[pos] == b[pos + 1] && a[pos + 1] == b[pos];
+    }
+
+    @Test
+    @DisplayName("Не правильное количество перестановок")
+    void invalidN() {
+        assertThrows(IllegalArgumentException.class, () -> JohnsonTrotter.permutations(0).iterator().next());
+    }
+
+    @Test
+    @DisplayName("Единичная перестановка")
+    void n1() {
+        List<int[]> list = collect(JohnsonTrotter.permutations(1));
+        assertEquals(1, list.size());
+        assertArrayEquals(new int[]{1}, list.get(0));
+    }
+
+    @Test
+    @DisplayName("Перестановка с 2 до 4")
+    void countAndUniqueness() {
+        for (int n = 2; n <= 4; n++) {
+            List<int[]> list = collect(JohnsonTrotter.permutations(n));
+            assertEquals(fact(n), list.size());
+            Set<String> uniq = new HashSet<>();
+            for (int[] p : list) {
+                uniq.add(key(p));
+                assertTrue(isPermutationOf(n, p));
+            }
+            assertEquals(list.size(), uniq.size());
+        }
+    }
+
+    @Test
+    @DisplayName("Проверка с перестановками")
+    void orderProperty() {
+        int n = 4;
+        List<int[]> list = collect(JohnsonTrotter.permutations(n));
+        assertArrayEquals(identity(n), list.get(0));
+        for (int i = 1; i < list.size(); i++) {
+            assertTrue(isAdjacentSwap(list.get(i - 1), list.get(i)));
+        }
     }
 }
