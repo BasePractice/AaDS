@@ -29,7 +29,14 @@ public interface CountRange {
                     return i;
                 }
             }
-            return ranges.length - 1;
+            return 0;
+        }
+
+        public long addCount(String name, long[] ranges, long[] values) {
+            int sized = counts.size();
+            long id = sized + 1;
+            counts.put(id, new Count(id, name, ranges, values));
+            return id;
         }
 
         @Override
@@ -65,9 +72,9 @@ public interface CountRange {
                 return Optional.empty();
             }
             Key key = new Key(countId, userId);
-            Value value = values.computeIfAbsent(key, k -> EMPTY.copy());
-            int index = indexOf(count.ranges, value.value);
-            return Optional.of(count.values[index]);
+            return Optional.ofNullable(values.get(key))
+                .map(Value::value)
+                .map(v -> count.values[indexOf(count.ranges, v)]);
         }
 
         private record Key(long rangesId, long userId) {
