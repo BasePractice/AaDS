@@ -1,7 +1,6 @@
 package ru.mifi.practice.voln.mazes.implementation.generator;
 
 import ru.mifi.practice.voln.mazes.Maze;
-import ru.mifi.practice.voln.mazes.implementation.NodeCommon;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -9,23 +8,15 @@ import java.util.Deque;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
-/**
- * Depth-first (iterative backtracker) maze generator.
- * Produces a perfect maze with a single unique path between any two cells.
- */
-public final class NodeGenerator extends NodeCommon implements Maze.Generator {
+//DFS
+public final class NodeGenerator implements Maze.Generator {
 
     @Override
     public Maze.Grid generate(int rows, int cols) {
         Node[][] nodes = new Node[rows][cols];
         for (int r = 0; r < rows; r++) {
             for (int c = 0; c < cols; c++) {
-                Node n = new Node(c, r);
-                n.up = true;
-                n.down = true;
-                n.left = true;
-                n.right = true;
-                nodes[r][c] = n;
+                nodes[r][c] = new Node();
             }
         }
 
@@ -90,5 +81,30 @@ public final class NodeGenerator extends NodeCommon implements Maze.Generator {
             }
         }
         return grid;
+    }
+
+    private static final class Node {
+
+        private boolean up = true;
+        private boolean down = true;
+        private boolean left = true;
+        private boolean right = true;
+
+        private char value() {
+            char val = 0;
+            if (up) {
+                val |= Maze.SQUARE_UP;
+            }
+            if (left) {
+                val |= Maze.SQUARE_LEFT;
+            }
+            if (down) {
+                val |= Maze.SQUARE_DOWN;
+            }
+            if (right) {
+                val |= Maze.SQUARE_RIGHT;
+            }
+            return val;
+        }
     }
 }

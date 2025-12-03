@@ -1,7 +1,6 @@
 package ru.mifi.practice.voln.mazes.implementation.finder;
 
 import ru.mifi.practice.voln.mazes.Maze;
-import ru.mifi.practice.voln.mazes.implementation.NodeCommon;
 
 import java.awt.Color;
 import java.util.ArrayDeque;
@@ -10,12 +9,7 @@ import java.util.Deque;
 import java.util.List;
 
 //BFS
-public final class NodeFinder extends NodeCommon implements Maze.Finder {
-    private final Maze.Representation repr;
-
-    public NodeFinder(Maze.Representation representation) {
-        this.repr = representation;
-    }
+public record NodeFinder(Maze.Representation repr) implements Maze.Finder {
 
     public NodeFinder() {
         this(null);
