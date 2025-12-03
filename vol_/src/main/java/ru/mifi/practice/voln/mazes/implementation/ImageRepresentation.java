@@ -50,6 +50,7 @@ public record ImageRepresentation(int width,
         g.setStroke(new BasicStroke(thickness));
         final Color lastColor = g.getColor();
         g.setColor(color);
+        g.drawRect(2, 2, maze.cols() * width - 2, maze.rows() * width - 2);
         for (int row = 0; row < maze.rows(); ++row) {
             for (int col = 0; col < maze.cols(); ++col) {
                 int halfWidth = width / 2;
