@@ -4,23 +4,22 @@ import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Детерминированный генератор псевдослучайных чисел на базе SplitMix64.
- * Подходит для воспроизводимого выбора соседей по заданному зерну.
  */
-public final class DeterministicRandom {
-    private static final long GOLDEN_GAMMA = 0x9E3779B97F4A7C15L; // 2^64 / golden ratio
-
-    private final AtomicLong state;
+public record DeterministicRandom(AtomicLong state) {
+    private static final long GOLDEN_GAMMA = 0x9E3779B97F4A7C15L; // 2^64
 
     /**
      * Создаёт генератор c заданным зерном.
-     * @param seed зерно
+     *
+     * @param state зерно
      */
-    public DeterministicRandom(long seed) {
-        this.state = new AtomicLong(seed);
+    public DeterministicRandom(long state) {
+        this(new AtomicLong(state));
     }
 
     /**
      * Следующее 64-битное случайное число.
+     *
      * @return значение long
      */
     public long nextLong() {
@@ -32,6 +31,7 @@ public final class DeterministicRandom {
 
     /**
      * Случайное число в диапазоне [0, bound).
+     *
      * @param bound верхняя граница (эксклюзивно)
      * @return значение от 0 до bound-1
      */
@@ -46,6 +46,7 @@ public final class DeterministicRandom {
 
     /**
      * Случайное double в диапазоне [0, 1).
+     *
      * @return значение
      */
     public double nextDouble() {

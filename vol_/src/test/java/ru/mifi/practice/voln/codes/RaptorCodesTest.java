@@ -19,7 +19,7 @@ class RaptorCodesTest {
     @DisplayName("Базовый сценарий: строка кодируется и восстанавливается")
     void basicEncodeDecode() {
         byte[] data = "Hello, Raptor!".getBytes(StandardCharsets.UTF_8);
-        RaptorConfig cfg = RaptorConfig.defaults(64, 42L);
+        RaptorConfiguration cfg = RaptorConfiguration.defaults(64, 42L);
         RaptorEncoder enc = RaptorEncoder.fromData(data, cfg);
 
         // Сгенерируем небольшую избыточность
@@ -44,7 +44,7 @@ class RaptorCodesTest {
         for (int i = 0; i < data.length; i++) {
             data[i] = (byte) (i * 31 + 7);
         }
-        RaptorConfig cfg = RaptorConfig.defaults(256, 2025L);
+        RaptorConfiguration cfg = RaptorConfiguration.defaults(256, 2025L);
         RaptorEncoder enc = RaptorEncoder.fromData(data, cfg);
 
         int needed = enc.totalIntermediates();
@@ -69,7 +69,7 @@ class RaptorCodesTest {
     @Test
     @DisplayName("Пустой ввод: должен вернуться пустой массив")
     void emptyInput() {
-        RaptorConfig cfg = RaptorConfig.defaults(64, 1L);
+        RaptorConfiguration cfg = RaptorConfiguration.defaults(64, 1L);
         RaptorEncoder enc = RaptorEncoder.fromData(new byte[0], cfg);
         assertEquals(0, enc.originalLength());
 
@@ -88,7 +88,7 @@ class RaptorCodesTest {
     @Test
     @DisplayName("Один байт и размер символа больше длины")
     void singleByte() {
-        RaptorConfig cfg = RaptorConfig.defaults(128, 99L);
+        RaptorConfiguration cfg = RaptorConfiguration.defaults(128, 99L);
         byte[] src = new byte[]{123};
         RaptorEncoder enc = RaptorEncoder.fromData(src, cfg);
         List<EncodedSymbol> packets = new ArrayList<>();
@@ -104,7 +104,7 @@ class RaptorCodesTest {
     @Test
     @DisplayName("Некорректный пакет: индекс вне диапазона вызывает исключение")
     void invalidNeighborIndex() {
-        RaptorConfig cfg = RaptorConfig.defaults(16, 3L);
+        RaptorConfiguration cfg = RaptorConfiguration.defaults(16, 3L);
         RaptorEncoder enc = RaptorEncoder.fromData("abc".getBytes(StandardCharsets.UTF_8), cfg);
         EncodedSymbol ok = enc.nextSymbol(1);
         // Сконструируем неверный пакет вручную
@@ -119,7 +119,7 @@ class RaptorCodesTest {
     @DisplayName("Добавление дубликатов пакетов не мешает декодированию")
     void duplicates() {
         byte[] data = "duplicates".getBytes(StandardCharsets.UTF_8);
-        RaptorConfig cfg = RaptorConfig.defaults(64, 555L);
+        RaptorConfiguration cfg = RaptorConfiguration.defaults(64, 555L);
         RaptorEncoder enc = RaptorEncoder.fromData(data, cfg);
         List<EncodedSymbol> pkts = new ArrayList<>();
         for (int i = 0; i < enc.totalIntermediates() + 4; i++) {
