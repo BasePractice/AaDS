@@ -9,14 +9,18 @@ import java.util.Optional;
 
 public interface CountRange {
 
-    Optional<Long> add(long countId, long userId, long delta);
+    void increment(long countId, long userId, long delta);
+
+    void acceptValue(long countId, long userId);
+
+    boolean availableValue(long countId, long userId);
 
     Optional<Long> userValue(long countId, long userId);
 
     Optional<Long> countValue(long countId, long userId);
 
     final class Default implements CountRange {
-        private static final Value EMPTY = new Value(0, -1, null);
+        private static final Value EMPTY = new Value(0, 0, null);
         private final Map<Long, Count> counts = new HashMap<>();
         private final Map<Key, Value> values = new HashMap<>();
 
@@ -45,24 +49,16 @@ public interface CountRange {
         }
 
         @Override
-        public Optional<Long> add(long countId, long userId, long delta) {
+        public void increment(long countId, long userId, long delta) {
             Count count = this.counts.get(countId);
             if (count == null) {
-                return Optional.empty();
+                return;
             } else if (delta <= 0) {
-                return Optional.empty();
+                return;
             }
             Key key = new Key(countId, userId);
             Value value = values.computeIfAbsent(key, k -> EMPTY.copy());
-            long[] ranges = count.ranges;
-            int lastIt = indexOf(count.ranges, value.value);
-            int newIt = indexOf(ranges, value.value + delta);
-            value = value.toBuilder().value(value.value + delta).updatedAt(LocalDateTime.now()).build();
-            values.put(key, value);
-            if (lastIt < newIt) {
-                return Optional.of(count.values[newIt]);
-            }
-            return Optional.empty();
+            values.put(key, value.toBuilder().value(value.value + delta).updatedAt(LocalDateTime.now()).build());
         }
 
         @Override
@@ -77,15 +73,41 @@ public interface CountRange {
                 .map(v -> count.values[indexOf(count.ranges, v)]);
         }
 
+        @Override
+        public void acceptValue(long countId, long userId) {
+            Count count = this.counts.get(countId);
+            if (count == null) {
+                return;
+            }
+            Key key = new Key(countId, userId);
+            Value value = values.computeIfAbsent(key, k -> EMPTY.copy());
+            int currentIt = indexOf(count.ranges, value.value);
+            if (currentIt > value.acceptedIndex()) {
+                values.put(key, value.toBuilder().acceptedIndex(value.acceptedIndex() + 1).build());
+            }
+        }
+
+        @Override
+        public boolean availableValue(long countId, long userId) {
+            Count count = this.counts.get(countId);
+            if (count == null) {
+                return false;
+            }
+            Key key = new Key(countId, userId);
+            Value value = values.computeIfAbsent(key, k -> EMPTY.copy());
+            int currentIt = indexOf(count.ranges, value.value);
+            return currentIt > value.acceptedIndex();
+        }
+
         private record Key(long rangesId, long userId) {
         }
     }
 
 
     @Builder(toBuilder = true)
-    record Value(long value, long accepted, LocalDateTime updatedAt) {
+    record Value(long value, long acceptedIndex, LocalDateTime updatedAt) {
         private Value copy() {
-            return new Value(value, accepted, updatedAt);
+            return new Value(value, acceptedIndex, updatedAt);
         }
     }
 
