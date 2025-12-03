@@ -63,40 +63,41 @@ public interface CountRange {
 
         @Override
         public Optional<Long> countValue(long countId, long userId) {
-            Count count = this.counts.get(countId);
-            if (count == null) {
-                return Optional.empty();
-            }
-            Key key = new Key(countId, userId);
-            return Optional.ofNullable(values.get(key))
-                .map(Value::value)
-                .map(v -> count.values[indexOf(count.ranges, v)]);
+            return processingCount(countId, userId, (count, key, value) ->
+                Optional.of(count.values[indexOf(count.ranges, value.value())]));
         }
 
         @Override
         public void acceptValue(long countId, long userId) {
-            Count count = this.counts.get(countId);
-            if (count == null) {
-                return;
-            }
-            Key key = new Key(countId, userId);
-            Value value = values.computeIfAbsent(key, k -> EMPTY.copy());
-            int currentIt = indexOf(count.ranges, value.value);
-            if (currentIt > value.acceptedIndex()) {
-                values.put(key, value.toBuilder().acceptedIndex(value.acceptedIndex() + 1).build());
-            }
+            processingCount(countId, userId, (count, key, value) -> {
+                int currentIt = indexOf(count.ranges, value.value);
+                if (currentIt > value.acceptedIndex()) {
+                    values.put(key, value.toBuilder().acceptedIndex(value.acceptedIndex() + 1).build());
+                }
+                return Optional.empty();
+            });
         }
 
         @Override
         public boolean availableValue(long countId, long userId) {
-            Count count = this.counts.get(countId);
+            return processingCount(countId, userId, (count, key, value) -> {
+                int currentIt = indexOf(count.ranges, value.value);
+                return Optional.of(currentIt > value.acceptedIndex());
+            }).orElse(false);
+        }
+
+        private <T> Optional<T> processingCount(long countId, long userId, Processing<T> processing) {
+            Count count = counts.get(countId);
             if (count == null) {
-                return false;
+                return Optional.empty();
             }
             Key key = new Key(countId, userId);
-            Value value = values.computeIfAbsent(key, k -> EMPTY.copy());
-            int currentIt = indexOf(count.ranges, value.value);
-            return currentIt > value.acceptedIndex();
+            Value value = values.get(key);
+            return processing.run(count, key, value);
+        }
+
+        private interface Processing<T> {
+            Optional<T> run(Count count, Key key, Value value);
         }
 
         private record Key(long rangesId, long userId) {
