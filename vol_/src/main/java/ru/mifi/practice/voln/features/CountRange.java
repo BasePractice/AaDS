@@ -28,6 +28,10 @@ public interface CountRange {
             if (value < ranges[0]) {
                 return 0;
             }
+            // если значение больше или равно последней границы — возвращаем последний индекс
+            if (value >= ranges[ranges.length - 1]) {
+                return ranges.length - 1;
+            }
             for (int i = 1; i < ranges.length; i++) {
                 if (value > ranges[i - 1] && value < ranges[i]) {
                     return i;
@@ -58,7 +62,7 @@ public interface CountRange {
             }
             Key key = new Key(countId, userId);
             Value value = values.computeIfAbsent(key, k -> EMPTY.copy());
-            values.put(key, value.toBuilder().value(value.value + delta).updatedAt(LocalDateTime.now()).build());
+            values.put(key, value.toBuilder().value(value.value() + delta).updatedAt(LocalDateTime.now()).build());
         }
 
         @Override
@@ -70,7 +74,7 @@ public interface CountRange {
         @Override
         public void acceptValue(long countId, long userId) {
             processingCount(countId, userId, (count, key, value) -> {
-                int currentIt = indexOf(count.ranges, value.value);
+                int currentIt = indexOf(count.ranges, value.value());
                 if (currentIt > value.acceptedIndex()) {
                     values.put(key, value.toBuilder().acceptedIndex(value.acceptedIndex() + 1).build());
                 }
@@ -81,7 +85,7 @@ public interface CountRange {
         @Override
         public boolean availableValue(long countId, long userId) {
             return processingCount(countId, userId, (count, key, value) -> {
-                int currentIt = indexOf(count.ranges, value.value);
+                int currentIt = indexOf(count.ranges, value.value());
                 return Optional.of(currentIt > value.acceptedIndex());
             }).orElse(false);
         }
@@ -93,7 +97,8 @@ public interface CountRange {
             }
             Key key = new Key(countId, userId);
             Value value = values.get(key);
-            return processing.run(count, key, value);
+            Value safe = value == null ? EMPTY : value;
+            return processing.run(count, key, safe);
         }
 
         private interface Processing<T> {
