@@ -1,5 +1,5 @@
-//https://plantuml.com/ru/ebnf
 @startebnf
+'https://plantuml.com/ru/ebnf
 regexp        = or | simple_re;
 or            = regexp, "|", simple_re;
 simple_re     = add | basic_re;

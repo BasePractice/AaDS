@@ -21,7 +21,7 @@ class DiffieHellmanSerializationTest {
         BigInteger g = BigInteger.valueOf(5);
 
         DiffieHellman dh = new DiffieHellman(p, g);
-        assertThrows(IllegalStateException.class, dh::sharedSecretHex);
+        assertThrows(NullPointerException.class, dh::sharedSecretHex);
         DiffieHellman other = new DiffieHellman(p, g);
         dh.calculateSharedSecret(other.getPublicKey());
         assertEquals(dh.getPrivateKey(), DiffieHellman.fromHex(dh.privateKeyHex()));

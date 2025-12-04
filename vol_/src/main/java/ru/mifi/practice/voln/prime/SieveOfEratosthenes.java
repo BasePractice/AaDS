@@ -7,12 +7,6 @@ public final class SieveOfEratosthenes {
     private SieveOfEratosthenes() {
     }
 
-    /**
-     * Возвращает все простые числа от 2 до n включительно с помощью решета Эратосфена.
-     *
-     * @param n верхняя граница (включительно)
-     * @return массив простых чисел по возрастанию
-     */
     public static int[] primesUpTo(int n) {
         if (n < 2) {
             return new int[0];
@@ -40,13 +34,6 @@ public final class SieveOfEratosthenes {
         return result;
     }
 
-    /**
-     * Простейшая проверка простоты на основе решета: проверяем деление на найденные простые.
-     * Подходит для небольших n в учебных целях.
-     *
-     * @param value проверяемое число
-     * @return true если простое
-     */
     public static boolean isPrime(int value) {
         if (value < 2) {
             return false;
