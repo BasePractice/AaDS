@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.SecureRandom;
+import java.util.Objects;
 import java.util.Random;
 
 @Getter
@@ -55,17 +56,11 @@ public final class DiffieHellman {
     }
 
     public static String toHex(BigInteger value) {
-        if (value == null) {
-            throw new IllegalArgumentException("value is null");
-        }
-        return value.toString(16);
+        return Objects.requireNonNull(value).toString(16);
     }
 
     public static BigInteger fromHex(String hex) {
-        if (hex == null) {
-            throw new IllegalArgumentException("hex is null");
-        }
-        return new BigInteger(hex, 16);
+        return new BigInteger(Objects.requireNonNull(hex), 16);
     }
 
     public static void writeKey(Path path, BigInteger value) throws IOException {
@@ -92,9 +87,6 @@ public final class DiffieHellman {
     }
 
     public String sharedSecretHex() {
-        if (sharedSecret == null) {
-            throw new IllegalStateException("Shared secret is not calculated yet");
-        }
         return toHex(sharedSecret);
     }
 
@@ -107,9 +99,6 @@ public final class DiffieHellman {
     }
 
     public void writeSharedSecret(Path path) throws IOException {
-        if (sharedSecret == null) {
-            throw new IllegalStateException("Shared secret is not calculated yet");
-        }
         writeKey(path, sharedSecret);
     }
 }
