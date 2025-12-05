@@ -80,7 +80,7 @@ public class CountRedis implements Count {
         }
     }
 
-    private void putUpdate(long userId) {
+    private void sendUpdate(long userId) {
         localRedis.send(COUNT_TOPIC, userId);
     }
 
@@ -93,20 +93,18 @@ public class CountRedis implements Count {
         String key = key(userId);
         Map<String, Long> map = localRedis.hGet(key);
         if (map == null || map.isEmpty()) {
-            putUpdate(userId);
+            sendUpdate(userId);
             return Optional.empty();
         }
-        Optional<Long> v = Optional.ofNullable(map.get(VALUE));
-        Optional<Long> updateDate = Optional.ofNullable(map.get(UPDATE_DATE));
-        long countValue = v.orElse(0L);
-        if (updateDate.isEmpty()) {
-            putUpdate(userId);
+        Long updateDate = map.get(UPDATE_DATE);
+        long countValue = map.getOrDefault(VALUE, 0L);
+        if (updateDate == null) {
+            sendUpdate(userId);
             return Optional.of(new CountActual(countValue, false));
         } else {
-            long timestamp = updateDate.get();
-            LocalDateTime localDateTime = timestampLdt(timestamp).plus(timeActualDeltaMs, ChronoUnit.MILLIS);
+            LocalDateTime localDateTime = timestampLdt(updateDate).plus(timeActualDeltaMs, ChronoUnit.MILLIS);
             if (localDateTime.isBefore(LocalDateTime.now())) {
-                putUpdate(userId);
+                sendUpdate(userId);
                 return Optional.of(new CountActual(countValue, false));
             }
             CountActual actual = new CountActual(countValue, true);
