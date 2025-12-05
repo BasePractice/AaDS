@@ -6,8 +6,8 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class Main {
-    public static void main(String[] args) throws Exception {
-        try (CountRedis balance = new CountRedis("redis://localhost/1", Main::fetchBalance, 1000, 1000)) {
+    public static void main(String[] args) {
+        try (CountRedis balance = new CountRedis("redis://localhost/1", Main::fetchBalance, 5000, 1000)) {
             Count.Value last = null;
             AtomicInteger hint = new AtomicInteger(0);
             for (int i = 1; i <= 1000000000; i++) {
@@ -16,10 +16,10 @@ public abstract class Main {
                     Count.Value v = value.get();
                     if (last == null) {
                         last = v;
-                        System.out.printf("[%8d,%8d] %s%n", 0, balance.lastCacheHits(), v);
+                        System.out.printf("[%9d,%9d] %s%n", 0, balance.lastCacheHits(), v);
                     } else if (!last.equals(v)) {
                         last = v;
-                        System.out.printf("[%8d,%8d] %s%n", hint.intValue(), balance.lastCacheHits(), v);
+                        System.out.printf("[%9d,%9d] %s%n", hint.intValue(), balance.lastCacheHits(), v);
                         hint.set(0);
                     } else {
                         hint.incrementAndGet();
