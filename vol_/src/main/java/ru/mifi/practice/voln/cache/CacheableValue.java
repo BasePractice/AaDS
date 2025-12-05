@@ -2,9 +2,9 @@ package ru.mifi.practice.voln.cache;
 
 import java.util.Optional;
 
-public interface Count extends AutoCloseable {
+public interface CacheableValue extends AutoCloseable {
 
-    Optional<Value> getValue(long userId);
+    Optional<Value> getValue(long key);
 
     interface Value {
         long value();
