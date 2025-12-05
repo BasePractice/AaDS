@@ -22,5 +22,10 @@
             <artifactId>lettuce-core</artifactId>
             <version>7.1.0.RELEASE</version>
         </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-core</artifactId>
+            <version>1.15.5</version>
+        </dependency>
     </dependencies>
 </project>

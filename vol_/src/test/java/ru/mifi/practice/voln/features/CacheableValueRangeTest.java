@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DisplayName("Счетчик")
-class CountRangeTest {
+class CacheableValueRangeTest {
     private static final long USER_ID = 10067;
     private CountRange.Default count;
     private long countId;
