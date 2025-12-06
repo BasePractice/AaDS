@@ -31,6 +31,10 @@ public final class NotifiableRedis implements Notifiable {
         Gauge.builder("CacheNotifyRedis", inOrderSize, AtomicInteger::intValue).tag("target", "in-order-size").register(registry);
     }
 
+    public NotifiableRedis(String url, MeterRegistry registry) {
+        this(RedisClient.create(url), registry);
+    }
+
     @Override
     public void registerNotify(String updateChannel, Consumer<Long> callback) {
         pubSub.addListener(new RedisPubSubAdapter<>() {
