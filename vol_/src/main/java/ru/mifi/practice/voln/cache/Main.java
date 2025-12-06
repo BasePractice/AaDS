@@ -9,15 +9,20 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class Main {
+
+    public static final int TICK = 1000000000;
+
     public static void main(String[] args) throws Exception {
         MeterRegistry registry = new SimpleMeterRegistry();
-//        CacheMap map = new CacheMapRedis("redis://localhost/1");
+//        CacheableMap map = new CacheableMapRedis("redis://localhost/1");
         CacheableMap map = new CacheableMapMemory(registry);
-        try (Notifiable notify = new NotifiableMemory(10000, registry);
-             SimpleCacheableValue balance = new SimpleCacheableValue(map, notify, Main::fetchBalance, 1000, 1000)) {
+        Notifiable notify = new NotifiableMemory(10000, registry);
+//        Notifiable notify = new NotifiableRedis("redis://localhost/1", registry);
+        try (SimpleCacheableValue balance = new SimpleCacheableValue(map, notify, Main::fetchBalance, 1000, 1000)) {
             CacheableValue.Value last = null;
             AtomicInteger hint = new AtomicInteger(0);
-            for (int i = 1; i <= 1000000000; i++) {
+            long nanoTime = System.nanoTime();
+            for (int i = 0; i < TICK; i++) {
                 Optional<CacheableValue.Value> value = balance.getValue(1011185);
                 if (value.isPresent()) {
                     CacheableValue.Value v = value.get();
@@ -35,8 +40,8 @@ public abstract class Main {
                     System.err.println("Value not found");
                 }
             }
+            System.out.println("Завершили. " + (System.nanoTime() - nanoTime) / TICK + "ns");
         }
-        System.out.println("Завершили");
     }
 
     private static long fetchBalance(long userId) {
