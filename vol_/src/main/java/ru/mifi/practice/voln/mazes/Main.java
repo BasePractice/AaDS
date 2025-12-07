@@ -1,17 +1,21 @@
 package ru.mifi.practice.voln.mazes;
 
-import ru.mifi.practice.voln.mazes.implementation.ImageRepresentation;
+import ru.mifi.practice.voln.images.Gif;
+import ru.mifi.practice.voln.mazes.implementation.GifRepresentation;
 import ru.mifi.practice.voln.mazes.implementation.finder.NodeFinder;
 import ru.mifi.practice.voln.mazes.implementation.generator.NodeGenerator;
 
+import java.io.IOException;
+
 public abstract class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         Maze.Generator generator = new NodeGenerator();
-        Maze.Representation representation = new ImageRepresentation();
-        Maze.Finder finder = new NodeFinder();
-        for (int i = 0; i < 10; i++) {
+        GifRepresentation representation = new GifRepresentation();
+        Maze.Finder finder = new NodeFinder(representation);
+        for (int i = 0; i < 1; i++) {
             generate(generator, finder, representation, 20, 20, "N" + i);
         }
+        Gif.create2(representation, "maze.gif", 100, true);
     }
 
     private static void generate(Maze.Generator generator,

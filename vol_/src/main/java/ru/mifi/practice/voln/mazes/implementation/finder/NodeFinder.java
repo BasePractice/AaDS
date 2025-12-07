@@ -9,10 +9,15 @@ import java.util.Deque;
 import java.util.List;
 
 //BFS
-public record NodeFinder(Maze.Representation repr) implements Maze.Finder {
+public record NodeFinder(Maze.Representation repr, Color pathColor) implements Maze.Finder {
+    private static final Color PATH_COLOR = Color.BLUE;
 
     public NodeFinder() {
         this(null);
+    }
+
+    public NodeFinder(Maze.Representation repr) {
+        this(repr, PATH_COLOR);
     }
 
     @Override
@@ -55,7 +60,7 @@ public record NodeFinder(Maze.Representation repr) implements Maze.Finder {
                 q.add(new int[]{r - 1, c});
                 if (repr != null) {
                     discoveredPoints.add(new Maze.Point(c, r - 1));
-                    repr.snapshot(snapshotIndex, maze, discoveredPoints.toArray(new Maze.Point[0]), Color.ORANGE);
+                    repr.snapshot(snapshotIndex, maze, discoveredPoints.toArray(new Maze.Point[0]), pathColor);
                     snapshotIndex++;
                 }
             }
@@ -67,7 +72,7 @@ public record NodeFinder(Maze.Representation repr) implements Maze.Finder {
                 q.add(new int[]{r + 1, c});
                 if (repr != null) {
                     discoveredPoints.add(new Maze.Point(c, r + 1));
-                    repr.snapshot(snapshotIndex, maze, discoveredPoints.toArray(new Maze.Point[0]), Color.ORANGE);
+                    repr.snapshot(snapshotIndex, maze, discoveredPoints.toArray(new Maze.Point[0]), pathColor);
                     snapshotIndex++;
                 }
             }
@@ -79,7 +84,7 @@ public record NodeFinder(Maze.Representation repr) implements Maze.Finder {
                 q.add(new int[]{r, c - 1});
                 if (repr != null) {
                     discoveredPoints.add(new Maze.Point(c - 1, r));
-                    repr.snapshot(snapshotIndex, maze, discoveredPoints.toArray(new Maze.Point[0]), Color.ORANGE);
+                    repr.snapshot(snapshotIndex, maze, discoveredPoints.toArray(new Maze.Point[0]), pathColor);
                     snapshotIndex++;
                 }
             }
@@ -91,7 +96,7 @@ public record NodeFinder(Maze.Representation repr) implements Maze.Finder {
                 q.add(new int[]{r, c + 1});
                 if (repr != null) {
                     discoveredPoints.add(new Maze.Point(c + 1, r));
-                    repr.snapshot(snapshotIndex, maze, discoveredPoints.toArray(new Maze.Point[0]), Color.ORANGE);
+                    repr.snapshot(snapshotIndex, maze, discoveredPoints.toArray(new Maze.Point[0]), pathColor);
                     snapshotIndex++;
                 }
             }

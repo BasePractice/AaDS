@@ -16,7 +16,7 @@ public final class GoL {
             count(matrix.get(row - 1, col)) + count(matrix.get(row + 1, col)) +
             count(matrix.get(row - 1, col - 1)) + count(matrix.get(row - 1, col + 1)) +
             count(matrix.get(row + 1, col - 1)) + count(matrix.get(row + 1, col + 1));
-        if (is(matrix.get(row, col))) {
+        if (is(v)) {
             if (total < 2 || total > 3) {
                 return 0;
             }
@@ -34,7 +34,7 @@ public final class GoL {
         return v;
     }
 
-    public void tick() {
+    public void tick(Executor executor) {
         BytesMatrix copied = matrix.copy();
         for (int row = 0; row < matrix.rows(); row++) {
             for (int col = 0; col < matrix.cols(); col++) {
@@ -42,6 +42,13 @@ public final class GoL {
             }
         }
         matrix = copied;
-        ticks.incrementAndGet();
+        int tick = ticks.incrementAndGet();
+        if (executor != null) {
+            executor.execute(tick, copied);
+        }
+    }
+
+    public interface Executor {
+        void execute(int tick, BytesMatrix matrix);
     }
 }
