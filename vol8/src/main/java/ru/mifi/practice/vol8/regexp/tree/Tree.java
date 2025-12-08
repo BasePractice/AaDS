@@ -1,5 +1,7 @@
 package ru.mifi.practice.vol8.regexp.tree;
 
+import lombok.NonNull;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -96,6 +98,7 @@ public interface Tree {
             visitor.visit(this);
         }
 
+        @NonNull
         @Override
         public String toString() {
             return "" + ch;
@@ -103,6 +106,7 @@ public interface Tree {
     }
 
     record Escape(char ch) implements Node {
+        @NonNull
         @Override
         public String toString() {
             return "\\" + ch;
@@ -119,6 +123,7 @@ public interface Tree {
             visitor.exit(this);
         }
 
+        @NonNull
         @Override
         public String toString() {
             return left + "" + right;
@@ -150,6 +155,7 @@ public interface Tree {
             visitor.exit(this);
         }
 
+        @NonNull
         @Override
         public String toString() {
             return nodes.stream().map(Node::toString).collect(Collectors.joining("|"));
@@ -157,6 +163,7 @@ public interface Tree {
     }
 
     record Unary(Operator operator, Node node) implements Node {
+        @NonNull
         @Override
         public String toString() {
             return node + operator.toString();
@@ -171,6 +178,7 @@ public interface Tree {
     }
 
     record Group(Node node) implements Node {
+        @NonNull
         @Override
         public String toString() {
             return "(" + node + ")";
@@ -185,6 +193,7 @@ public interface Tree {
     }
 
     record Range(Node start, Node end) implements Node {
+        @NonNull
         @Override
         public String toString() {
             return start.toString() + "-" + end.toString();
@@ -201,6 +210,7 @@ public interface Tree {
     }
 
     record Set(boolean positive, List<Node> nodes) implements Node {
+        @NonNull
         @Override
         public String toString() {
             return "[" + (positive ? "" : "^") + nodes.stream().map(Node::toString).collect(Collectors.joining()) + "]";
@@ -218,6 +228,7 @@ public interface Tree {
     }
 
     record Any() implements Node {
+        @NonNull
         @Override
         public String toString() {
             return ".";
@@ -229,16 +240,9 @@ public interface Tree {
         }
     }
 
-    final class Default implements Tree {
-        private final Node root;
-
-        public Default(String text) {
-            this.root = new Parser(text).parse();
-        }
-
-        @Override
-        public Node root() {
-            return root;
+    record Default(Node root) implements Tree {
+        public Default(String root) {
+            this(new Parser(root).parse());
         }
 
         @Override
