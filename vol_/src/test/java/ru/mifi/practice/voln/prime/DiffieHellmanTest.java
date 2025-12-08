@@ -42,19 +42,19 @@ class DiffieHellmanTest {
         assertTrue(g.compareTo(BigInteger.ONE) >= 0);
         assertTrue(g.compareTo(p) < 0);
 
-        BigInteger priv1 = party1.getPrivateKey();
-        BigInteger priv2 = party2.getPrivateKey();
-        assertTrue(priv1.compareTo(BigInteger.ONE) >= 0);
-        assertTrue(priv1.compareTo(p.subtract(BigInteger.ONE)) < 0);
-        assertTrue(priv2.compareTo(BigInteger.ONE) >= 0);
-        assertTrue(priv2.compareTo(p.subtract(BigInteger.ONE)) < 0);
+        BigInteger privateKey1 = party1.getPrivateKey();
+        BigInteger privateKey2 = party2.getPrivateKey();
+        assertTrue(privateKey1.compareTo(BigInteger.ONE) >= 0);
+        assertTrue(privateKey1.compareTo(p.subtract(BigInteger.ONE)) < 0);
+        assertTrue(privateKey2.compareTo(BigInteger.ONE) >= 0);
+        assertTrue(privateKey2.compareTo(p.subtract(BigInteger.ONE)) < 0);
 
-        BigInteger pub1 = party1.getPublicKey();
-        BigInteger pub2 = party2.getPublicKey();
-        assertTrue(pub1.compareTo(BigInteger.ONE) >= 0);
-        assertTrue(pub1.compareTo(p) < 0);
-        assertTrue(pub2.compareTo(BigInteger.ONE) >= 0);
-        assertTrue(pub2.compareTo(p) < 0);
+        BigInteger publicKey1 = party1.getPublicKey();
+        BigInteger publicKey2 = party2.getPublicKey();
+        assertTrue(publicKey1.compareTo(BigInteger.ONE) >= 0);
+        assertTrue(publicKey1.compareTo(p) < 0);
+        assertTrue(publicKey2.compareTo(BigInteger.ONE) >= 0);
+        assertTrue(publicKey2.compareTo(p) < 0);
 
         party1.calculateSharedSecret(party2.getPublicKey());
         party2.calculateSharedSecret(party1.getPublicKey());

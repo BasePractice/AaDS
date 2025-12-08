@@ -85,6 +85,7 @@ public enum OTP implements State {
             }
             case WAS_SENT -> {
                 if (RESENT.is(context)) {
+                    RESENT.clear(context);
                     return CHECK_SEND;
                 }
                 if (handler.isCodeEquals(context, CODE)) {
@@ -108,6 +109,7 @@ public enum OTP implements State {
             }
             case FAILED_VERIFIED -> {
                 if (RESENT.is(context)) {
+                    RESENT.clear(context);
                     VERIFICATION_CODE_ATTEMPTS.clear(context);
                     return CHECK_SEND;
                 } else if (VERIFICATION_CODE_ATTEMPTS.isOverflow(context, MAX_VERIFICATION_CODE_ATTEMPTS)) {

@@ -49,9 +49,6 @@ public final class MersenneNumbers {
 
     /**
      * Возвращает список показателей p ≤ maxP, для которых M_p — простое число.
-     *
-     * @param maxP верхняя граница показателя p (включительно)
-     * @return массив показателей p
      */
     public static int[] mersennePrimeExponentsUpTo(int maxP) {
         if (maxP < 2) {
