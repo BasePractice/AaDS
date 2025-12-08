@@ -25,12 +25,12 @@ class MachineTest extends AbstractPatternTest {
         assertNotNull(generator.getState());
         PlantUmlTextGenerator plantUml = new PlantUmlTextGenerator();
         plantUml.start(generator.getState());
-        plantUml.writeFile(String.format("%s.fsm.utext", name));
+        plantUml.writeFile(String.format("%s.fsm.puml", name));
 
         StringBuilder builder = new StringBuilder();
         builder.append("@startregex").append("\n");
         builder.append(text).append("\n");
         builder.append("@endregex").append("\n");
-        Files.writeString(Path.of(String.format("%s.rgx.utext", name)), builder, StandardCharsets.UTF_8);
+        Files.writeString(Path.of(String.format("%s.rgx.puml", name)), builder, StandardCharsets.UTF_8);
     }
 }
