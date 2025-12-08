@@ -1,0 +1,58 @@
+@startuml
+title Двухуровневое кеширование с redis в качестве L2 кеша и оповещения при изменениях
+<style>
+sequenceDiagram {
+    FontName Fira Code
+    partition {
+        LineColor DarkRed
+    }
+}
+</style>
+participant "система\n" as system
+box "микросервис"
+    participant "Программный\nсервис" as inbound
+    participant "Кеш\n" as cc
+    note left cc
+    **""LRU""** кеш
+    end note
+end box
+queue "redis\n" as redis
+box "сторонняя\nсистема"
+    participant "система\n" as wp
+end box
+
+== Запрос баланса ==
+autonumber
+system   -> inbound: <font color=green><b>""GRPC запрос данных""
+inbound  -> cc: Запрос баланса
+alt#Gold #LightGreen есть данные в кеше L1
+    inbound <-- cc: данные
+    system <-- inbound: результат
+else #LightPink нет данных/сработал LRU/сработало TTL
+    inbound <-[#red]-x cc: нет
+    inbound -> redis: <font color=blue><b>""HGETALL val:{value-key}""
+    alt#Gold #LightGreen есть данные в редис
+        alt#Gold #LightPink время TTL вышло
+            inbound -> redis: запрос в топик\n<font color=blue><b>""PUB val:update_value""
+            system <-- inbound: результат из redis
+        else #LightGreen установка если TTL кеша меньше времени оставшегося времени TTL редиса
+            inbound -> cc: установка
+            system <-- inbound: результат из redis
+        end
+    else #LightPink нет данных
+        inbound -> redis: запрос в топик\n<font color=blue><b>""PUB val:update_value""
+        system <-- inbound: результат <font color=DarkRed size=16>**""0""**
+    end
+end
+== Запрос в стороннюю систему ==
+autonumber
+redis   --> inbound: <font color=blue><b>""SUB val:update_value""
+inbound ->  wp: <font color=green><b>""GET {value-key}""
+alt#Gold #LightGreen 200
+    inbound ->  redis: <font color=blue><b>""HSET val:{value-key} value {value} expired {expired}""
+    inbound ->  cc: установка
+else #LightPink
+    inbound -> inbound: повтор \nили возвращение запроса в топик
+end
+
+@enduml

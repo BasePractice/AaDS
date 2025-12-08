@@ -32,7 +32,7 @@ public final class CacheableMapMemory implements CacheableMap {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         values.invalidateAll();
     }
 }

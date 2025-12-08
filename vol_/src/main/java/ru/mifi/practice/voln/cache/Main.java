@@ -18,20 +18,20 @@ public abstract class Main {
         CacheableMap map = new CacheableMapMemory(registry);
         Notifiable notify = new NotifiableMemory(10000, registry);
 //        Notifiable notify = new NotifiableRedis("redis://localhost/1", registry);
-        try (SimpleCacheableValue balance = new SimpleCacheableValue(map, notify, Main::fetchBalance, 1000, 1000)) {
+        try (SimpleCacheableValue cachableValue = new SimpleCacheableValue(map, notify, Main::fetchValue, 1000, 1000)) {
             CacheableValue.Value last = null;
             AtomicInteger hint = new AtomicInteger(0);
             long nanoTime = System.nanoTime();
             for (int i = 0; i < TICK; i++) {
-                Optional<CacheableValue.Value> value = balance.getValue(1011185);
+                Optional<CacheableValue.Value> value = cachableValue.getValue(1011185);
                 if (value.isPresent()) {
                     CacheableValue.Value v = value.get();
                     if (last == null) {
                         last = v;
-                        System.out.printf("[%9d,%9d] %s%n", 0, balance.lastCacheHits(), v);
+                        System.out.printf("[%9d,%9d] %s%n", 0, cachableValue.lastCacheHits(), v);
                     } else if (!last.equals(v)) {
                         last = v;
-                        System.out.printf("[%9d,%9d] %s%n", hint.intValue(), balance.lastCacheHits(), v);
+                        System.out.printf("[%9d,%9d] %s%n", hint.intValue(), cachableValue.lastCacheHits(), v);
                         hint.set(0);
                     } else {
                         hint.incrementAndGet();
@@ -44,7 +44,7 @@ public abstract class Main {
         }
     }
 
-    private static long fetchBalance(long userId) {
-        return userId + 30000L;
+    private static long fetchValue(long key) {
+        return key + 30000L;
     }
 }

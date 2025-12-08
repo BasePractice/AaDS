@@ -15,10 +15,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
 public class SimpleCacheableValue implements CacheableValue {
+    private static final int MINIMUM_L1_DELTA_MS = 100;
     private static final String UPDATE_DATE = "update_date";
     private static final String VALUE = "value";
     private static final ZoneId ZONE_ID = ZoneId.of("UTC");
-    private static final String VALUE_KEY_PREFIX = "cnt:";
+    private static final String VALUE_KEY_PREFIX = "val:";
     private static final String VALUE_UPDATE_TOPIC = "value_update";
     private final Function<Long, Long> fetchValue;
     private final long timeActualMs;
@@ -37,11 +38,11 @@ public class SimpleCacheableValue implements CacheableValue {
         this.notifiable = notifiable;
         this.fetchValue = fetchValue;
         this.timeActualMs = timeActualMs;
-        if (timeActualMs - 1 <= 0) {
+        if (timeActualMs + MINIMUM_L1_DELTA_MS <= 0) {
             this.cacheValues = null;
         } else {
             this.cacheValues = CacheBuilder.newBuilder()
-                .expireAfterWrite(timeActualMs - 1, TimeUnit.MILLISECONDS)
+                .expireAfterWrite(timeActualMs + MINIMUM_L1_DELTA_MS, TimeUnit.MILLISECONDS)
                 .recordStats()
                 .maximumSize(maximumCacheSize)
                 .build();

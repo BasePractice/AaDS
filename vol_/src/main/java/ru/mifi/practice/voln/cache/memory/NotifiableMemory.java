@@ -38,11 +38,15 @@ public final class NotifiableMemory implements Notifiable, Runnable {
             running.set(true);
             executor.execute(this);
         }
-        messages.offer(new Message(channel, key));
+        Message message = new Message(channel, key);
+        if (messages.contains(message)) {
+            return;
+        }
+        messages.offer(message);
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         running.set(false);
         executor.shutdown();
     }
