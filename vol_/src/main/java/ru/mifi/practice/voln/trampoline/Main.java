@@ -22,6 +22,6 @@ public abstract class Main {
 
     public static void main(String[] args) {
         System.out.println(calculateFactorial(5));
-        System.out.println(calculateFactorial(10));
+        System.out.println(calculateFactorial(100000));
     }
 }

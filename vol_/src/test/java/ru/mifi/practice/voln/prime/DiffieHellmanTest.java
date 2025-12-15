@@ -33,7 +33,7 @@ class DiffieHellmanTest {
     @Test
     @DisplayName("Конструктор по битности и совпадение секрета")
     void bitLengthConstructorFlow() {
-        DiffieHellman party1 = new DiffieHellman(64);
+        DiffieHellman party1 = new DiffieHellman(256);
         DiffieHellman party2 = new DiffieHellman(party1.getPrime(), party1.getGenerator());
 
         // Проверяем диапазоны генератора и ключей
