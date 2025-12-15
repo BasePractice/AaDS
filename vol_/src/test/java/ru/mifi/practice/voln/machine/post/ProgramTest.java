@@ -12,18 +12,29 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @DisplayName("Машина Поста")
 class ProgramTest {
-
     private static final String ONE_INCREMENT = """
         ? 1;2
         V 3
         X 4
         !
         < 0
-        """; //promo.transaction.result,promo.wallet.debit,bonus.wallet.debit
+        """;
+    private static final String ONE_DECREMENT = """
+        ? 2;1
+        X 3
+        V 4
+        !
+        < 0
+        """;
 
     private static Stream<Arguments> programs() throws IOException {
         return Stream.of(
-            createArguments("100000", ONE_INCREMENT, "100001")
+            createArguments("100000", ONE_INCREMENT, "100001"),
+            createArguments("100001", ONE_INCREMENT, "100010"),
+            createArguments("100010", ONE_INCREMENT, "100011"),
+            createArguments("100010", ONE_DECREMENT, "100001"),
+            createArguments("100001", ONE_DECREMENT, "100000"),
+            createArguments("100000", ONE_DECREMENT, "011111")
         );
     }
 
