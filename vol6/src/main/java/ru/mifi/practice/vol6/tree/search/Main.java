@@ -10,10 +10,12 @@ public abstract class Main {
             .add(7).add(10).add(14).add(13);
         test("Binary", new BinarySearchTree<>(), generator);
         test("AVL", new AVL<>(), generator);
+        test("RBT", new RBT<>(), generator);
         System.out.println("Вырожденное дерево");
         generator = tree -> tree.add(1).add(2).add(3).add(4).add(5).add(6).add(7).add(8).add(9);
         test("Binary", new BinarySearchTree<>(), generator);
         test("AVL", new AVL<>(), generator);
+        test("RBT", new RBT<>(), generator);
     }
 
     private static void test(String title, BinaryTree<Integer> tree, Consumer<BinaryTree<Integer>> generator) {

@@ -5,7 +5,7 @@ public final class AVL<T extends Comparable<T>> extends BinaryTree.AbstractBinar
         if (node == null) {
             return -1;
         }
-        return node.height;
+        return node.custom;
     }
 
     private int balance(Node<T> node) {
@@ -16,7 +16,7 @@ public final class AVL<T extends Comparable<T>> extends BinaryTree.AbstractBinar
     }
 
     private void up(Node<T> node) {
-        node.height = 1 + Math.max(height(node.left), height(node.right));
+        node.custom = 1 + Math.max(height(node.left), height(node.right));
     }
 
     private Node<T> lr(Node<T> node) {
