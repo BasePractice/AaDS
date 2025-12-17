@@ -19,9 +19,10 @@ public interface BinaryTree<T extends Comparable<T>> {
     @SuppressWarnings("PMD.OverrideBothEqualsAndHashCodeOnComparable")
     final class Node<T extends Comparable<T>> implements Comparable<Node<T>> {
         T value;
+        Node<T> parent;
         Node<T> left;
         Node<T> right;
-        int height;
+        int custom;
 
         private Node(T value) {
             this.value = value;
@@ -73,6 +74,9 @@ public interface BinaryTree<T extends Comparable<T>> {
         }
 
         private String print(Node<T> node) {
+            if (node == null) {
+                return "";
+            }
             String result = String.valueOf(node);
             if (node.left != null) {
                 result += print(node.left);
