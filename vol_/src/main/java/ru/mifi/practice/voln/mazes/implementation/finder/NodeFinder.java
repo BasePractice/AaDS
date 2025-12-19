@@ -102,15 +102,14 @@ public record NodeFinder(Maze.Representation repr, Color pathColor) implements M
             }
         }
 
-        // reconstruct path
         List<Maze.Point> path = new ArrayList<>();
         int r = rows - 1;
         int c = cols - 1;
         if (dist[r][c] == -1) {
-            return new Maze.Point[0]; // no path
+            return new Maze.Point[0];
         }
         while (r != -1 && c != -1) {
-            path.add(0, new Maze.Point(c, r)); // prepend
+            path.add(0, new Maze.Point(c, r));
             int tr = pr[r][c];
             int tc = pc[r][c];
             r = tr;

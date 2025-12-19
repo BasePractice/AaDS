@@ -30,7 +30,6 @@ public final class NodeGenerator implements Maze.Generator {
             int r = cur[0];
             int c = cur[1];
 
-            // collect unvisited neighbors
             List<int[]> neighbors = new ArrayList<>(4);
             if (r > 0 && !visited[r - 1][c]) {
                 neighbors.add(new int[]{r - 1, c});
@@ -55,17 +54,16 @@ public final class NodeGenerator implements Maze.Generator {
             int nr = nxt[0];
             int nc = nxt[1];
 
-            // carve passage between (r,c) and (nr,nc)
             if (nr == r - 1) { // up
                 nodes[r][c].up = false;
                 nodes[nr][nc].down = false;
-            } else if (nr == r + 1) { // down
+            } else if (nr == r + 1) {
                 nodes[r][c].down = false;
                 nodes[nr][nc].up = false;
-            } else if (nc == c - 1) { // left
+            } else if (nc == c - 1) {
                 nodes[r][c].left = false;
                 nodes[nr][nc].right = false;
-            } else if (nc == c + 1) { // right
+            } else if (nc == c + 1) {
                 nodes[r][c].right = false;
                 nodes[nr][nc].left = false;
             }
