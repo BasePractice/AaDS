@@ -25,7 +25,7 @@ public interface Item {
         @Override
         public void apply(Person person, Context context) {
             person.healthUp(health);
-            context.log("Used health kit: " + this);
+            context.log("Использование эликсира: " + this);
         }
 
         @Override

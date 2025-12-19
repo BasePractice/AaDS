@@ -308,16 +308,16 @@ class PatternTest {
         Output output = (format, args) -> {
             logs.add(String.format(format, args).trim());
         };
-        Person.Player player = new Person.Player("Hero");
+        Person.Player player = new Person.Player("Герой");
         AdventureGame game = new AdventureGame(output, player);
 
         player.addInventory(new Item.Health(20), null);
         game.useItem(0);
-        assertTrue(logs.stream().anyMatch(s -> s.contains("Used health kit: H20")));
+        assertTrue(logs.stream().anyMatch(s -> s.contains("Использование эликсира: H20")));
 
         player.addInventory(new Item.Hummer(), null);
         game.removeItem(0);
-        assertTrue(logs.stream().anyMatch(s -> s.contains("Removed: D10")));
+        assertTrue(logs.stream().anyMatch(s -> s.contains("Удалили: D10")));
 
         int itemIndex = -1;
         for (int i = 0; i < game.getLineLength(); i++) {
@@ -332,13 +332,13 @@ class PatternTest {
             }
             logs.clear();
             game.catchItem();
-            assertTrue(logs.stream().anyMatch(s -> s.contains("Picked up:")));
+            assertTrue(logs.stream().anyMatch(s -> s.contains("Подняли:")));
         }
     }
 
     @Test
     void testInventoryLimit() {
-        Person.Player player = new Person.Player("Hero");
+        Person.Player player = new Person.Player("Герой");
         for (int i = 0; i < 10; i++) {
             player.addInventory(new Item.DamageItem(10 + i), null);
         }

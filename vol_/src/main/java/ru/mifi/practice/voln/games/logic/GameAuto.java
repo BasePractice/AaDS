@@ -100,13 +100,13 @@ public final class GameAuto {
     }
 
     private boolean hasHealthPotion() {
-        return player.items().stream().anyMatch(i -> i instanceof Item.Once);
+        return player.items().stream().anyMatch(i -> i instanceof Item.Health);
     }
 
     private void usePotion() {
         List<Item> items = player.items();
         for (int i = 0; i < items.size(); i++) {
-            if (items.get(i) instanceof Item.Once) {
+            if (items.get(i) instanceof Item.Health) {
                 game.useItem(i);
                 return;
             }
