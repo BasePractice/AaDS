@@ -26,7 +26,6 @@ public interface Transmit extends Input, Output {
         @Override
         public void print(String format, Object... args) {
             output.printf(format, args);
-            //NOTICE: Не очень хорошо
             output.flush();
         }
     }

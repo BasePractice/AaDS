@@ -79,39 +79,39 @@ public final class RBT<T extends Comparable<T>> extends BinaryTree.AbstractBinar
     }
 
     private void rotateLeft(Node<T> x) {
-        Node<T> y = x.right;
-        x.right = y.left;
-        if (y.left != null) {
-            y.left.parent = x;
+        Node<T> right = x.right;
+        x.right = right.left;
+        if (right.left != null) {
+            right.left.parent = x;
         }
-        y.parent = x.parent;
+        right.parent = x.parent;
         if (x.parent == null) {
-            root = y;
+            root = right;
         } else if (x == x.parent.left) {
-            x.parent.left = y;
+            x.parent.left = right;
         } else {
-            x.parent.right = y;
+            x.parent.right = right;
         }
-        y.left = x;
-        x.parent = y;
+        right.left = x;
+        x.parent = right;
     }
 
-    private void rotateRight(Node<T> y) {
-        Node<T> x = y.left;
-        y.left = x.right;
-        if (x.right != null) {
-            x.right.parent = y;
+    private void rotateRight(Node<T> node) {
+        Node<T> left = node.left;
+        node.left = left.right;
+        if (left.right != null) {
+            left.right.parent = node;
         }
-        x.parent = y.parent;
-        if (y.parent == null) {
-            root = x;
-        } else if (y == y.parent.left) {
-            y.parent.left = x;
+        left.parent = node.parent;
+        if (node.parent == null) {
+            root = left;
+        } else if (node == node.parent.left) {
+            node.parent.left = left;
         } else {
-            y.parent.right = x;
+            node.parent.right = left;
         }
-        x.right = y;
-        y.parent = x;
+        left.right = node;
+        node.parent = left;
     }
 
     @Override

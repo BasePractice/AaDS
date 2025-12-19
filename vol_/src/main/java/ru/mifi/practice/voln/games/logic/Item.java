@@ -25,6 +25,7 @@ public interface Item {
         @Override
         public void apply(Person person, Context context) {
             person.healthUp(health);
+            context.log("Used health kit: " + this);
         }
 
         @Override
@@ -55,6 +56,26 @@ public interface Item {
 
         public Hummer() {
             super(10);
+        }
+    }
+
+    final class BonusItem implements Item {
+        private final Item item;
+        private final int bonus;
+
+        public BonusItem(Item item, int bonus) {
+            this.item = item;
+            this.bonus = bonus;
+        }
+
+        @Override
+        public int damage() {
+            return item.damage() + bonus;
+        }
+
+        @Override
+        public String toString() {
+            return item.toString() + "+" + bonus;
         }
     }
 }
