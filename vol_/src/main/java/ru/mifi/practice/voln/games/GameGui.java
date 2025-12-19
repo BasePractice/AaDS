@@ -40,7 +40,7 @@ public class GameGui extends JFrame {
     private final Timer autoTimer;
 
     public GameGui() {
-        this.player = new Person.Player("Hero");
+        this.player = new Person.Player("Герой");
         Output output = (format, args) -> {
             String msg = String.format(format, args).trim();
             if (!msg.isEmpty()) {
