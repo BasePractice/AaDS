@@ -1,0 +1,22 @@
+services:
+    scylladb:
+        image: scylladb/scylla:latest
+        container_name: scylladb
+        ports:
+            - "9042:9042" # CQL port
+            - "9180:9180" # JMX port
+        command: --smp 1 --seeds scylladb
+        volumes:
+            - .data:/var/lib/scylla
+        healthcheck:
+            test: [ "CMD-SHELL", "cqlsh -e 'SELECT cluster_name FROM system.local;' scylladb || exit 1" ]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 30s # Give ScyllaDB time to start up before health checks begin
+        environment:
+            # Optional: Set this if you are running ScyllaDB in a non-default network
+            # SCYLLA_LISTEN_ADDRESS: 172.17.0.2 # Replace with your Docker network IP if needed
+            # SCYLLA_BROADCAST_ADDRESS: 172.17.0.2
+            # SCYLLA_BROADCAST_RPC_ADDRESS: 172.17.0.2
+            SCYLLA_DEVELOPER_MODE: 1

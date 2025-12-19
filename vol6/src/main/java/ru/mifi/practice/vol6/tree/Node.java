@@ -23,6 +23,7 @@ public interface Node<T> extends Visitor.Visit<T>, Hashable {
         });
     }
 
+    @Override
     int hash();
 
     int index();
