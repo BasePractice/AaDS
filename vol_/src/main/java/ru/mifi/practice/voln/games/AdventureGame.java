@@ -154,7 +154,7 @@ public final class AdventureGame implements Updatable, Updatable.Context {
 
     @Override
     public void hit(Person person, Item item) {
-        output.println("Ударил " + person + " этим " + item);
+        output.println(person + " ударил " + item + " по голове");
     }
 
     @Override
