@@ -18,6 +18,8 @@ public interface Updatable {
         View view(Person.Mob mob);
 
         void hit(Person person, Item item);
+
+        void log(String message);
     }
 
     record View(Type type, Object element) {

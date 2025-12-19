@@ -21,6 +21,10 @@ public final class AdventureGame implements Updatable, Updatable.Context {
     private int index;
     @Getter
     private boolean running;
+    @Getter
+    private int steps;
+    @Getter
+    private int level;
 
     public AdventureGame(Output output, Person.Player player) {
         this.output = output;
@@ -29,7 +33,20 @@ public final class AdventureGame implements Updatable, Updatable.Context {
         nextGameLine();
     }
 
+    public int getIdleTicks() {
+        return player.getIdleTicks();
+    }
+
+    public int getLineLength() {
+        return gameLine.length;
+    }
+
+    public int getPlayerIndex() {
+        return index;
+    }
+
     private void nextGameLine() {
+        level++;
         Arrays.fill(gameLine, null);
         index = 0;
         gameLine[0] = player;
@@ -50,7 +67,8 @@ public final class AdventureGame implements Updatable, Updatable.Context {
         }
         switch (type) {
             case ENEMY -> {
-                gameLine[index] = new Person.Mob("Paul", 80, index,
+                gameLine[index] = new Person.Mob("Paul",
+                    random.nextInt(50) + 40, index,
                     new Item.DamageItem(random.nextInt(10) + 5), false);
             }
             case EMPTY -> {
@@ -66,7 +84,16 @@ public final class AdventureGame implements Updatable, Updatable.Context {
         }
     }
 
-    void update() {
+    public void idleTick() {
+        player.idleTick();
+    }
+
+    public void resetIdle() {
+        player.resetIdle();
+    }
+
+    public void update() {
+        steps++;
         update(this);
     }
 
@@ -85,14 +112,19 @@ public final class AdventureGame implements Updatable, Updatable.Context {
             output.println("Game over");
             running = false;
         } else if (person instanceof Person.Mob mob) {
+            player.addKill();
             gameLine[index] = null;
             index = mob.getIndex();
             gameLine[index] = player;
-            player.addInventory(new Item.Health(100 - player.health()));
+            if (player.health() < 100) {
+                Item healthItem = new Item.Health(100 - player.health());
+                player.addInventory(healthItem, this);
+                output.println("Picked up: " + healthItem);
+            }
         }
     }
 
-    private View viewIndex(int index) {
+    public View viewAt(int index) {
         Objects.checkIndex(index, gameLine.length);
         Object object = gameLine[index];
         if (object instanceof Item item) {
@@ -107,19 +139,27 @@ public final class AdventureGame implements Updatable, Updatable.Context {
 
     @Override
     public View view(Person.Player player) {
-        return viewIndex(index + 1);
+        if (index + 1 >= gameLine.length) {
+            return new View(Type.EMPTY, null);
+        }
+        return viewAt(index + 1);
     }
 
     @Override
     public View view(Person.Mob mob) {
         int i = mob.getIndex();
         Objects.checkIndex(i - 1, gameLine.length);
-        return viewIndex(i - 1);
+        return viewAt(i - 1);
     }
 
     @Override
     public void hit(Person person, Item item) {
         output.println("Hit " + person + " on " + item);
+    }
+
+    @Override
+    public void log(String message) {
+        output.println(message);
     }
 
     public View playerView() {
@@ -131,6 +171,10 @@ public final class AdventureGame implements Updatable, Updatable.Context {
             output.println("We cant move forward");
             return;
         }
+        if (index + 1 < gameLine.length && gameLine[index + 1] instanceof Item item) {
+            player.addInventory(item, this);
+            output.println("Picked up: " + item);
+        }
         index++;
         if (index >= gameLine.length) {
             nextGameLine();
@@ -140,11 +184,42 @@ public final class AdventureGame implements Updatable, Updatable.Context {
         }
     }
 
+    public void backward() {
+        if (index <= 0) {
+            output.println("We cant move backward");
+            return;
+        }
+        if (gameLine[index - 1] instanceof Person.Mob) {
+            output.println("We cant move backward");
+            return;
+        }
+        if (gameLine[index - 1] instanceof Item item) {
+            player.addInventory(item, this);
+            output.println("Picked up: " + item);
+        }
+        gameLine[index] = null;
+        index--;
+        gameLine[index] = player;
+    }
+
+    public void restart() {
+        steps = 0;
+        level = 0;
+        player.reset();
+        running = true;
+        nextGameLine();
+    }
+
     public void attack() {
         View view = playerView();
         if (view.type() == Type.ENEMY) {
             Person.Mob mob = (Person.Mob) view.element();
-            mob.hit(player.getSelectedItem(), this);
+            int bonus = player.getBaseAttack();
+            if (bonus > 0) {
+                mob.hit(new Item.BonusItem(player.getSelectedItem(), bonus), this);
+            } else {
+                mob.hit(player.getSelectedItem(), this);
+            }
         } else {
             output.println("We cant kick empty space");
         }
@@ -158,10 +233,24 @@ public final class AdventureGame implements Updatable, Updatable.Context {
         player.selectItem(itemIndex, this);
     }
 
+    public void useItem(int itemIndex) {
+        player.useItem(itemIndex, this);
+    }
+
+    public void removeItem(int itemIndex) {
+        List<Item> items = player.items();
+        if (itemIndex >= 0 && itemIndex < items.size()) {
+            output.println("Removed: " + items.get(itemIndex));
+        }
+        player.removeItem(itemIndex);
+    }
+
     public void catchItem() {
         Updatable.View view = playerView();
         if (view.type() == Updatable.Type.ITEM) {
-            player.addInventory((Item) view.element());
+            Item item = (Item) view.element();
+            player.addInventory(item, this);
+            output.println("Picked up: " + item);
             gameLine[index + 1] = null;
             forward();
         }

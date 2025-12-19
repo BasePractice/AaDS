@@ -61,7 +61,7 @@ public abstract class Main {
                         }
                         transmit.print("Select item or -1 skip: ");
                         var input = transmit.readInt().orElse(-1);
-                        game.selectItem(input);
+                        game.useItem(input);
                     }
                     break;
                 }
