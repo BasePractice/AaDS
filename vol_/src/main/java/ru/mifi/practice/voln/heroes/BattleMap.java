@@ -1,12 +1,15 @@
 package ru.mifi.practice.voln.heroes;
 
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.List;
 import java.util.NavigableMap;
 import java.util.PriorityQueue;
@@ -18,12 +21,34 @@ import java.util.concurrent.atomic.AtomicLong;
 public final class BattleMap {
     private static final int ROWS = 11;
     private static final int COLS = 15;
+    private static final int MIN_STACKS = 5;
+    private static final int RANDOM_STACKS = 3;
+    private static final int MAX_COL_INDEX = 14;
+    private static final int MIN_UNITS = 1;
+    private static final int RANDOM_UNITS = 10;
+    private static final int MIN_SPEED = 3;
+    private static final int RANDOM_SPEED = 5;
+    private static final int MIN_ATTACK = 10;
+    private static final int RANDOM_ATTACK = 20;
+    private static final int MIN_DEFENSE = 5;
+    private static final int RANDOM_DEFENSE = 10;
+    private static final int MIN_HEALTH = 50;
+    private static final int RANDOM_HEALTH = 50;
+    private static final int DIRECTIONS_COUNT = 4;
+    private static final int OBSTACLES_COUNT_BASE = 5;
+    private static final int OBSTACLES_COUNT_RANDOM = 5;
+    private static final int OBSTACLES_COL_MIN = 5;
+    private static final int OBSTACLES_COL_RANDOM = 5;
+
     private final AtomicLong idCount = new AtomicLong(0);
     private final NavigableMap<Long, StackKey> left = new TreeMap<>();
     private final NavigableMap<Long, StackKey> right = new TreeMap<>();
     private final Long[][] map = new Long[ROWS][COLS];
     private final boolean[][] obstacles = new boolean[ROWS][COLS];
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
+    @Getter
+    private final Deque<Long> turnQueue = new ArrayDeque<>();
+    @Getter
     private boolean leftTurn = true;
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -53,7 +78,7 @@ public final class BattleMap {
     public void fillRandomly() {
         Random random = new Random();
         generateObstacles(random);
-        int stackCount = 5 + random.nextInt(3);
+        int stackCount = MIN_STACKS + random.nextInt(RANDOM_STACKS);
         for (int i = 0; i < stackCount; i++) {
             int row;
             do {
@@ -63,19 +88,88 @@ public final class BattleMap {
 
             do {
                 row = random.nextInt(ROWS);
-            } while (map[row][14] != null);
-            addRight(row, 14, createRandomStack(random));
+            } while (map[row][MAX_COL_INDEX] != null);
+            addRight(row, MAX_COL_INDEX, createRandomStack(random));
         }
+        fillTurnQueue();
+    }
+
+    private void fillTurnQueue() {
+        turnQueue.clear();
+        for (int r = 0; r < ROWS; r++) {
+            for (int c = 0; c < COLS; c++) {
+                Long id = map[r][c];
+                if (id != null) {
+                    if (leftTurn && left.containsKey(id)) {
+                        turnQueue.add(id);
+                    } else if (!leftTurn && right.containsKey(id)) {
+                        turnQueue.add(id);
+                    }
+                }
+            }
+        }
+    }
+
+    public void waitTurn() {
+        if (turnQueue.isEmpty()) {
+            return;
+        }
+        Long id = turnQueue.pollFirst();
+        turnQueue.addLast(id);
+        support.firePropertyChange("map", null, null);
+    }
+
+    public void skipTurn() {
+        if (turnQueue.isEmpty()) {
+            return;
+        }
+        Long id = turnQueue.pollFirst();
+        Unit.Stack stack = getStackById(id);
+        if (stack != null) {
+            stack.setActed(true);
+            String msg = String.format("%s %s пропустил ход",
+                leftTurn ? "Левый" : "Правый", stack.getType().getName());
+            support.firePropertyChange("log", null, msg);
+        }
+        checkTurnEnd();
+        support.firePropertyChange("map", null, null);
+    }
+
+    public Unit.Stack getStackById(Long id) {
+        if (id == null) {
+            return null;
+        }
+        StackKey key = left.get(id);
+        if (key == null) {
+            key = right.get(id);
+        }
+        return key != null ? key.stack : null;
+    }
+
+    public int[] getStackCoord(Long id) {
+        if (id == null) {
+            return new int[0];
+        }
+        for (int r = 0; r < ROWS; r++) {
+            for (int c = 0; c < COLS; c++) {
+                if (id.equals(map[r][c])) {
+                    return new int[]{r, c};
+                }
+            }
+        }
+        return new int[0];
     }
 
     private Unit.Stack createRandomStack(Random random) {
         Unit.Type[] types = Unit.Type.values();
         Unit.Type type = types[random.nextInt(types.length)];
         Unit.Stack stack = new Unit.Stack(type);
-        int count = 1 + random.nextInt(10);
-        int speed = 3 + random.nextInt(5);
+        int count = MIN_UNITS + random.nextInt(RANDOM_UNITS);
+        int speed = MIN_SPEED + random.nextInt(RANDOM_SPEED);
         for (int i = 0; i < count; i++) {
-            stack.add(new Unit(10 + random.nextInt(20), 5 + random.nextInt(10), 50 + random.nextInt(50), speed));
+            stack.add(new Unit(MIN_ATTACK + random.nextInt(RANDOM_ATTACK),
+                MIN_DEFENSE + random.nextInt(RANDOM_DEFENSE),
+                MIN_HEALTH + random.nextInt(RANDOM_HEALTH), speed));
         }
         return stack;
     }
@@ -101,10 +195,6 @@ public final class BattleMap {
         return obstacles[row][col];
     }
 
-    public boolean isLeftTurn() {
-        return leftTurn;
-    }
-
     public void move(int r, int c, int tr, int tc) {
         Unit.Stack stack = getStack(r, c);
         if (stack == null || stack.hasActed() || isLeft(r, c) != leftTurn) {
@@ -112,11 +202,12 @@ public final class BattleMap {
         }
         List<int[]> path = getPath(r, c, tr, tc, stack.getType() == Unit.Type.FLYER);
         if (!path.isEmpty() && path.size() - 1 <= stack.speed()) {
+            turnQueue.remove(map[r][c]);
             map[tr][tc] = map[r][c];
             map[r][c] = null;
             stack.setActed(true);
-            String msg = String.format("%s %s ходит на (%d, %d)",
-                    leftTurn ? "Левый" : "Правый", stack.getType().getName(), tr, tc);
+            String msg = String.format("%s(%s) ходит (%d, %d)",
+                stack.getType().getName(), leftTurn ? "L" : "R", tr, tc);
             support.firePropertyChange("log", null, msg);
             support.firePropertyChange("move", null, path);
             checkTurnEnd();
@@ -130,43 +221,78 @@ public final class BattleMap {
         if (stack == null || target == null || stack.hasActed() || isLeft(r, c) != leftTurn || isLeft(tr, tc) == leftTurn) {
             return;
         }
+
+        List<int[]> path = getPath(r, c, tr, tc, stack.getType() == Unit.Type.FLYER);
+        if (path.isEmpty()) {
+            return;
+        }
+
+        int[] moveTarget = path.get(path.size() - 2);
+        if (isObstacle(moveTarget[0], moveTarget[1]) || (getStack(moveTarget[0], moveTarget[1]) != null &&
+            (moveTarget[0] != r || moveTarget[1] != c))) {
+            int[] drs = {0, 0, 1, -1};
+            int[] dcs = {1, -1, 0, 0};
+            boolean found = false;
+            for (int i = 0; i < DIRECTIONS_COUNT; i++) {
+                int nr = tr + drs[i];
+                int nc = tc + dcs[i];
+                if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && !isObstacle(nr, nc) &&
+                    (getStack(nr, nc) == null || (nr == r && nc == c))) {
+                    List<int[]> newPath = getPath(r, c, nr, nc, stack.getType() == Unit.Type.FLYER);
+                    if (!newPath.isEmpty() && newPath.size() - 1 <= stack.speed()) {
+                        path = new ArrayList<>(newPath);
+                        path.add(new int[]{tr, tc});
+                        moveTarget = new int[]{nr, nc};
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            if (!found) {
+                return;
+            }
+        }
+
+        if (path.size() - 2 > stack.speed()) {
+            return;
+        }
+
+        turnQueue.remove(map[r][c]);
+        int mtr = moveTarget[0];
+        int mtc = moveTarget[1];
+        if (mtr != r || mtc != c) {
+            map[mtr][mtc] = map[r][c];
+            map[r][c] = null;
+            support.firePropertyChange("move", null, new ArrayList<>(path.subList(0, path.size() - 1)));
+            r = mtr;
+            c = mtc;
+        }
+
         int startSize = target.size();
         target.damage(stack.attack());
         int killed = startSize - target.size();
         String msg = String.format("%s %s атакует %s (-%d)",
-                leftTurn ? "Левый" : "Правый", stack.getType().getName(), target.getType().getName(), killed);
+            leftTurn ? "Левый" : "Правый", stack.getType().getName(), target.getType().getName(), killed);
         support.firePropertyChange("log", null, msg);
-        if (target.size() == 0) {
+        if (target.isEmpty()) {
             removeStack(tr, tc);
         } else if (!target.hasCounterAttacked()) {
             int sStart = stack.size();
             stack.damage(target.attack());
             int sKilled = sStart - stack.size();
             String cmsg = String.format("%s %s контратакует (-%d)",
-                    leftTurn ? "Правый" : "Левый", target.getType().getName(), sKilled);
+                leftTurn ? "Правый" : "Левый", target.getType().getName(), sKilled);
             support.firePropertyChange("log", null, cmsg);
             target.setCounterAttacked(true);
-            if (stack.size() == 0) {
+            if (stack.isEmpty()) {
                 removeStack(r, c);
             }
         }
-        if (stack.size() > 0) {
+        if (!stack.isEmpty()) {
             stack.setActed(true);
         }
         checkTurnEnd();
         support.firePropertyChange("map", null, null);
-    }
-
-    public void skip(int r, int c) {
-        Unit.Stack stack = getStack(r, c);
-        if (stack != null && isLeft(r, c) == leftTurn && !stack.hasActed()) {
-            stack.setActed(true);
-            String msg = String.format("%s %s пропустил ход",
-                    leftTurn ? "Левый" : "Правый", stack.getType().getName());
-            support.firePropertyChange("log", null, msg);
-            checkTurnEnd();
-            support.firePropertyChange("map", null, null);
-        }
     }
 
     private void removeStack(int r, int c) {
@@ -177,9 +303,7 @@ public final class BattleMap {
     }
 
     private void checkTurnEnd() {
-        NavigableMap<Long, StackKey> currentSide = leftTurn ? left : right;
-        boolean allActed = currentSide.values().stream().allMatch(sk -> sk.stack.hasActed());
-        if (allActed) {
+        if (turnQueue.isEmpty()) {
             leftTurn = !leftTurn;
             String msg = String.format("--- Ход %s ---", leftTurn ? "ЛЕВЫХ" : "ПРАВЫХ");
             support.firePropertyChange("log", null, msg);
@@ -191,6 +315,10 @@ public final class BattleMap {
                 sk.stack.setActed(false);
                 sk.stack.setCounterAttacked(false);
             });
+            fillTurnQueue();
+            if (turnQueue.isEmpty()) {
+                checkTurnEnd(); // Switch back if other side is also empty (should not happen in normal game)
+            }
         }
     }
 
@@ -206,7 +334,6 @@ public final class BattleMap {
         int[] drs = {0, 0, 1, -1};
         int[] dcs = {1, -1, 0, 0};
         while (currR != r || currC != c) {
-            boolean found = false;
             for (int i = 0; i < 4; i++) {
                 int nr = currR + drs[i];
                 int nc = currC + dcs[i];
@@ -214,7 +341,6 @@ public final class BattleMap {
                     currR = nr;
                     currC = nc;
                     path.add(0, new int[]{currR, currC});
-                    found = true;
                     break;
                 }
             }
@@ -259,24 +385,15 @@ public final class BattleMap {
                 }
             }
         }
-        if (flying) {
-            for (int r = 0; r < ROWS; r++) {
-                for (int c = 0; c < COLS; c++) {
-                    if (map[r][c] != null && (r != row || c != col) && (r != tr || c != tc)) {
-                        dist[r][c] = Integer.MAX_VALUE;
-                    }
-                }
-            }
-        }
         return dist;
     }
 
     private void generateObstacles(Random random) {
-        int count = 5 + random.nextInt(5);
+        int count = OBSTACLES_COUNT_BASE + random.nextInt(OBSTACLES_COUNT_RANDOM);
         int placed = 0;
         while (placed < count) {
             int r = random.nextInt(ROWS);
-            int c = 5 + random.nextInt(5);
+            int c = OBSTACLES_COL_MIN + random.nextInt(OBSTACLES_COL_RANDOM);
             if (map[r][c] == null && !obstacles[r][c]) {
                 obstacles[r][c] = true;
                 placed++;
