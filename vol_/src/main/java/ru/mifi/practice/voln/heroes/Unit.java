@@ -9,6 +9,7 @@ import java.util.PriorityQueue;
 import java.util.Queue;
 
 public final class Unit {
+    private static final int ATTACK_DIVIDER = 100;
     private final int attack;
     private final int defense;
     private final int speed;
@@ -34,7 +35,11 @@ public final class Unit {
     }
 
     public int attack() {
-        return attack * health / 100;
+        return attack * health / ATTACK_DIVIDER;
+    }
+
+    public void takeDamage(int damage) {
+        this.health -= damage;
     }
 
     @Getter
@@ -92,8 +97,12 @@ public final class Unit {
             return enemies.stream().mapToInt(Unit::speed).min().orElse(0);
         }
 
-        public void damage(int attack) {
-            int remaining = attack;
+        public boolean isEmpty() {
+            return enemies.isEmpty();
+        }
+
+        public void damage(int attackAmount) {
+            int remaining = attackAmount;
             Iterator<Unit> it = enemies.iterator();
             while (it.hasNext() && remaining > 0) {
                 Unit unit = it.next();
@@ -105,7 +114,7 @@ public final class Unit {
                     it.remove();
                     remaining -= kick - unit.health();
                 } else {
-                    unit.health -= kick;
+                    unit.takeDamage(kick);
                     remaining = 0;
                 }
             }
