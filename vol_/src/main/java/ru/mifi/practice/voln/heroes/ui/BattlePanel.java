@@ -75,6 +75,7 @@ final class BattlePanel extends JPanel {
                 if (animStep >= animPath.size() - 1) {
                     ((Timer) e.getSource()).stop();
                     animPath = null;
+                    map.endAction();
                 }
             }
             repaint();
@@ -106,6 +107,9 @@ final class BattlePanel extends JPanel {
     }
 
     private void handleCellClick(int r, int c) {
+        if (map.isAnimating()) {
+            return;
+        }
         Long activeId = map.getTurnQueue().peekFirst();
         if (activeId == null) {
             return;

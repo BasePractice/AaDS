@@ -50,6 +50,9 @@ public final class BattleMap {
     private final Deque<Long> turnQueue = new ArrayDeque<>();
     @Getter
     private boolean leftTurn = true;
+    @Getter
+    private boolean animating;
+    private int[] pendingAttack;
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
@@ -94,7 +97,7 @@ public final class BattleMap {
         fillTurnQueue();
     }
 
-    private void fillTurnQueue() {
+    public void fillTurnQueue() {
         turnQueue.clear();
         for (int r = 0; r < ROWS; r++) {
             for (int c = 0; c < COLS; c++) {
@@ -111,7 +114,7 @@ public final class BattleMap {
     }
 
     public void waitTurn() {
-        if (turnQueue.isEmpty()) {
+        if (turnQueue.isEmpty() || animating) {
             return;
         }
         Long id = turnQueue.pollFirst();
@@ -120,7 +123,7 @@ public final class BattleMap {
     }
 
     public void skipTurn() {
-        if (turnQueue.isEmpty()) {
+        if (turnQueue.isEmpty() || animating) {
             return;
         }
         Long id = turnQueue.pollFirst();
@@ -196,26 +199,32 @@ public final class BattleMap {
     }
 
     public void move(int r, int c, int tr, int tc) {
+        if (animating) {
+            return;
+        }
         Unit.Stack stack = getStack(r, c);
         if (stack == null || stack.hasActed() || isLeft(r, c) != leftTurn) {
             return;
         }
+        if (getStack(tr, tc) != null || isObstacle(tr, tc)) {
+            return;
+        }
         List<int[]> path = getPath(r, c, tr, tc, stack.getType() == Unit.Type.FLYER);
         if (!path.isEmpty() && path.size() - 1 <= stack.speed()) {
-            turnQueue.remove(map[r][c]);
             map[tr][tc] = map[r][c];
             map[r][c] = null;
-            stack.setActed(true);
             String msg = String.format("%s(%s) ходит (%d, %d)",
                 stack.getType().getName(), leftTurn ? "L" : "R", tr, tc);
             support.firePropertyChange("log", null, msg);
+            animating = true;
             support.firePropertyChange("move", null, path);
-            checkTurnEnd();
-            support.firePropertyChange("map", null, null);
         }
     }
 
     public void attack(int r, int c, int tr, int tc) {
+        if (animating) {
+            return;
+        }
         Unit.Stack stack = getStack(r, c);
         Unit.Stack target = getStack(tr, tc);
         if (stack == null || target == null || stack.hasActed() || isLeft(r, c) != leftTurn || isLeft(tr, tc) == leftTurn) {
@@ -257,17 +266,52 @@ public final class BattleMap {
             return;
         }
 
-        turnQueue.remove(map[r][c]);
         int mtr = moveTarget[0];
         int mtc = moveTarget[1];
         if (mtr != r || mtc != c) {
             map[mtr][mtc] = map[r][c];
             map[r][c] = null;
+            animating = true;
+            pendingAttack = new int[]{tr, tc};
             support.firePropertyChange("move", null, new ArrayList<>(path.subList(0, path.size() - 1)));
-            r = mtr;
-            c = mtc;
+        } else {
+            performAttack(r, c, tr, tc);
+            finishTurn();
         }
+    }
 
+    public void endAction() {
+        if (!animating) {
+            return;
+        }
+        if (pendingAttack != null) {
+            int tr = pendingAttack[0];
+            int tc = pendingAttack[1];
+            pendingAttack = null;
+            Long id = turnQueue.peekFirst();
+            int[] pos = getStackCoord(id);
+            performAttack(pos[0], pos[1], tr, tc);
+        }
+        finishTurn();
+    }
+
+    private void finishTurn() {
+        Long id = turnQueue.pollFirst();
+        Unit.Stack stack = getStackById(id);
+        if (stack != null) {
+            stack.setActed(true);
+        }
+        animating = false;
+        checkTurnEnd();
+        support.firePropertyChange("map", null, null);
+    }
+
+    private void performAttack(int r, int c, int tr, int tc) {
+        Unit.Stack stack = getStack(r, c);
+        Unit.Stack target = getStack(tr, tc);
+        if (stack == null || target == null) {
+            return;
+        }
         int startSize = target.size();
         target.damage(stack.attack());
         int killed = startSize - target.size();
@@ -288,11 +332,6 @@ public final class BattleMap {
                 removeStack(r, c);
             }
         }
-        if (!stack.isEmpty()) {
-            stack.setActed(true);
-        }
-        checkTurnEnd();
-        support.firePropertyChange("map", null, null);
     }
 
     private void removeStack(int r, int c) {
@@ -374,7 +413,10 @@ public final class BattleMap {
                 int nr = r + drs[i];
                 int nc = c + dcs[i];
                 if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) {
-                    if (!flying && (obstacles[nr][nc] || (map[nr][nc] != null && (nr != tr || nc != tc)))) {
+                    if (map[nr][nc] != null && (nr != tr || nc != tc)) {
+                        continue;
+                    }
+                    if (!flying && obstacles[nr][nc]) {
                         continue;
                     }
                     int nd = d + 1;

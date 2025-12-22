@@ -16,6 +16,8 @@ public final class BattleGui extends JFrame {
     public BattleGui(BattleMap map) {
         this.map = map;
         setTitle("Герои");
+        setType(Type.UTILITY);
+        setResizable(false);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
         BattlePanel panel = new BattlePanel(this);
