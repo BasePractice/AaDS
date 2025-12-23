@@ -1,6 +1,5 @@
 package ru.mifi.practice.voln.heroes;
 
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 import java.beans.PropertyChangeListener;
@@ -315,8 +314,8 @@ public final class BattleMap {
         int startSize = target.size();
         target.damage(stack.attack());
         int killed = startSize - target.size();
-        String msg = String.format("%s %s атакует %s (-%d)",
-            leftTurn ? "Левый" : "Правый", stack.getType().getName(), target.getType().getName(), killed);
+        String msg = String.format("%s(%s) бьет %s (-%d)", stack.getType().getName(), leftTurn ? "R" : "L",
+            target.getType().getName(), killed);
         support.firePropertyChange("log", null, msg);
         if (target.isEmpty()) {
             removeStack(tr, tc);
@@ -324,8 +323,11 @@ public final class BattleMap {
             int sStart = stack.size();
             stack.damage(target.attack());
             int sKilled = sStart - stack.size();
-            String cmsg = String.format("%s %s контратакует (-%d)",
-                leftTurn ? "Правый" : "Левый", target.getType().getName(), sKilled);
+            String cmsg = String.format("%s(%s) отвечает",
+                target.getType().getName(), leftTurn ? "R" : "L");
+            if (sKilled > 0) {
+                cmsg += "(-" + sKilled + ")";
+            }
             support.firePropertyChange("log", null, cmsg);
             target.setCounterAttacked(true);
             if (stack.isEmpty()) {
@@ -443,14 +445,6 @@ public final class BattleMap {
         }
     }
 
-    @EqualsAndHashCode(of = "id")
-    private static final class StackKey {
-        private final long id;
-        private final Unit.Stack stack;
-
-        private StackKey(long id, Unit.Stack stack) {
-            this.id = id;
-            this.stack = stack;
-        }
+    private record StackKey(long id, Unit.Stack stack) {
     }
 }
