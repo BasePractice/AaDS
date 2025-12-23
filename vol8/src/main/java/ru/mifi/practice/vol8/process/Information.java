@@ -55,6 +55,7 @@ public abstract class Information {
         return students;
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     public static void main(String[] args) throws IOException {
         String fileName = "C:\\Users\\Pastor\\Downloads\\courseid_9687_participants.csv";
         String output = ".output";

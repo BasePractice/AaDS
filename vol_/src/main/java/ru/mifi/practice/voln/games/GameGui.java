@@ -233,6 +233,7 @@ public class GameGui extends JFrame {
             g.drawImage(buffer, 0, 0, null);
         }
 
+        @SuppressWarnings("UnnecessaryLocalVariable")
         private void drawGame(Graphics g) {
             int cells = game.getLineLength();
             int cellWidth = WIDTH / cells;

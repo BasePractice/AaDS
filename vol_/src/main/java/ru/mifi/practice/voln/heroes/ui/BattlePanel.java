@@ -115,9 +115,6 @@ final class BattlePanel extends JPanel {
             return;
         }
         int[] activeCoord = map.getStackCoord(activeId);
-        if (activeCoord == null) {
-            return;
-        }
         int ar = activeCoord[0];
         int ac = activeCoord[1];
 
@@ -198,21 +195,19 @@ final class BattlePanel extends JPanel {
         Long activeId = map.getTurnQueue().peekFirst();
         if (activeId != null) {
             int[] coord = map.getStackCoord(activeId);
-            if (coord != null) {
-                int ar = coord[0];
-                int ac = coord[1];
-                Unit.Stack stack = map.getStack(ar, ac);
-                if (stack != null) {
-                    g2.setColor(ACTIVE_HIGHLIGHT_COLOR);
-                    g2.fillRect(ac * CELL_SIZE, ar * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+            int ar = coord[0];
+            int ac = coord[1];
+            Unit.Stack stack = map.getStack(ar, ac);
+            if (stack != null) {
+                g2.setColor(ACTIVE_HIGHLIGHT_COLOR);
+                g2.fillRect(ac * CELL_SIZE, ar * CELL_SIZE, CELL_SIZE, CELL_SIZE);
 
-                    int[][] dists = map.getDistances(ar, ac, stack.getType() == Unit.Type.FLYER);
-                    g2.setColor(MOVE_HIGHLIGHT_COLOR);
-                    for (int r = 0; r < ROWS; r++) {
-                        for (int c = 0; c < COLS; c++) {
-                            if (dists[r][c] <= stack.speed() && (r != ar || c != ac)) {
-                                g2.fillRect(c * CELL_SIZE, r * CELL_SIZE, CELL_SIZE, CELL_SIZE);
-                            }
+                int[][] dists = map.getDistances(ar, ac, stack.getType() == Unit.Type.FLYER);
+                g2.setColor(MOVE_HIGHLIGHT_COLOR);
+                for (int r = 0; r < ROWS; r++) {
+                    for (int c = 0; c < COLS; c++) {
+                        if (dists[r][c] <= stack.speed() && (r != ar || c != ac)) {
+                            g2.fillRect(c * CELL_SIZE, r * CELL_SIZE, CELL_SIZE, CELL_SIZE);
                         }
                     }
                 }

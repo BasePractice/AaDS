@@ -32,6 +32,7 @@ public final class NotifiableMemory implements Notifiable, Runnable {
         listeners.computeIfAbsent(updateChannel, (u) -> new ArrayList<>()).add(callback);
     }
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     @Override
     public void notify(String channel, long key) {
         if (!running.get()) {

@@ -80,7 +80,7 @@ public interface Tree<T> extends Visitor.Visit<T>, Hashable {
             return root.search(element);
         }
 
-        @SuppressWarnings("PMD.EmptyControlStatement")
+        @SuppressWarnings({"PMD.EmptyControlStatement", "StatementWithEmptyBody"})
         @Override
         public void delete(T value) {
             Node<T> node = find(value);

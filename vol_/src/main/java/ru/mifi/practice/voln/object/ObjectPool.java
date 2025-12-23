@@ -171,6 +171,7 @@ public interface ObjectPool<T extends Closeable> extends Closeable {
 
         private record Wrapper<T extends Closeable>(T target, ObjectPool<T> pool) {
 
+            @SuppressWarnings("resource")
             @SneakyThrows
             public static <T extends Closeable> T proxy(ObjectPool<T> pool, T target, Class<T> clazz) {
                 return new ByteBuddy()

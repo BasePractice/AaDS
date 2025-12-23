@@ -113,7 +113,7 @@ public interface HashTable<K, V> {
             this(Character.MAX_VALUE);
         }
 
-        @SuppressWarnings("PMD.EmptyControlStatement")
+        @SuppressWarnings({"PMD.EmptyControlStatement", "StatementWithEmptyBody"})
         private void resize() {
             if (size > entries.length * 8) {
                 //TODO: реализовать перехеширование
