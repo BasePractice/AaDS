@@ -197,60 +197,61 @@ public final class BattleMap {
         return obstacles[row][col];
     }
 
-    public void move(int r, int c, int tr, int tc) {
+    public void move(int sourceRow, int sourceColumn, int targetRow, int targetColumn) {
         if (animating) {
             return;
         }
-        Unit.Stack stack = getStack(r, c);
-        if (stack == null || stack.hasActed() || isLeft(r, c) != leftTurn) {
+        Unit.Stack stack = getStack(sourceRow, sourceColumn);
+        if (stack == null || stack.hasActed() || isLeft(sourceRow, sourceColumn) != leftTurn) {
             return;
         }
-        if (getStack(tr, tc) != null || isObstacle(tr, tc)) {
+        if (getStack(targetRow, targetColumn) != null || isObstacle(targetRow, targetColumn)) {
             return;
         }
-        List<int[]> path = getPath(r, c, tr, tc, stack.getType() == Unit.Type.FLYER);
+        List<int[]> path = getPath(sourceRow, sourceColumn, targetRow, targetColumn, stack.getType() == Unit.Type.FLYER);
         if (!path.isEmpty() && path.size() - 1 <= stack.speed()) {
-            map[tr][tc] = map[r][c];
-            map[r][c] = null;
+            map[targetRow][targetColumn] = map[sourceRow][sourceColumn];
+            map[sourceRow][sourceColumn] = null;
             String msg = String.format("%s(%s) ходит (%d, %d)",
-                stack.getType().getName(), leftTurn ? "L" : "R", tr, tc);
+                stack.getType().getName(), leftTurn ? "L" : "R", targetRow, targetColumn);
             support.firePropertyChange("log", null, msg);
             animating = true;
             support.firePropertyChange("move", null, path);
         }
     }
 
-    public void attack(int r, int c, int tr, int tc) {
+    public void attack(int sourceRow, int sourceColumn, int targetRow, int targetColumn) {
         if (animating) {
             return;
         }
-        Unit.Stack stack = getStack(r, c);
-        Unit.Stack target = getStack(tr, tc);
-        if (stack == null || target == null || stack.hasActed() || isLeft(r, c) != leftTurn || isLeft(tr, tc) == leftTurn) {
+        Unit.Stack stack = getStack(sourceRow, sourceColumn);
+        Unit.Stack target = getStack(targetRow, targetColumn);
+        if (stack == null || target == null || stack.hasActed() ||
+            isLeft(sourceRow, sourceColumn) != leftTurn || isLeft(targetRow, targetColumn) == leftTurn) {
             return;
         }
 
-        List<int[]> path = getPath(r, c, tr, tc, stack.getType() == Unit.Type.FLYER);
+        List<int[]> path = getPath(sourceRow, sourceColumn, targetRow, targetColumn, stack.getType() == Unit.Type.FLYER);
         if (path.isEmpty()) {
             return;
         }
 
         int[] moveTarget = path.get(path.size() - 2);
         if (isObstacle(moveTarget[0], moveTarget[1]) || (getStack(moveTarget[0], moveTarget[1]) != null &&
-            (moveTarget[0] != r || moveTarget[1] != c))) {
+            (moveTarget[0] != sourceRow || moveTarget[1] != sourceColumn))) {
             int[] drs = {0, 0, 1, -1};
             int[] dcs = {1, -1, 0, 0};
             boolean found = false;
             for (int i = 0; i < DIRECTIONS_COUNT; i++) {
-                int nr = tr + drs[i];
-                int nc = tc + dcs[i];
-                if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && !isObstacle(nr, nc) &&
-                    (getStack(nr, nc) == null || (nr == r && nc == c))) {
-                    List<int[]> newPath = getPath(r, c, nr, nc, stack.getType() == Unit.Type.FLYER);
+                int nextRow = targetRow + drs[i];
+                int nextColumn = targetColumn + dcs[i];
+                if (nextRow >= 0 && nextRow < ROWS && nextColumn >= 0 && nextColumn < COLS && !isObstacle(nextRow, nextColumn) &&
+                    (getStack(nextRow, nextColumn) == null || (nextRow == sourceRow && nextColumn == sourceColumn))) {
+                    List<int[]> newPath = getPath(sourceRow, sourceColumn, nextRow, nextColumn, stack.getType() == Unit.Type.FLYER);
                     if (!newPath.isEmpty() && newPath.size() - 1 <= stack.speed()) {
                         path = new ArrayList<>(newPath);
-                        path.add(new int[]{tr, tc});
-                        moveTarget = new int[]{nr, nc};
+                        path.add(new int[]{targetRow, targetColumn});
+                        moveTarget = new int[]{nextRow, nextColumn};
                         found = true;
                         break;
                     }
@@ -267,14 +268,14 @@ public final class BattleMap {
 
         int mtr = moveTarget[0];
         int mtc = moveTarget[1];
-        if (mtr != r || mtc != c) {
-            map[mtr][mtc] = map[r][c];
-            map[r][c] = null;
+        if (mtr != sourceRow || mtc != sourceColumn) {
+            map[mtr][mtc] = map[sourceRow][sourceColumn];
+            map[sourceRow][sourceColumn] = null;
             animating = true;
-            pendingAttack = new int[]{tr, tc};
+            pendingAttack = new int[]{targetRow, targetColumn};
             support.firePropertyChange("move", null, new ArrayList<>(path.subList(0, path.size() - 1)));
         } else {
-            performAttack(r, c, tr, tc);
+            performAttack(sourceRow, sourceColumn, targetRow, targetColumn);
             finishTurn();
         }
     }
@@ -305,9 +306,9 @@ public final class BattleMap {
         support.firePropertyChange("map", null, null);
     }
 
-    private void performAttack(int r, int c, int tr, int tc) {
-        Unit.Stack stack = getStack(r, c);
-        Unit.Stack target = getStack(tr, tc);
+    private void performAttack(int sourceRow, int sourceColumn, int targetRow, int targetColumn) {
+        Unit.Stack stack = getStack(sourceRow, sourceColumn);
+        Unit.Stack target = getStack(targetRow, targetColumn);
         if (stack == null || target == null) {
             return;
         }
@@ -318,10 +319,10 @@ public final class BattleMap {
             target.getType().getName(), killed);
         support.firePropertyChange("log", null, msg);
         if (target.isEmpty()) {
-            removeStack(tr, tc);
+            removeStack(targetRow, targetColumn);
         } else if (!target.hasCounterAttacked()) {
             int sStart = stack.size();
-            stack.damage(target.attack());
+            stack.damage(target.counterAttack());
             int sKilled = sStart - stack.size();
             String cmsg = String.format("%s(%s) отвечает",
                 target.getType().getName(), leftTurn ? "R" : "L");
@@ -331,16 +332,16 @@ public final class BattleMap {
             support.firePropertyChange("log", null, cmsg);
             target.setCounterAttacked(true);
             if (stack.isEmpty()) {
-                removeStack(r, c);
+                removeStack(sourceRow, sourceColumn);
             }
         }
     }
 
-    private void removeStack(int r, int c) {
-        Long id = map[r][c];
+    private void removeStack(int row, int column) {
+        Long id = map[row][column];
         left.remove(id);
         right.remove(id);
-        map[r][c] = null;
+        map[row][column] = null;
     }
 
     private void checkTurnEnd() {
@@ -363,25 +364,26 @@ public final class BattleMap {
         }
     }
 
-    public List<int[]> getPath(int r, int c, int tr, int tc, boolean flying) {
-        int[][] dists = getDistances(r, c, flying, tr, tc);
-        if (dists[tr][tc] == Integer.MAX_VALUE) {
+    public List<int[]> getPath(int sourceRow, int sourceColumn, int targetRow, int targetColumn, boolean flying) {
+        int[][] dists = getDistances(sourceRow, sourceColumn, flying, targetRow, targetColumn);
+        if (dists[targetRow][targetColumn] == Integer.MAX_VALUE) {
             return new ArrayList<>();
         }
         List<int[]> path = new ArrayList<>();
-        int currR = tr;
-        int currC = tc;
-        path.add(new int[]{currR, currC});
+        int currentRow = targetRow;
+        int currentColumn = targetColumn;
+        path.add(new int[]{currentRow, currentColumn});
         int[] drs = {0, 0, 1, -1};
         int[] dcs = {1, -1, 0, 0};
-        while (currR != r || currC != c) {
+        while (currentRow != sourceRow || currentColumn != sourceColumn) {
             for (int i = 0; i < 4; i++) {
-                int nr = currR + drs[i];
-                int nc = currC + dcs[i];
-                if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && dists[nr][nc] == dists[currR][currC] - 1) {
-                    currR = nr;
-                    currC = nc;
-                    path.add(0, new int[]{currR, currC});
+                int nextRow = currentRow + drs[i];
+                int nextColumn = currentColumn + dcs[i];
+                if (nextRow >= 0 && nextRow < ROWS && nextColumn >= 0 && nextColumn < COLS &&
+                    dists[nextRow][nextColumn] == dists[currentRow][currentColumn] - 1) {
+                    currentRow = nextRow;
+                    currentColumn = nextColumn;
+                    path.add(0, new int[]{currentRow, currentColumn});
                     break;
                 }
             }
@@ -393,7 +395,7 @@ public final class BattleMap {
         return getDistances(row, col, flying, -1, -1);
     }
 
-    public int[][] getDistances(int row, int col, boolean flying, int tr, int tc) {
+    public int[][] getDistances(int row, int col, boolean flying, int targetRow, int targetColumn) {
         int[][] dist = new int[ROWS][COLS];
         for (int[] r : dist) {
             Arrays.fill(r, Integer.MAX_VALUE);
@@ -412,19 +414,19 @@ public final class BattleMap {
                 continue;
             }
             for (int i = 0; i < 4; i++) {
-                int nr = r + drs[i];
-                int nc = c + dcs[i];
-                if (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS) {
-                    if (map[nr][nc] != null && (nr != tr || nc != tc)) {
+                int nextRow = r + drs[i];
+                int nextColumn = c + dcs[i];
+                if (nextRow >= 0 && nextRow < ROWS && nextColumn >= 0 && nextColumn < COLS) {
+                    if (map[nextRow][nextColumn] != null && (nextRow != targetRow || nextColumn != targetColumn)) {
                         continue;
                     }
-                    if (!flying && obstacles[nr][nc]) {
+                    if (!flying && obstacles[nextRow][nextColumn]) {
                         continue;
                     }
                     int nd = d + 1;
-                    if (nd < dist[nr][nc]) {
-                        dist[nr][nc] = nd;
-                        pq.add(new int[]{nr, nc, nd});
+                    if (nd < dist[nextRow][nextColumn]) {
+                        dist[nextRow][nextColumn] = nd;
+                        pq.add(new int[]{nextRow, nextColumn, nd});
                     }
                 }
             }

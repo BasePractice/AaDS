@@ -236,6 +236,7 @@ public interface Stage {
             return this;
         }
 
+        @SuppressWarnings("ConstantValue")
         public boolean permutation(Stepper stepper) {
             char x = 0;
             if (this.x.length > index - 1) {

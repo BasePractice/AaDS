@@ -60,7 +60,7 @@ public final class Unit {
     public static final class Stack {
         @Getter
         private final Type type;
-        private final Queue<Unit> enemies = new PriorityQueue<>(Comparator.comparing(Unit::health));
+        private final Queue<Unit> units = new PriorityQueue<>(Comparator.comparing(Unit::health));
         @Setter
         private boolean acted;
         @Setter
@@ -79,38 +79,44 @@ public final class Unit {
         }
 
         public void add(Unit unit) {
-            enemies.add(unit);
+            units.add(unit);
         }
 
         public int size() {
-            return enemies.size();
+            return units.size();
         }
 
         public int maximumAttack() {
-            return enemies.stream().mapToInt(Unit::attack).sum();
+            return units.stream().mapToInt(Unit::attack).sum();
+        }
+
+        public int counterAttack() {
+            int maximum = units.stream().mapToInt(Unit::attack).sum();
+            int minimum = maximum / 2;
+            return ThreadLocalRandom.current().nextInt(minimum, maximum);
         }
 
         public int attack() {
-            int maximum = enemies.stream().mapToInt(Unit::attack).sum();
+            int maximum = units.stream().mapToInt(Unit::attack).sum();
             int minimum = maximum - 20;
             return ThreadLocalRandom.current().nextInt(minimum, maximum);
         }
 
         public int totalHealth() {
-            return enemies.stream().mapToInt(Unit::health).sum();
+            return units.stream().mapToInt(Unit::health).sum();
         }
 
         public int speed() {
-            return enemies.stream().mapToInt(Unit::speed).min().orElse(0);
+            return units.stream().mapToInt(Unit::speed).min().orElse(1);
         }
 
         public boolean isEmpty() {
-            return enemies.isEmpty();
+            return units.isEmpty();
         }
 
         public void damage(int attackAmount) {
             int remaining = attackAmount;
-            Iterator<Unit> it = enemies.iterator();
+            Iterator<Unit> it = units.iterator();
             while (it.hasNext() && remaining > 0) {
                 Unit unit = it.next();
                 int kick = Math.max(0, remaining - unit.defense());
