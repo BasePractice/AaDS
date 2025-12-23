@@ -7,6 +7,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.PriorityQueue;
 import java.util.Queue;
+import java.util.concurrent.ThreadLocalRandom;
 
 public final class Unit {
     private static final int ATTACK_DIVIDER = 100;
@@ -85,8 +86,14 @@ public final class Unit {
             return enemies.size();
         }
 
-        public int attack() {
+        public int maximumAttack() {
             return enemies.stream().mapToInt(Unit::attack).sum();
+        }
+
+        public int attack() {
+            int maximum = enemies.stream().mapToInt(Unit::attack).sum();
+            int minimum = maximum - 20;
+            return ThreadLocalRandom.current().nextInt(minimum, maximum);
         }
 
         public int totalHealth() {

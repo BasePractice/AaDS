@@ -40,7 +40,7 @@ final class BattlePanel extends JPanel {
     private static final int LOG_X_OFFSET = 10;
     private static final int LOG_Y_START = 20;
     private static final int LOG_LINE_HEIGHT = 20;
-    private static final int LOG_FONT_SIZE = 12;
+    private static final int LOG_FONT_SIZE = 10;
 
     private static final Color BG_COLOR = new Color(245, 245, 245);
     private static final Color GRID_COLOR = new Color(107, 166, 89);
@@ -308,7 +308,7 @@ final class BattlePanel extends JPanel {
         g2.fillRect(sx, sy, size, size);
         g2.setColor(Color.BLACK);
         String nStr = String.format("N: %3d", stack.size());
-        String aStr = String.format("A: %3d", stack.attack());
+        String aStr = String.format("A: %3d", stack.maximumAttack());
         String hStr = String.format("H: %3d", stack.totalHealth());
         FontMetrics fm = g2.getFontMetrics();
         int lineHeight = fm.getHeight();
