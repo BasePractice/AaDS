@@ -6,18 +6,6 @@ import ru.mifi.practice.voln.games.logic.Person;
 import ru.mifi.practice.voln.games.logic.Updatable;
 import ru.mifi.practice.voln.games.transmit.Output;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -26,6 +14,19 @@ import javax.swing.JSlider;
 import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.List;
 
 public class GameGui extends JFrame {
     private static final int REFRESH_DELAY = 100;
@@ -125,6 +126,13 @@ public class GameGui extends JFrame {
         this.timer.start();
     }
 
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            GameGui gui = new GameGui();
+            gui.setVisible(true);
+        });
+    }
+
     private void handleKey(int keyCode) {
         if (!game.isRunning()) {
             return;
@@ -211,6 +219,10 @@ public class GameGui extends JFrame {
             Graphics2D bg = (Graphics2D) buffer.getGraphics();
             bg.setColor(getBackground());
             bg.fillRect(0, 0, getWidth(), getHeight());
+            bg.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            bg.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
+            bg.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+            bg.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
             double scale = Math.min((double) getWidth() / WIDTH, (double) getHeight() / HEIGHT);
             bg.translate((getWidth() - WIDTH * scale) / 2, (getHeight() - HEIGHT * scale) / 2);
@@ -297,12 +309,5 @@ public class GameGui extends JFrame {
             g.drawString(text, tx, ty);
             g.setFont(oldFont);
         }
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            GameGui gui = new GameGui();
-            gui.setVisible(true);
-        });
     }
 }
