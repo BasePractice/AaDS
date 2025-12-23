@@ -121,7 +121,7 @@ public final class SimpleGen1 implements YaSymbol {
                     }
                 } else if (cZ == null) {
                     if (!context.digits.contains(1)) {
-                        context.assign(cZ, 1);
+                        context.assign(null, 1);
                         return Optional.of(context);
                     }
                 }
@@ -179,8 +179,6 @@ public final class SimpleGen1 implements YaSymbol {
                         if (result.isPresent()) {
                             return result;
                         }
-                    } else {
-                        //TODO: Next
                     }
 
                     if (zState.type() == StateType.GENERATED) {

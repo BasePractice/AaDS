@@ -261,6 +261,7 @@ public interface Stage2 {
             return String.valueOf(trX()) + trY() + trZ();
         }
 
+        @SuppressWarnings("SuspiciousNameCombination")
         public boolean step() {
             if (hasX && hasY && hasZ) {
                 int sum = sum(x, y);

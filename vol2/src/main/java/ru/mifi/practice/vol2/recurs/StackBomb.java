@@ -4,6 +4,7 @@ public abstract class StackBomb {
 
     private static int callFrame = 0;
 
+    @SuppressWarnings("TailRecursion")
     private static void call(int n) {
         callFrame++;
         call(n + 1);

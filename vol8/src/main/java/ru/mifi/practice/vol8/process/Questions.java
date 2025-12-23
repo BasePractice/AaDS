@@ -46,6 +46,7 @@ public abstract class Questions {
         {"Алгоритм Хаффмана", ""},
     };
 
+    @SuppressWarnings("ResultOfMethodCallIgnored")
     public static void main(String[] args) throws IOException {
         var students = parseStudents("C:\\Users\\Pastor\\Downloads\\courseid_9687_participants.csv");
         var output = new File(".output/questions");
