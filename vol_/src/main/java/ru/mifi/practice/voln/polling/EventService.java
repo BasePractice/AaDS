@@ -1,12 +1,12 @@
 package ru.mifi.practice.voln.polling;
 
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Sinks;
-
 import java.time.Duration;
 import java.util.concurrent.ConcurrentNavigableMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicLong;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
+import reactor.core.publisher.Sinks;
 
 public interface EventService {
 
@@ -19,6 +19,7 @@ public interface EventService {
         private final Sinks.Many<Event> eventSink = Sinks.many().multicast().onBackpressureBuffer(1000);
         private final AtomicLong eventId = new AtomicLong(1);
         private final long bufferSize;
+        private final AtomicLong currentSize = new AtomicLong(0);
 
         public Default(long bufferSize) {
             this.bufferSize = bufferSize;
@@ -27,32 +28,27 @@ public interface EventService {
         @Override
         public synchronized void addEvent(Event.Data data) {
             long id = eventId.getAndIncrement();
-            var event = new Event(id, data);
+            Event event = new Event(id, data);
             eventBuffer.put(event.id(), event);
-            if (eventBuffer.size() > bufferSize) {
+            if (currentSize.incrementAndGet() > bufferSize) {
                 eventBuffer.pollFirstEntry();
+                currentSize.decrementAndGet();
             }
             eventSink.tryEmitNext(event);
         }
 
         @Override
         public Flux<Event> getEvents(Long lastOffset, long timeoutSeconds) {
-            return Flux.defer(() -> {
-                Flux<Event> historicalEvents = getHistoricalEvents(lastOffset);
-                Flux<Event> newEvents = eventSink.asFlux()
-                    .filter(event -> event.id() > (lastOffset != null ? lastOffset : 0))
-                    .timeout(Duration.ofSeconds(timeoutSeconds))
-                    .onErrorResume(e -> Flux.empty());
-
-                return Flux.concat(historicalEvents, newEvents);
-            });
+            long offset = lastOffset != null ? lastOffset : 0L;
+            return getHistoricalEvents(offset)
+                    .switchIfEmpty(Mono.defer(() -> eventSink.asFlux()
+                            .filter(event -> event.id() > offset)
+                            .next()
+                            .timeout(Duration.ofSeconds(timeoutSeconds), Mono.empty())));
         }
 
-        private Flux<Event> getHistoricalEvents(Long lastOffset) {
-            return Flux.fromIterable(() -> {
-                Long startKey = lastOffset != null ? lastOffset + 1 : 1L;
-                return eventBuffer.tailMap(startKey).values().iterator();
-            });
+        private Flux<Event> getHistoricalEvents(long lastOffset) {
+            return Flux.fromIterable(eventBuffer.tailMap(lastOffset + 1).values());
         }
     }
 }
