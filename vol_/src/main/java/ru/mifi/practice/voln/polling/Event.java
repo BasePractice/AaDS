@@ -4,7 +4,7 @@ import lombok.Builder;
 
 @Builder(toBuilder = true)
 public record Event(long id, Data data) {
-    public record Data() {
 
+    public record Data(Object message) {
     }
 }
