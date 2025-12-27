@@ -1,63 +1,96 @@
 package ru.mifi.practice.voln.polling;
 
-import java.time.Duration;
-import java.util.concurrent.ConcurrentNavigableMap;
-import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.concurrent.atomic.AtomicLong;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import lombok.SneakyThrows;
+import org.jspecify.annotations.NonNull;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
+import ru.mifi.practice.voln.event.Event;
+import ru.mifi.practice.voln.event.EventSequence;
+import ru.mifi.practice.voln.event.EventStream;
+
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Objects;
 
 public interface EventService {
 
-    void addEvent(Event.Data event);
+    long DEFAULT_STREAM_ID = 0L;
+
+    void addEvent(Event.Data data);
+
+    void addEvent(long streamId, Event.Data event);
+
+    EventStream newEventStream();
 
     Flux<Event> getEvents(Long lastOffset, long timeoutSeconds);
 
-    Flux<Event> getEventStream(Long lastOffset);
+    Flux<Event> getEvents(long streamId, Long lastOffset, long timeoutSeconds);
+
+    Flux<Event> getEventStream(long lastOffset);
+
+    Flux<Event> getEventStream(long streamId, long lastOffset);
 
     final class Default implements EventService {
-        private final ConcurrentNavigableMap<Long, Event> eventBuffer = new ConcurrentSkipListMap<>();
+        private final EventSequence eventSequence = new EventSequence.Default();
+        private final Cache<Long, EventStream> eventCache = CacheBuilder.newBuilder()
+            .expireAfterWrite(Duration.ofMinutes(30))
+            .recordStats()
+            .build();
         private final Sinks.Many<Event> eventSink = Sinks.many().multicast().onBackpressureBuffer(1000);
-        private final AtomicLong eventId = new AtomicLong(1);
-        private final long bufferSize;
-        private final AtomicLong currentSize = new AtomicLong(0);
 
-        public Default(long bufferSize) {
-            this.bufferSize = bufferSize;
+        @Override
+        public void addEvent(Event.Data data) {
+            addEvent(DEFAULT_STREAM_ID, data);
         }
 
         @Override
-        public synchronized void addEvent(Event.Data data) {
-            long id = eventId.getAndIncrement();
-            Event event = new Event(id, data);
-            eventBuffer.put(event.id(), event);
-            if (currentSize.incrementAndGet() > bufferSize) {
-                eventBuffer.pollFirstEntry();
-                currentSize.decrementAndGet();
-            }
+        public synchronized void addEvent(long streamId, Event.Data data) {
+            var stream = findOrCreateStream(streamId);
+            var event = stream.add(data, Event.Type.PUBLIC, null, null);
             eventSink.tryEmitNext(event);
         }
 
         @Override
-        public Flux<Event> getEvents(Long lastOffset, long timeoutSeconds) {
-            long offset = lastOffset != null ? lastOffset : 0L;
-            return getHistoricalEvents(offset)
-                    .switchIfEmpty(Mono.defer(() -> eventSink.asFlux()
-                            .filter(event -> event.id() > offset)
-                            .next()
-                            .timeout(Duration.ofSeconds(timeoutSeconds), Mono.empty())));
+        public EventStream newEventStream() {
+            return new EventStream.Default(eventSequence.next(), new ArrayList<>());
+        }
+
+        @SneakyThrows
+        private @NonNull EventStream findOrCreateStream(long streamId) {
+            return eventCache.get(streamId, () -> new EventStream.Default(streamId, new ArrayList<>()));
         }
 
         @Override
-        public Flux<Event> getEventStream(Long lastOffset) {
-            long offset = lastOffset != null ? lastOffset : 0L;
-            return getHistoricalEvents(offset)
-                    .concatWith(eventSink.asFlux().filter(event -> event.id() > offset));
+        public Flux<Event> getEvents(Long lastOffset, long timeoutSeconds) {
+            return getEvents(DEFAULT_STREAM_ID, lastOffset, timeoutSeconds);
         }
 
-        private Flux<Event> getHistoricalEvents(long lastOffset) {
-            return Flux.fromIterable(eventBuffer.tailMap(lastOffset + 1).values());
+        @Override
+        public Flux<Event> getEvents(long streamId, Long lastOffset, long timeoutSeconds) {
+            long offset = Objects.requireNonNullElse(lastOffset, 0L);
+            return getHistoricalEvents(findOrCreateStream(streamId), offset)
+                .switchIfEmpty(Mono.defer(() -> eventSink.asFlux()
+                    .filter(event -> event.streamId() == streamId && event.offset() >= offset)
+                    .next()
+                    .timeout(Duration.ofSeconds(timeoutSeconds), Mono.empty())));
+        }
+
+        @Override
+        public Flux<Event> getEventStream(long lastOffset) {
+            return getEventStream(DEFAULT_STREAM_ID, lastOffset);
+        }
+
+        @Override
+        public Flux<Event> getEventStream(long streamId, long lastOffset) {
+            return getHistoricalEvents(findOrCreateStream(streamId), lastOffset)
+                .concatWith(eventSink.asFlux().filter(event -> event.streamId() == streamId && event.offset() >= lastOffset));
+        }
+
+        private Flux<Event> getHistoricalEvents(EventStream stream, long lastOffset) {
+            return Flux.fromStream(stream.getEvents(lastOffset, Event.Type.PUBLIC));
         }
     }
 }
