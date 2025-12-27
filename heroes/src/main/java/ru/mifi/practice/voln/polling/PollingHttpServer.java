@@ -17,14 +17,25 @@ import java.util.concurrent.Executors;
 @Slf4j
 public final class PollingHttpServer {
 
+    public enum TransportMode {
+        LONG_POLLING,
+        SSE
+    }
+
     private static final ObjectMapper MAPPER = new ObjectMapper();
     private final int port;
     private final EventService eventService;
+    private final TransportMode transportMode;
     private HttpServer server;
 
     public PollingHttpServer(int port, EventService eventService) {
+        this(port, eventService, TransportMode.LONG_POLLING);
+    }
+
+    public PollingHttpServer(int port, EventService eventService, TransportMode transportMode) {
         this.port = port;
         this.eventService = eventService;
+        this.transportMode = transportMode;
     }
 
     public void start() throws IOException {
@@ -59,8 +70,16 @@ public final class PollingHttpServer {
     private void handleGetEvents(HttpExchange exchange) throws IOException {
         Map<String, String> params = parseQueryParams(exchange.getRequestURI());
         long lastOffset = Long.parseLong(params.getOrDefault("lastOffset", "0"));
-        long timeout = Long.parseLong(params.getOrDefault("timeout", "30"));
 
+        if (transportMode == TransportMode.SSE) {
+            handleSseEvents(exchange, lastOffset);
+        } else {
+            handleLongPollingEvents(exchange, lastOffset, params);
+        }
+    }
+
+    private void handleLongPollingEvents(HttpExchange exchange, long lastOffset, Map<String, String> params) {
+        long timeout = Long.parseLong(params.getOrDefault("timeout", "30"));
         eventService.getEvents(lastOffset, timeout)
             .collectList()
             .subscribe(events -> {
@@ -72,27 +91,62 @@ public final class PollingHttpServer {
                         os.write(response);
                     }
                 } catch (IOException expected) {
-                    try {
-                        exchange.sendResponseHeaders(500, -1);
-                    } catch (IOException expectedInner) {
-                        if (log.isErrorEnabled()) {
-                            log.error("Error sending response", expectedInner);
-                        }
-                    }
+                    sendError(exchange, 500, expected);
                 } finally {
                     exchange.close();
                 }
             }, throwable -> {
-                try {
-                    exchange.sendResponseHeaders(500, -1);
-                } catch (IOException expected) {
-                    if (log.isErrorEnabled()) {
-                        log.error("Error sending response", expected);
-                    }
-                } finally {
-                    exchange.close();
-                }
+                sendError(exchange, 500, (Exception) throwable);
+                exchange.close();
             });
+    }
+
+    @SuppressWarnings("PMD.CloseResource")
+    private void handleSseEvents(HttpExchange exchange, long lastOffset) {
+        try {
+            exchange.getResponseHeaders().set("Content-Type", "text/event-stream");
+            exchange.getResponseHeaders().set("Cache-Control", "no-cache");
+            exchange.getResponseHeaders().set("Connection", "keep-alive");
+            exchange.sendResponseHeaders(200, 0);
+            OutputStream os = exchange.getResponseBody();
+
+            eventService.getEventStream(lastOffset)
+                .doFinally(signalType -> {
+                    try {
+                        os.close();
+                        exchange.close();
+                    } catch (IOException expected) {
+                        // ignore
+                    }
+                })
+                .subscribe(event -> {
+                    try {
+                        String data = "data: " + MAPPER.writeValueAsString(event) + "\n\n";
+                        os.write(data.getBytes());
+                        os.flush();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }, throwable -> {
+                    // Handled by doFinally
+                });
+        } catch (IOException e) {
+            sendError(exchange, 500, e);
+            exchange.close();
+        }
+    }
+
+    private void sendError(HttpExchange exchange, int code, Exception e) {
+        if (log.isErrorEnabled()) {
+            log.error("HTTP error {}", code, e);
+        }
+        try {
+            exchange.sendResponseHeaders(code, -1);
+        } catch (IOException expectedInner) {
+            if (log.isErrorEnabled()) {
+                log.error("Error sending response", expectedInner);
+            }
+        }
     }
 
     private void handlePostEvent(HttpExchange exchange) throws IOException {

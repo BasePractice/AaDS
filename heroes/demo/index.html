@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Event Transport Demo</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; }
+        #log { border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll; background: #f9f9f9; }
+        .event { margin-bottom: 5px; border-bottom: 1px solid #eee; }
+        .controls { margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Event Transport Demo</h1>
+    <div class="controls">
+        <label for="mode">Transport Mode:</label>
+        <select id="mode">
+            <option value="LP">Long Polling</option>
+            <option value="SSE">SSE</option>
+        </select>
+        <button id="start">Start Listening</button>
+        <button id="stop">Stop</button>
+        <input type="text" id="msg" placeholder="Message to send">
+        <button id="send">Send Event</button>
+    </div>
+    <div id="log"></div>
+
+    <script>
+        const logDiv = document.getElementById('log');
+        const modeSelect = document.getElementById('mode');
+        const startBtn = document.getElementById('start');
+        const stopBtn = document.getElementById('stop');
+        const sendBtn = document.getElementById('send');
+        const msgInput = document.getElementById('msg');
+
+        let lastOffset = 0;
+        let running = false;
+        let eventSource = null;
+
+        function log(msg) {
+            const div = document.createElement('div');
+            div.className = 'event';
+            div.textContent = `${new Date().toLocaleTimeString()}: ${msg}`;
+            logDiv.appendChild(div);
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        async function startLongPolling() {
+            running = true;
+            log('Starting Long Polling...');
+            while (running) {
+                try {
+                    const response = await fetch(`http://localhost:8081/events?lastOffset=${lastOffset}&timeout=10`);
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    const events = await response.json();
+                    events.forEach(event => {
+                        log(`[LP] Received: ${JSON.stringify(event.data.message)} (ID: ${event.id})`);
+                        lastOffset = Math.max(lastOffset, event.id);
+                    });
+                } catch (e) {
+                    if (running) {
+                        log(`Error: ${e.message}`);
+                        await new Promise(r => setTimeout(r, 2000));
+                    }
+                }
+            }
+        }
+
+        function startSse() {
+            log('Starting SSE...');
+            running = true;
+            eventSource = new EventSource(`http://localhost:8081/events?lastOffset=${lastOffset}`);
+            eventSource.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                log(`[SSE] Received: ${JSON.stringify(data.data.message)} (ID: ${data.id})`);
+                lastOffset = Math.max(lastOffset, data.id);
+            };
+            eventSource.onerror = (e) => {
+                log('SSE Error, reconnecting...');
+            };
+        }
+
+        startBtn.onclick = () => {
+            if (running) return;
+            const mode = modeSelect.value;
+            if (mode === 'LP') {
+                startLongPolling();
+            } else {
+                startSse();
+            }
+        };
+
+        stopBtn.onclick = () => {
+            running = false;
+            if (eventSource) {
+                eventSource.close();
+                eventSource = null;
+            }
+            log('Stopped.');
+        };
+
+        sendBtn.onclick = async () => {
+            const message = msgInput.value || 'Hello';
+            try {
+                const response = await fetch('http://localhost:8081/events', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: message })
+                });
+                if (response.ok) {
+                    log(`Sent: ${message}`);
+                    msgInput.value = '';
+                }
+            } catch (e) {
+                log(`Send Error: ${e.message}`);
+            }
+        };
+    </script>
+</body>
+</html>

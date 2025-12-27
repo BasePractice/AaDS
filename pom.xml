@@ -37,6 +37,7 @@
         <module>vol7</module>
         <module>vol8</module>
         <module>vol_</module>
+        <module>heroes</module>
     </modules>
 
     <dependencyManagement>
