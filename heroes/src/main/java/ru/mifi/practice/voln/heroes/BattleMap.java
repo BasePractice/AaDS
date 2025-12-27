@@ -342,10 +342,11 @@ public final class BattleMap {
         left.remove(id);
         right.remove(id);
         map[row][column] = null;
+        turnQueue.remove(id);
     }
 
     private void checkTurnEnd() {
-        if (turnQueue.isEmpty()) {
+        while (turnQueue.isEmpty()) {
             leftTurn = !leftTurn;
             String msg = String.format("--- Ход %s ---", leftTurn ? "ЛЕВЫХ" : "ПРАВЫХ");
             support.firePropertyChange("log", null, msg);
@@ -358,8 +359,8 @@ public final class BattleMap {
                 sk.stack.setCounterAttacked(false);
             });
             fillTurnQueue();
-            if (turnQueue.isEmpty()) {
-                checkTurnEnd(); // Switch back if other side is also empty (should not happen in normal game)
+            if (left.isEmpty() && right.isEmpty()) {
+                break;
             }
         }
     }

@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.concurrent.ThreadLocalRandom;
@@ -116,18 +115,18 @@ public final class Unit {
 
         public void damage(int attackAmount) {
             int remaining = attackAmount;
-            Iterator<Unit> it = units.iterator();
-            while (it.hasNext() && remaining > 0) {
-                Unit unit = it.next();
+            while (!units.isEmpty() && remaining > 0) {
+                Unit unit = units.poll();
                 int kick = Math.max(0, remaining - unit.defense());
-                if (kick == 0) {
+                if (kick <= 0) {
+                    units.add(unit);
                     break;
                 }
-                if (unit.health() - kick <= 0) {
-                    it.remove();
-                    remaining -= kick - unit.health();
+                if (unit.health() <= kick) {
+                    remaining = kick - unit.health();
                 } else {
                     unit.takeDamage(kick);
+                    units.add(unit);
                     remaining = 0;
                 }
             }

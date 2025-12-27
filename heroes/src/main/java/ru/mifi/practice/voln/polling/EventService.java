@@ -14,6 +14,8 @@ public interface EventService {
 
     Flux<Event> getEvents(Long lastOffset, long timeoutSeconds);
 
+    Flux<Event> getEventStream(Long lastOffset);
+
     final class Default implements EventService {
         private final ConcurrentNavigableMap<Long, Event> eventBuffer = new ConcurrentSkipListMap<>();
         private final Sinks.Many<Event> eventSink = Sinks.many().multicast().onBackpressureBuffer(1000);
@@ -45,6 +47,13 @@ public interface EventService {
                             .filter(event -> event.id() > offset)
                             .next()
                             .timeout(Duration.ofSeconds(timeoutSeconds), Mono.empty())));
+        }
+
+        @Override
+        public Flux<Event> getEventStream(Long lastOffset) {
+            long offset = lastOffset != null ? lastOffset : 0L;
+            return getHistoricalEvents(offset)
+                    .concatWith(eventSink.asFlux().filter(event -> event.id() > offset));
         }
 
         private Flux<Event> getHistoricalEvents(long lastOffset) {
