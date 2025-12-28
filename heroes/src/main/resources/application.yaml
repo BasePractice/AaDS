@@ -1,0 +1,26 @@
+spring:
+  main:
+    banner-mode: off
+    web-application-type: reactive
+    allow-bean-definition-overriding: true
+  application:
+    name: heroes
+server:
+  port: 9097
+  http2:
+    enabled: true
+  compression:
+    enabled: true
+
+logging:
+  level:
+    root: INFO
+    ru.mifi.practice.voln: DEBUG
+  charset:
+    console: UTF-8
+
+app:
+  telegram:
+    bot:
+      token: ${TELEGRAM_BOT_TOKEN}
+      username: Маргинал
