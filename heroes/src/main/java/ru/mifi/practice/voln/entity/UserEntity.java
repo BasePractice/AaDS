@@ -2,11 +2,13 @@ package ru.mifi.practice.voln.entity;
 
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import org.springframework.util.StringUtils;
 
 import java.util.UUID;
 
 @Builder(toBuilder = true)
+@Getter
 @EqualsAndHashCode(of = "id")
 public class UserEntity {
     private UUID id;

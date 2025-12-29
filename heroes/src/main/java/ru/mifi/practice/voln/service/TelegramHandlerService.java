@@ -17,6 +17,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 import ru.mifi.practice.voln.api.TelegramHandler;
 import ru.mifi.practice.voln.entity.UserEntity;
+import ru.mifi.practice.voln.repository.MessageRepository;
 import ru.mifi.practice.voln.repository.UserRepository;
 
 import java.util.List;
@@ -26,7 +27,22 @@ import java.util.List;
 @Service("TelegramHandler.Default")
 public class TelegramHandlerService implements TelegramHandler {
     private final UserRepository userRepository;
+    private final MessageRepository messageRepository;
     private final Scheduler telegramScheduler;
+
+    private static void sendContactPermissions(TelegramLongPollingBot bot, Long chatId) {
+        ReplyKeyboardMarkup markup = new ReplyKeyboardMarkup(List.of(
+            new KeyboardRow(List.of(KeyboardButton.builder().text("Отправить карточку").requestContact(true).build()))
+        ));
+        try {
+            bot.execute(SendMessage.builder().chatId(chatId)
+                .text("Для регистрации отправьте свою персональную карточку").replyMarkup(markup).build());
+        } catch (TelegramApiException e) {
+            if (log.isErrorEnabled()) {
+                log.error("", e);
+            }
+        }
+    }
 
     @Override
     public void received(TelegramLongPollingBot bot, Update update) {
@@ -67,26 +83,20 @@ public class TelegramHandlerService implements TelegramHandler {
                 if (entity.isTelegramRegistered()) {
                     sink.next(entity);
                 } else {
-                    ReplyKeyboardMarkup markup = new ReplyKeyboardMarkup(List.of(
-                        new KeyboardRow(List.of(KeyboardButton.builder().text("Отправить карточку").requestContact(true).build()))
-                    ));
-                    try {
-                        bot.execute(SendMessage.builder().chatId(chatId)
-                            .text("Для регистрации отправьте свою персональную карточку").replyMarkup(markup).build());
-                    } catch (TelegramApiException e) {
-                        if (log.isErrorEnabled()) {
-                            log.error("", e);
-                        }
-                    }
+                    sendContactPermissions(bot, chatId);
                     sink.complete();
                 }
             })
             .map(entity -> processing(bot, update, entity))
+            .switchIfEmpty(Mono.fromCallable(() -> {
+                sendContactPermissions(bot, chatId);
+                return Mono.empty();
+            }))
             .then();
     }
 
     @SuppressWarnings("PMD.UnusedFormalParameter")
     private Mono<Void> processing(TelegramLongPollingBot bot, Update update, UserEntity entity) {
-        return Mono.empty();
+        return messageRepository.receivedMessage(entity.getId(), update.toString());
     }
 }
