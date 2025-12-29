@@ -1,4 +1,4 @@
-package ru.mifi.practice.voln.controller.model;
+package ru.mifi.practice.voln.domain.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
