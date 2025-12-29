@@ -6,7 +6,7 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,8 +27,9 @@ import java.util.UUID;
 public class UserEntity implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id", columnDefinition = "UUID DEFAULT gen_random_uuid()")
     private UUID id;
-
+    @Column(name = "username", unique = true, updatable = false)
     private String username;
     private String password;
     private String email;
@@ -46,7 +47,7 @@ public class UserEntity implements UserDetails {
     private String telegramFirstName;
     @Column(name = "telegram_last_name")
     private String telegramLastName;
-    @ManyToMany(fetch = FetchType.LAZY)
+    @OneToMany(fetch = FetchType.LAZY)
     private List<AuthorityEntity> authorities;
 
     public boolean isTelegramRegistered() {

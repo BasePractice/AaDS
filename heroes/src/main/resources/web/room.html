@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>SSE Чат с учетом пользователей</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+
+        .chat-section {
+            flex: 2;
+        }
+
+        .users-section {
+            flex: 1;
+        }
+
+        #chat {
+            border: 1px solid #ccc;
+            height: 400px;
+            overflow-y: auto;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .message {
+            margin-bottom: 10px;
+            padding: 5px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .username {
+            font-weight: bold;
+            color: #3366cc;
+        }
+
+        .timestamp {
+            font-size: 0.8em;
+            color: #999;
+        }
+
+        .system {
+            color: #666;
+            font-style: italic;
+        }
+
+        .user-list {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .user-item {
+            padding: 5px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .user-online {
+            color: green;
+            font-weight: bold;
+        }
+
+        .stats {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        input, button {
+            padding: 10px;
+            margin: 5px 0;
+        }
+
+        #messageInput {
+            width: 70%;
+        }
+
+        #sendButton {
+            width: 25%;
+        }
+    </style>
+</head>
+<body>
+<h1>SSE Чат с учетом пользователей</h1>
+
+<div class="stats">
+    <div>Онлайн: <span id="onlineCount">0</span> пользователей</div>
+    <div>Подключений: <span id="connectionsCount">0</span></div>
+    <div>Сообщений: <span id="messagesCount">0</span></div>
+</div>
+
+<div class="container">
+    <div class="chat-section">
+        <div>
+            <input type="text" id="username" placeholder="Введите имя" value="Гость">
+            <button onclick="connect()">Подключиться</button>
+            <button onclick="disconnect()" style="display:none;" id="disconnectBtn">Отключиться</button>
+        </div>
+
+        <div id="chat"></div>
+
+        <div>
+            <input type="text" id="messageInput" placeholder="Введите сообщение" disabled>
+            <button id="sendButton" onclick="sendMessage()" disabled>Отправить</button>
+        </div>
+    </div>
+
+    <div class="users-section">
+        <h3>Онлайн пользователи (<span id="userCount">0</span>)</h3>
+        <div id="userList" class="user-list"></div>
+
+        <div>
+            <button onclick="refreshUserList()">Обновить список</button>
+            <button onclick="showStats()">Статистика</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let eventSource = null;
+    let currentUsername = '';
+    let sessionId = '';
+    let pingInterval = null;
+
+    function connect() {
+        const username = document.getElementById('username').value.trim();
+        if (!username) {
+            alert('Введите имя пользователя');
+            return;
+        }
+
+        currentUsername = username;
+
+        // Закрываем предыдущее соединение, если есть
+        if (eventSource) {
+            eventSource.close();
+            clearInterval(pingInterval);
+        }
+
+        // Подключаемся к SSE endpoint
+        eventSource = new EventSource(`/api/chat/connect?username=${encodeURIComponent(username)}`);
+
+        // Обработка успешного подключения
+        eventSource.addEventListener('connected', (event) => {
+            const data = JSON.parse(event.data);
+            sessionId = data.sessionId;
+
+            // Показываем кнопку отключения
+            document.getElementById('disconnectBtn').style.display = 'inline-block';
+
+            // Запускаем ping для поддержания активности
+            pingInterval = setInterval(() => {
+                fetch('/api/chat/ping', {
+                    method: 'POST',
+                    headers: {
+                        'X-Session-Id': sessionId
+                    }
+                });
+            }, 30000); // Каждые 30 секунд
+
+            addSystemMessage(`Вы подключились как ${username} (сессия: ${sessionId.substring(0, 8)}...)`);
+        });
+
+        // Обработка сообщений
+        eventSource.addEventListener('message', (event) => {
+            const message = JSON.parse(event.data);
+            addMessageToChat(message.username, message.text, message.timestamp);
+            updateMessageCount();
+        });
+
+        // Обработка системных событий
+        eventSource.addEventListener('system', (event) => {
+            const systemEvent = JSON.parse(event.data);
+            addSystemMessage(systemEvent.message);
+        });
+
+        // Обработка отключений пользователей
+        eventSource.addEventListener('user_disconnected', (event) => {
+            const data = JSON.parse(event.data);
+            addSystemMessage(data.message);
+            refreshUserList();
+        });
+
+        // Обработка обновления списка пользователей
+        eventSource.addEventListener('user_list', (event) => {
+            const data = JSON.parse(event.data);
+            updateUserList(data.data.users);
+            updateStats(data.data);
+        });
+
+        // Включаем поле ввода
+        document.getElementById('messageInput').disabled = false;
+        document.getElementById('sendButton').disabled = false;
+
+        addSystemMessage(`Подключаемся как ${username}...`);
+    }
+
+    function disconnect() {
+        if (eventSource) {
+            // Отправляем запрос на отключение
+            fetch('/api/chat/disconnect', {
+                method: 'POST',
+                headers: {
+                    'X-Session-Id': sessionId
+                }
+            });
+
+            eventSource.close();
+            eventSource = null;
+            clearInterval(pingInterval);
+
+            addSystemMessage('Вы отключились от чата');
+            document.getElementById('messageInput').disabled = true;
+            document.getElementById('sendButton').disabled = true;
+            document.getElementById('disconnectBtn').style.display = 'none';
+
+            // Очищаем список пользователей
+            document.getElementById('userList').innerHTML = '';
+            document.getElementById('userCount').textContent = '0';
+        }
+    }
+
+    function sendMessage() {
+        const input = document.getElementById('messageInput');
+        const text = input.value.trim();
+
+        if (text && currentUsername && sessionId) {
+            // Отправка сообщения на сервер
+            fetch('/api/chat/send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Session-Id': sessionId
+                },
+                body: JSON.stringify({
+                    username: currentUsername,
+                    text: text
+                })
+            });
+
+            input.value = '';
+        }
+    }
+
+    function refreshUserList() {
+        fetch('/api/chat/users')
+            .then(response => response.json())
+            .then(data => {
+                updateUserList(data.uniqueUsers);
+                updateStats(data);
+            });
+    }
+
+    function showStats() {
+        fetch('/api/chat/stats')
+            .then(response => response.json())
+            .then(data => {
+                alert(`Статистика чата:\n
+                    Всего сообщений: ${data.totalMessages}
+                    Уникальных пользователей: ${data.uniqueUsers}
+                    Всего подключений: ${data.totalConnections}
+                    Активен с: ${new Date(data.activeSince).toLocaleString()}`);
+            });
+    }
+
+    function updateUserList(users) {
+        const userList = document.getElementById('userList');
+        const userCount = document.getElementById('userCount');
+
+        userList.innerHTML = '';
+        userCount.textContent = users.length;
+
+        users.forEach(username => {
+            const userDiv = document.createElement('div');
+            userDiv.className = 'user-item';
+            userDiv.innerHTML = `
+                    <span class="user-online">●</span>
+                    ${escapeHtml(username)}
+                    ${username === currentUsername ? ' (вы)' : ''}
+                `;
+            userList.appendChild(userDiv);
+        });
+    }
+
+    function updateStats(data) {
+        document.getElementById('onlineCount').textContent =
+            data.uniqueUsersCount || data.uniqueUsers?.length || 0;
+        document.getElementById('connectionsCount').textContent =
+            data.totalConnections || 0;
+    }
+
+    function updateMessageCount() {
+        const messages = document.getElementById('chat').getElementsByClassName('message');
+        document.getElementById('messagesCount').textContent = messages.length;
+    }
+
+    function addMessageToChat(username, text, timestamp) {
+        const chat = document.getElementById('chat');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message';
+
+        const time = new Date(timestamp).toLocaleTimeString();
+        const isCurrentUser = username === currentUsername;
+
+        messageDiv.innerHTML = `
+                <span class="username" style="color: ${isCurrentUser ? '#cc3333' : '#3366cc'}">
+                    ${escapeHtml(username)}${isCurrentUser ? ' (вы)' : ''}:
+                </span>
+                <span>${escapeHtml(text)}</span>
+                <span class="timestamp">${time}</span>
+            `;
+
+        chat.appendChild(messageDiv);
+        chat.scrollTop = chat.scrollHeight;
+    }
+
+    function addSystemMessage(text) {
+        const chat = document.getElementById('chat');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message system';
+        messageDiv.textContent = `[Система] ${text}`;
+
+        chat.appendChild(messageDiv);
+        chat.scrollTop = chat.scrollHeight;
+        updateMessageCount();
+    }
+
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    // Отправка сообщения по Enter
+    document.getElementById('messageInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+
+    // Отключение при закрытии вкладки
+    window.addEventListener('beforeunload', () => {
+        if (eventSource && sessionId) {
+            // Используем synchronous XMLHttpRequest для гарантированной отправки
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/api/chat/disconnect', false);
+            xhr.setRequestHeader('X-Session-Id', sessionId);
+            xhr.send();
+        }
+    });
+
+    // Автообновление списка пользователей каждые 30 секунд
+    setInterval(refreshUserList, 30000);
+</script>
+</body>
+</html>

@@ -5,5 +5,5 @@ import org.springframework.stereotype.Repository;
 import ru.mifi.practice.voln.domain.entity.AuthorityEntity;
 
 @Repository
-public interface AuthorityRepository extends JpaRepository<AuthorityEntity, AuthorityEntity.PK> {
+public interface AuthorityRepository extends JpaRepository<AuthorityEntity, Long> {
 }
