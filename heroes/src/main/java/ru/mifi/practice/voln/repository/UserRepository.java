@@ -1,11 +1,15 @@
 package ru.mifi.practice.voln.repository;
 
-import reactor.core.publisher.Mono;
-import ru.mifi.practice.voln.entity.UserEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+import ru.mifi.practice.voln.domain.entity.UserEntity;
 
-public interface UserRepository {
-    Mono<UserEntity> findUserTelegramId(Long telegramId);
+import java.util.Optional;
+import java.util.UUID;
 
-    Mono<UserEntity> registrationTelegramUser(Long telegramId, String telegramUsername,
-                                              String telegramPhone, String telegramFirstName, String telegramLastName);
+@Repository
+public interface UserRepository extends JpaRepository<UserEntity, UUID> {
+    Optional<UserEntity> findByTelegramId(Long telegramId);
+
+    Optional<UserEntity> findByUsername(String username);
 }

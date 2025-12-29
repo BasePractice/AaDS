@@ -1,8 +1,18 @@
 package ru.mifi.practice.voln.service;
 
-import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.micrometer.core.instrument.MeterRegistry;
+import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Contact;
@@ -13,22 +23,27 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMar
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Scheduler;
 import ru.mifi.practice.voln.api.TelegramHandler;
-import ru.mifi.practice.voln.entity.UserEntity;
+import ru.mifi.practice.voln.domain.entity.MessageEntity;
+import ru.mifi.practice.voln.domain.entity.UserEntity;
 import ru.mifi.practice.voln.repository.MessageRepository;
 import ru.mifi.practice.voln.repository.UserRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Service("TelegramHandler.Default")
 public class TelegramHandlerService implements TelegramHandler {
+    private static final ObjectMapper HISTORICAL_MAPPER = new ObjectMapper()
+        .setSerializationInclusion(JsonInclude.Include.NON_EMPTY)
+        .configure(JsonParser.Feature.IGNORE_UNDEFINED, true)
+        .configure(JsonGenerator.Feature.IGNORE_UNKNOWN, true);
     private final UserRepository userRepository;
     private final MessageRepository messageRepository;
-    private final Scheduler telegramScheduler;
+    private final MeterRegistry registry;
+    private TelegramLongPollingBot bot;
 
     private static void sendContactPermissions(TelegramLongPollingBot bot, Long chatId) {
         ReplyKeyboardMarkup markup = new ReplyKeyboardMarkup(List.of(
@@ -44,59 +59,85 @@ public class TelegramHandlerService implements TelegramHandler {
         }
     }
 
-    @Override
-    public void received(TelegramLongPollingBot bot, Update update) {
-        processing(bot, update)
-            .subscribeOn(telegramScheduler)
-            .publishOn(telegramScheduler)
-            .subscribe();
+    @SuppressWarnings("PMD.CloseResource")
+    @EventListener(ApplicationReadyEvent.class)
+    public void onReady(ApplicationReadyEvent event) {
+        ConfigurableApplicationContext context = event.getApplicationContext();
+        bot = context.getBean(TelegramLongPollingBot.class);
     }
 
-    private Mono<Void> processing(TelegramLongPollingBot bot, Update update) {
+    @Override
+    public void received(TelegramLongPollingBot bot, Update update) {
+        processing(bot, update);
+    }
+
+    @Override
+    public void send(Long telegramId, String message) {
+        if (bot != null) {
+            try {
+                bot.execute(SendMessage.builder().chatId(telegramId).text(message).build());
+            } catch (TelegramApiException e) {
+                if (log.isErrorEnabled()) {
+                    log.error("", e);
+                }
+            }
+        }
+    }
+
+    @Transactional
+    protected void processing(TelegramLongPollingBot bot, Update update) {
         Message message = update.getMessage();
         if (message == null) {
             if (log.isDebugEnabled()) {
-                log.debug("Skip message {}", update);
+                log.debug("Skip empty message {}", update);
             }
-            return Mono.empty();
+            return;
         }
         Long chatId = message.getChatId();
         User user = message.getFrom();
         Long userId = user.getId();
         if (chatId == null || !chatId.equals(userId)) {
             if (log.isDebugEnabled()) {
-                log.debug("Skip message {}", update);
+                log.debug("Skip not private message {}", update);
             }
-            return Mono.empty();
+            return;
         }
         if (log.isDebugEnabled()) {
             log.debug("Processing message {}", update);
         }
         Contact contact = message.getContact();
         if (contact != null && userId.equals(contact.getUserId())) {
-            return userRepository.registrationTelegramUser(userId, user.getUserName(),
-                    contact.getPhoneNumber(), contact.getFirstName(), contact.getLastName())
-                .then();
+            userRepository.saveAndFlush(UserEntity.builder()
+                .telegramId(userId)
+                .telegramPhone(contact.getPhoneNumber())
+                .telegramLastName(contact.getLastName())
+                .telegramFirstName(contact.getFirstName())
+                .telegramUsername(user.getUserName())
+                .build());
+            return;
         }
-        return userRepository.findUserTelegramId(userId)
-            .<UserEntity>handle((entity, sink) -> {
-                if (entity.isTelegramRegistered()) {
-                    sink.next(entity);
-                } else {
-                    sendContactPermissions(bot, chatId);
-                    sink.complete();
-                }
-            })
-            .map(entity -> processing(bot, update, entity))
-            .switchIfEmpty(Mono.fromCallable(() -> {
+
+        Optional<UserEntity> userEntity = userRepository.findByTelegramId(userId);
+        if (userEntity.isPresent()) {
+            UserEntity ue = userEntity.get();
+            if (ue.isTelegramRegistered()) {
+                processing(bot, update, ue);
+            } else {
                 sendContactPermissions(bot, chatId);
-                return Mono.empty();
-            }))
-            .then();
+            }
+        } else {
+            sendContactPermissions(bot, chatId);
+        }
     }
 
+    @Transactional
+    @SneakyThrows
     @SuppressWarnings("PMD.UnusedFormalParameter")
-    private Mono<Void> processing(TelegramLongPollingBot bot, Update update, UserEntity entity) {
-        return messageRepository.receivedMessage(entity.getId(), update.toString());
+    protected void processing(TelegramLongPollingBot bot, Update update, UserEntity entity) {
+        String text = HISTORICAL_MAPPER.writeValueAsString(update);
+        if (log.isDebugEnabled()) {
+            log.debug(text);
+        }
+        messageRepository.saveAndFlush(MessageEntity.builder().userId(entity.getId()).message(text).build());
     }
 }
