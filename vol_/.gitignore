@@ -1,1 +1,2 @@
 *.png
+/src/test/resources/nosql/.data

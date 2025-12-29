@@ -138,6 +138,6 @@ public class TelegramHandlerService implements TelegramHandler {
         if (log.isDebugEnabled()) {
             log.debug(text);
         }
-        messageRepository.saveAndFlush(MessageEntity.builder().userId(entity.getId()).message(text).build());
+        messageRepository.saveAndFlush(MessageEntity.builder().user(entity).message(text).build());
     }
 }
