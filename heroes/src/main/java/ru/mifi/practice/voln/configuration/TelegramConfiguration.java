@@ -8,6 +8,8 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.generics.LongPollingBot;
 import org.telegram.telegrambots.starter.TelegramBotStarterConfiguration;
+import reactor.core.scheduler.Scheduler;
+import reactor.core.scheduler.Schedulers;
 import ru.mifi.practice.voln.api.TelegramHandler;
 
 @Configuration
@@ -27,5 +29,10 @@ public class TelegramConfiguration {
                 return environment.getProperty("app.telegram.bot.username", "");
             }
         };
+    }
+
+    @Bean
+    public Scheduler telegramScheduler() {
+        return Schedulers.newBoundedElastic(10, 15000, "telegram");
     }
 }
