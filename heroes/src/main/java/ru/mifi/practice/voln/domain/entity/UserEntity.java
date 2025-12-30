@@ -12,12 +12,14 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.UUID;
 
+@ToString(exclude = "authorities")
 @Builder(toBuilder = true)
 @Getter
 @Entity

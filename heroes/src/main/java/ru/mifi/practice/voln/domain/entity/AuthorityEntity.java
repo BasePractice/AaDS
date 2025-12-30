@@ -12,8 +12,10 @@ import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
+import lombok.ToString;
 import org.springframework.security.core.GrantedAuthority;
 
+@ToString(of = {"authority", "user"})
 @Getter
 @Entity
 @Table(name = "authorities", uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "authority"}))

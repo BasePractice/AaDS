@@ -2,7 +2,6 @@ package ru.mifi.practice.voln.service;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +13,8 @@ import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Function;
 
 @Service
@@ -29,21 +30,26 @@ public class JwtService {
         return extractClaim(token, Claims::getSubject);
     }
 
+    public Optional<UUID> extractUserId(String token) {
+        return Optional.ofNullable(extractClaim(token, claims -> claims.get("user_id", String.class)))
+            .map(UUID::fromString);
+    }
+
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
-        if (userDetails instanceof UserEntity customUserDetails) {
-            claims.put("id", customUserDetails.getId());
-            claims.put("email", customUserDetails.getEmail());
-            claims.put("authorities", customUserDetails.getAuthorities());
+        if (userDetails instanceof UserEntity entity) {
+            claims.put("user_id", entity.getId());
+            claims.put("username", entity.getUsername());
+            claims.put("email", entity.getEmail());
+            claims.put("authorities", entity.getAuthorities());
         }
         return generateToken(claims, userDetails);
     }
 
     private String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
-        return Jwts.builder().setClaims(extraClaims).setSubject(userDetails.getUsername())
-            .setIssuedAt(new Date(System.currentTimeMillis()))
-            .setExpiration(new Date(System.currentTimeMillis() + 100000 * 60 * 24))
-            .signWith(getSigningKey(), SignatureAlgorithm.HS256).compact();
+        return Jwts.builder().claims(extraClaims).subject(userDetails.getUsername()).issuedAt(new Date(System.currentTimeMillis()))
+            .expiration(new Date(System.currentTimeMillis() + 100000 * 60 * 24))
+            .signWith(getSigningKey()).compact();
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {

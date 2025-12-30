@@ -128,10 +128,10 @@ public class SecurityConfiguration {
             }
 
             var jwt = authHeader.substring(BEARER_PREFIX.length());
-            var username = jwtService.extractUserName(jwt);
+            var userId = jwtService.extractUserId(jwt);
 
-            if (StringUtils.hasText(username) && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetails userDetails = userService.loadUserByUsername(username);
+            if (SecurityContextHolder.getContext().getAuthentication() == null && userId.isPresent()) {
+                UserDetails userDetails = userService.loadUserById(userId.get());
                 if (jwtService.isTokenValid(jwt, userDetails)) {
                     SecurityContext context = SecurityContextHolder.createEmptyContext();
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
