@@ -4,15 +4,30 @@ services:
         container_name: heroes-db
         restart: always
         environment:
-            POSTGRES_DB: postgres
+            POSTGRES_DB: rooms
             POSTGRES_USER: postgres
             POSTGRES_PASSWORD: postgres
         ports:
             - "25432:5432"
         volumes:
             - ./pg:/var/lib/postgresql/data
+            - ./configuration/postgres/pg_init.sql:/docker-entrypoint-initdb.d/init.sql
         healthcheck:
-            test: [ "CMD-SHELL", "pg_isready -U postgres -d postgres" ]
+            test: [ "CMD-SHELL", "pg_isready -U postgres -d rooms" ]
             interval: 5s
             timeout: 5s
             retries: 5
+    prometheus:
+        image: prom/prometheus
+        ports:
+            - "19090:9090"
+        volumes:
+            - ./configuration/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+
+    grafana:
+        image: grafana/grafana
+        ports:
+            - "13000:3000"
+        volumes:
+            - ./grafana-data:/var/lib/grafana
+            - ./configuration/grafana/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml

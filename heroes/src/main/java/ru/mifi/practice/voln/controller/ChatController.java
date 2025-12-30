@@ -41,13 +41,8 @@ public class ChatController {
     }
 
     @GetMapping("/api/chat/connect")
-    public SseEmitter connect(@RequestParam String username,
-                              HttpServletRequest request) {
-
-        // Генерируем уникальный ID сессии
+    public SseEmitter connect(@RequestParam String username, HttpServletRequest request) {
         UUID sessionId = UUID.randomUUID();
-
-        // Проверяем, не занято ли имя пользователя (опционально)
         if (userPresenceService.isUsernameTaken(username)) {
             throw new ResponseStatusException(
                 HttpStatus.CONFLICT,
@@ -55,50 +50,33 @@ public class ChatController {
             );
         }
 
-        SseEmitter emitter = new SseEmitter(60L * 1000 * 60); // 60 минут timeout
-
-        // Создаем пользователя
+        SseEmitter emitter = new SseEmitter(60L * 1000 * 60);
         RoomUser user = userPresenceService.addUser(username, sessionId, emitter);
-
-        // Отправляем информацию о пользователе
         Map<String, Object> userInfo = new HashMap<>();
         userInfo.put("sessionId", sessionId);
         userInfo.put("username", username);
         userInfo.put("connectedAt", user.connected());
 
         try {
-            // Отправляем данные о соединении
             emitter.send(SseEmitter.event()
                 .name("connected")
                 .data(userInfo));
-
-            // Отправляем историю сообщений
             for (RoomMessage message : messageHistory) {
                 emitter.send(SseEmitter.event()
                     .name("message")
                     .data(message));
             }
-
-            // Отправляем текущий список пользователей
             sendUserListUpdate();
 
         } catch (IOException e) {
             userPresenceService.removeUser(sessionId);
             emitter.completeWithError(e);
         }
+        emitter.onCompletion(() -> handleUserDisconnect(sessionId, username, "disconnected"));
 
-        // Обработчики событий
-        emitter.onCompletion(() -> {
-            handleUserDisconnect(sessionId, username, "disconnected");
-        });
+        emitter.onTimeout(() -> handleUserDisconnect(sessionId, username, "timeout"));
 
-        emitter.onTimeout(() -> {
-            handleUserDisconnect(sessionId, username, "timeout");
-        });
-
-        emitter.onError((e) -> {
-            handleUserDisconnect(sessionId, username, "error");
-        });
+        emitter.onError((e) -> handleUserDisconnect(sessionId, username, "error"));
 
         return emitter;
     }
