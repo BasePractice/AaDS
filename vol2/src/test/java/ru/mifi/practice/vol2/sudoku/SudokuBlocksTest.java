@@ -2,6 +2,7 @@ package ru.mifi.practice.vol2.sudoku;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,12 +20,14 @@ final class SudokuBlocksTest {
 
     @DisplayName("Читает все задачи из файла, включая последнюю")
     @Test
+    @Timeout(1)
     void readsEveryPuzzleIncludingTheLast() throws IOException {
         assertThat("the puzzle without a trailing separator is lost", Main.blocks(sudoku()).size(), is(50));
     }
 
     @DisplayName("Пропускает строки-разделители")
     @Test
+    @Timeout(1)
     void skipsSeparatorLines() throws IOException {
         assertThat("separator lines leak into a puzzle",
             Main.blocks(List.of("", "   ", "000000000")).size(), is(0));
@@ -32,6 +35,7 @@ final class SudokuBlocksTest {
 
     @DisplayName("Разбирает цифры задачи по позициям")
     @Test
+    @Timeout(1)
     void readsDigitsByPosition() {
         List<String> lines = Collections.nCopies(9, "123456789");
         assertThat("digit dont land on its own position", Main.blocks(lines).get(0)[0][4], is(5));

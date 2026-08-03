@@ -3,6 +3,7 @@ package ru.mifi.practice.voln.features;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.util.Optional;
 
@@ -23,6 +24,7 @@ class CacheableValueRangeTest {
     }
 
     @Test
+    @Timeout(1)
     @DisplayName("Входит в диапазон")
     void inRange() {
         count.increment(countId, USER_ID, 1);

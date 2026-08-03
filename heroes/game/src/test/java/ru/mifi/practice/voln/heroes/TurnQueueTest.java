@@ -1,6 +1,7 @@
 package ru.mifi.practice.voln.heroes;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -8,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class TurnQueueTest {
     @Test
+    @Timeout(1)
     void testTurnDelayedUntilEndAction() {
         BattleMap map = new BattleMap();
         Unit.Stack s1 = new Unit.Stack(Unit.Type.WALKER);
@@ -45,6 +47,7 @@ class TurnQueueTest {
     }
 
     @Test
+    @Timeout(1)
     void testAttackDelayedUntilEndAction() {
         Unit.Stack s1 = new Unit.Stack(Unit.Type.WALKER);
         s1.add(new Unit(100, 5, 100, 5)); // Strong attacker

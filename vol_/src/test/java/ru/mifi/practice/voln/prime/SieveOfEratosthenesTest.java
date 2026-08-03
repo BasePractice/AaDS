@@ -2,6 +2,7 @@ package ru.mifi.practice.voln.prime;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -10,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @DisplayName("Решето Эратосфена")
 class SieveOfEratosthenesTest {
     @Test
+    @Timeout(1)
     @DisplayName("Граница меньше 2 — пустой список")
     void borderLessThanTwo() {
         assertArrayEquals(new int[0], SieveOfEratosthenes.primesUpTo(1));
@@ -18,6 +20,7 @@ class SieveOfEratosthenesTest {
     }
 
     @Test
+    @Timeout(1)
     @DisplayName("Простые числа до 30")
     void primesUpTo30() {
         int[] expected = new int[]{2, 3, 5, 7, 11, 13, 17, 19, 23, 29};
@@ -25,6 +28,7 @@ class SieveOfEratosthenesTest {
     }
 
     @Test
+    @Timeout(1)
     @DisplayName("Проверка простоты небольших чисел")
     void isPrimeSmall() {
         assertFalse(SieveOfEratosthenes.isPrime(1));

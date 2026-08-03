@@ -1,6 +1,7 @@
 package ru.mifi.practice.vol11;
 
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import ru.mifi.practice.commons.Counter;
@@ -21,6 +22,7 @@ final class TopologicalSortTest {
 
     @DisplayName("Ставит зависимость раньше зависящего")
     @ParameterizedTest
+    @Timeout(1)
     @MethodSource("implementations")
     void putsDependencyBeforeDependent(TopologicalSort sort) {
         List<Integer> order = sort.sort(chain(), Counter.create()).orElseThrow();
@@ -29,6 +31,7 @@ final class TopologicalSortTest {
 
     @DisplayName("Упорядочивает цепочку целиком")
     @ParameterizedTest
+    @Timeout(1)
     @MethodSource("implementations")
     void ordersTheWholeChain(TopologicalSort sort) {
         assertThat("a plain chain dont come out in order",
@@ -37,6 +40,7 @@ final class TopologicalSortTest {
 
     @DisplayName("Возвращает все вершины, включая изолированные")
     @ParameterizedTest
+    @Timeout(1)
     @MethodSource("implementations")
     void returnsEveryVertex(TopologicalSort sort) {
         TopologicalSort.Graph graph = new TopologicalSort.Graph(4).edge(0, 1);
@@ -46,6 +50,7 @@ final class TopologicalSortTest {
 
     @DisplayName("Соблюдает порядок при ветвлении")
     @ParameterizedTest
+    @Timeout(1)
     @MethodSource("implementations")
     void respectsOrderOnABranchingGraph(TopologicalSort sort) {
         TopologicalSort.Graph graph = new TopologicalSort.Graph(4).edge(0, 1).edge(0, 2).edge(1, 3).edge(2, 3);
@@ -55,6 +60,7 @@ final class TopologicalSortTest {
 
     @DisplayName("Цикл делает порядок невозможным")
     @ParameterizedTest
+    @Timeout(1)
     @MethodSource("implementations")
     void reportsACycle(TopologicalSort sort) {
         TopologicalSort.Graph graph = new TopologicalSort.Graph(3).edge(0, 1).edge(1, 2).edge(2, 0);
@@ -64,6 +70,7 @@ final class TopologicalSortTest {
 
     @DisplayName("Петля тоже цикл")
     @ParameterizedTest
+    @Timeout(1)
     @MethodSource("implementations")
     void reportsASelfLoop(TopologicalSort sort) {
         TopologicalSort.Graph graph = new TopologicalSort.Graph(2).edge(0, 0);
@@ -73,6 +80,7 @@ final class TopologicalSortTest {
 
     @DisplayName("Пустой граф упорядочивается пустым списком")
     @ParameterizedTest
+    @Timeout(1)
     @MethodSource("implementations")
     void ordersAnEmptyGraph(TopologicalSort sort) {
         assertThat("an empty graph dont produce an empty order",

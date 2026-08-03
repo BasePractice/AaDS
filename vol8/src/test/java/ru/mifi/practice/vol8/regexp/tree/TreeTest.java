@@ -1,6 +1,7 @@
 package ru.mifi.practice.vol8.regexp.tree;
 
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import ru.mifi.practice.vol8.regexp.AbstractPatternTest;
@@ -14,6 +15,7 @@ class TreeTest extends AbstractPatternTest {
 
     @DisplayName("parse")
     @ParameterizedTest
+    @Timeout(5)
     @MethodSource("patternText")
     void parse(String name, String text) throws IOException {
         Tree.Default tree = new Tree.Default(text);

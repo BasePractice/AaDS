@@ -1,6 +1,7 @@
 package ru.mifi.practice.voln.heroes;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.util.List;
 
@@ -9,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class FlyerTest {
     @Test
+    @Timeout(1)
     void testFlyerPathOverUnit() {
         BattleMap map = new BattleMap();
         Unit.Stack flyer = new Unit.Stack(Unit.Type.FLYER);

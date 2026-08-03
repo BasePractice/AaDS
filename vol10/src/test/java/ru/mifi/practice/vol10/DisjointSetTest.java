@@ -2,6 +2,7 @@ package ru.mifi.practice.vol10;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import ru.mifi.practice.commons.Counter;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -14,6 +15,7 @@ final class DisjointSetTest {
 
     @DisplayName("Свежий элемент лежит в собственном множестве")
     @Test
+    @Timeout(1)
     void keepsEveryElementInItsOwnSet() {
         assertThat("a fresh element shares a set with a neighbour",
             new DisjointSet.Compressed(4).connected(0, 1, Counter.create()), is(false));
@@ -21,6 +23,7 @@ final class DisjointSetTest {
 
     @DisplayName("После объединения элементы связаны")
     @Test
+    @Timeout(1)
     void connectsElementsAfterUnion() {
         DisjointSet set = new DisjointSet.Compressed(4);
         set.union(0, 1, Counter.create());
@@ -29,6 +32,7 @@ final class DisjointSetTest {
 
     @DisplayName("Связность транзитивна")
     @Test
+    @Timeout(1)
     void propagatesConnectivityTransitively() {
         DisjointSet set = new DisjointSet.Compressed(4);
         set.union(0, 1, Counter.create());
@@ -39,6 +43,7 @@ final class DisjointSetTest {
 
     @DisplayName("Объединение уменьшает число множеств")
     @Test
+    @Timeout(1)
     void reducesTheNumberOfSets() {
         DisjointSet set = new DisjointSet.Compressed(4);
         set.union(0, 1, Counter.create());
@@ -47,6 +52,7 @@ final class DisjointSetTest {
 
     @DisplayName("Повторное объединение ничего не меняет")
     @Test
+    @Timeout(1)
     void ignoresRepeatedUnion() {
         DisjointSet set = new DisjointSet.Compressed(4);
         set.union(0, 1, Counter.create());
@@ -56,6 +62,7 @@ final class DisjointSetTest {
 
     @DisplayName("Повторное объединение сообщает, что связь уже была")
     @Test
+    @Timeout(1)
     void reportsThatElementsWereAlreadyTogether() {
         DisjointSet set = new DisjointSet.Compressed(4);
         set.union(0, 1, Counter.create());
@@ -65,6 +72,7 @@ final class DisjointSetTest {
 
     @DisplayName("Не связанные элементы остаются раздельными")
     @Test
+    @Timeout(1)
     void keepsUnrelatedElementsApart() {
         DisjointSet set = new DisjointSet.Compressed(4);
         set.union(0, 1, Counter.create());
@@ -75,6 +83,7 @@ final class DisjointSetTest {
 
     @DisplayName("Сжатие путей делает вырожденную цепочку дешевле наивной перекраски")
     @Test
+    @Timeout(5)
     void beatsTheNaiveColoringOnALongChain() {
         assertThat("path compression dont pay off against the naive coloring",
             steps(new DisjointSet.Compressed(1000)), lessThan(steps(new DisjointSet.Colored(1000))));
@@ -82,6 +91,7 @@ final class DisjointSetTest {
 
     @DisplayName("Элемент вне множества использовать нельзя")
     @Test
+    @Timeout(1)
     void cannotUseAnElementOutsideTheSet() {
         DisjointSet set = new DisjointSet.Compressed(4);
         assertThrows(IndexOutOfBoundsException.class, () -> set.find(4, Counter.create()),
@@ -90,6 +100,7 @@ final class DisjointSetTest {
 
     @DisplayName("Множество отрицательного размера создать нельзя")
     @Test
+    @Timeout(1)
     void cannotCreateASetOfNegativeSize() {
         assertThrows(IllegalArgumentException.class, () -> new DisjointSet.Compressed(-1),
             "a set of negative size is created");

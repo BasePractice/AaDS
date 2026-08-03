@@ -1,6 +1,7 @@
 package ru.mifi.practice.voln.games;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import ru.mifi.practice.voln.games.logic.GameAuto;
 import ru.mifi.practice.voln.games.logic.Item;
 import ru.mifi.practice.voln.games.logic.Person;
@@ -13,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class PatternTest {
     @Test
+    @Timeout(1)
     void testGameInitialization() {
         Output output = (format, args) -> {
         };
@@ -24,6 +26,7 @@ class PatternTest {
     }
 
     @Test
+    @Timeout(5)
     void testPatternUpdate() {
         Output output = (format, args) -> {
         };
@@ -37,6 +40,7 @@ class PatternTest {
     }
 
     @Test
+    @Timeout(1)
     void testBackwardMovement() {
         Output output = (format, args) -> {
         };
@@ -49,6 +53,7 @@ class PatternTest {
     }
 
     @Test
+    @Timeout(1)
     void testBackwardAtStart() {
         Output output = (format, args) -> {
         };
@@ -60,6 +65,7 @@ class PatternTest {
     }
 
     @Test
+    @Timeout(1)
     void testMobCounterAttack() {
         Output output = (format, args) -> {
         };
@@ -86,6 +92,7 @@ class PatternTest {
     }
 
     @Test
+    @Timeout(1)
     void testAutomaticPickup() {
         Output output = (format, args) -> {
         };
@@ -109,6 +116,7 @@ class PatternTest {
     }
 
     @Test
+    @Timeout(1)
     void testRestart() {
         Output output = (format, args) -> {
         };
@@ -124,6 +132,7 @@ class PatternTest {
     }
 
     @Test
+    @Timeout(1)
     void testStepCounter() {
         Output output = (format, args) -> {
         };
@@ -138,6 +147,7 @@ class PatternTest {
     }
 
     @Test
+    @Timeout(5)
     void testIdleRegen() {
         Output output = (format, args) -> {
         };
@@ -157,6 +167,7 @@ class PatternTest {
     }
 
     @Test
+    @Timeout(5)
     void testLevelCounter() {
         Output output = (format, args) -> {
         };
@@ -177,6 +188,7 @@ class PatternTest {
     }
 
     @Test
+    @Timeout(1)
     void testNegativeHealthBug() {
         Output output = (format, args) -> {
         };
@@ -199,6 +211,7 @@ class PatternTest {
     }
 
     @Test
+    @Timeout(1)
     void testAutoPilot() {
         Output output = (format, args) -> {
         };
@@ -211,6 +224,7 @@ class PatternTest {
     }
 
     @Test
+    @Timeout(1)
     void testAutoWeaponSelection() {
         Output output = (format, args) -> {
         };
@@ -230,6 +244,7 @@ class PatternTest {
     }
 
     @Test
+    @Timeout(1)
     void testAutoHealThreshold() {
         Output output = (format, args) -> {
         };
@@ -249,6 +264,7 @@ class PatternTest {
     }
 
     @Test
+    @Timeout(1)
     void testManualDeletion() {
         Output output = (format, args) -> {
         };
@@ -264,6 +280,7 @@ class PatternTest {
     }
 
     @Test
+    @Timeout(1)
     void testAutoInventoryCleanup() {
         final Output output = (format, args) -> {
         };
@@ -281,6 +298,7 @@ class PatternTest {
     }
 
     @Test
+    @Timeout(1)
     void testBaseAttackProgression() {
         Output output = (format, args) -> {
         };
@@ -303,6 +321,7 @@ class PatternTest {
     }
 
     @Test
+    @Timeout(1)
     void testLogging() {
         java.util.List<String> logs = new java.util.ArrayList<>();
         Output output = (format, args) -> {
@@ -337,6 +356,7 @@ class PatternTest {
     }
 
     @Test
+    @Timeout(1)
     void testInventoryLimit() {
         Person.Player player = new Person.Player("Герой");
         for (int i = 0; i < 10; i++) {

@@ -2,6 +2,7 @@ package ru.mifi.practice.voln.prime;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.math.BigInteger;
 
@@ -13,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @DisplayName("Числа Мерсенна")
 class MersenneNumbersTest {
     @Test
+    @Timeout(1)
     @DisplayName("Формула M_p = 2^p - 1")
     void mersenneFormula() {
         assertEquals(BigInteger.valueOf(31), MersenneNumbers.mersenne(5));
@@ -20,6 +22,7 @@ class MersenneNumbersTest {
     }
 
     @Test
+    @Timeout(1)
     @DisplayName("Лукас—Лемер: известные простые показатели")
     void lucasLehmerKnownPrimes() {
         int[] primes = new int[]{2, 3, 5, 7, 13, 17, 19};
@@ -29,6 +32,7 @@ class MersenneNumbersTest {
     }
 
     @Test
+    @Timeout(1)
     @DisplayName("Лукас—Лемер: составные показатели")
     void lucasLehmerCompositeExponents() {
         int[] composite = new int[]{1, 4, 6, 8, 9, 10, 12};
@@ -38,6 +42,7 @@ class MersenneNumbersTest {
     }
 
     @Test
+    @Timeout(1)
     @DisplayName("Показатели до 20")
     void exponentsUpTo20() {
         assertArrayEquals(new int[]{2, 3, 5, 7, 13, 17, 19}, MersenneNumbers.mersennePrimeExponentsUpTo(20));

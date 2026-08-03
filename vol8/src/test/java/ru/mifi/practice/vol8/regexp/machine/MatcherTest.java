@@ -1,6 +1,7 @@
 package ru.mifi.practice.vol8.regexp.machine;
 
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -29,6 +30,7 @@ class MatcherTest {
     }
 
     @ParameterizedTest
+    @Timeout(5)
     @MethodSource("patternMatching")
     void match(boolean isMatch, String input, String pattern) {
         Tree tree = new Tree.Default(pattern);

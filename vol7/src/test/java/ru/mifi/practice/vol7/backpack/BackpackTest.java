@@ -2,6 +2,7 @@ package ru.mifi.practice.vol7.backpack;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.util.List;
 
@@ -14,6 +15,7 @@ final class BackpackTest {
 
     @DisplayName("Предмет весом ровно во вместимость помещается")
     @Test
+    @Timeout(1)
     void takesAnItemWeighingExactlyTheCapacity() {
         assertThat("an item weighing exactly the capacity dont fit",
             new Backpack.Classic(1).putting(List.of(new Backpack.Item("гвоздь", 1, 10))),
@@ -22,6 +24,7 @@ final class BackpackTest {
 
     @DisplayName("Слишком тяжёлый предмет не берётся")
     @Test
+    @Timeout(1)
     void skipsAnItemHeavierThanTheCapacity() {
         assertThat("an item heavier than the capacity is taken anyway",
             new Backpack.Classic(1).putting(List.of(new Backpack.Item("молот", 10, 100))).size(), is(0));
@@ -29,6 +32,7 @@ final class BackpackTest {
 
     @DisplayName("Выбирает более ценный набор")
     @Test
+    @Timeout(1)
     void picksTheMoreValuableSet() {
         assertThat("the cheaper set wins",
             new Backpack.Classic(5).putting(List.of(
@@ -39,6 +43,7 @@ final class BackpackTest {
 
     @DisplayName("Набирает несколько предметов до вместимости")
     @Test
+    @Timeout(1)
     void combinesSeveralItemsUpToTheCapacity() {
         assertThat("the solver dont combine items up to the capacity",
             new Backpack.Classic(3).putting(List.of(
@@ -48,6 +53,7 @@ final class BackpackTest {
 
     @DisplayName("Пустой список предметов даёт пустой рюкзак")
     @Test
+    @Timeout(1)
     void putsNothingWhenThereIsNothingToPut() {
         assertThat("an empty item list dont produce an empty backpack",
             new Backpack.Classic(5).putting(List.of()).size(), is(0));

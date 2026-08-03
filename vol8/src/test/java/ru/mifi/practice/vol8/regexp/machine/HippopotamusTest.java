@@ -3,6 +3,7 @@ package ru.mifi.practice.vol8.regexp.machine;
 import lombok.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -39,6 +40,7 @@ public final class HippopotamusTest {
     }
 
     @ParameterizedTest
+    @Timeout(5)
     @MethodSource("patternMatching")
     void match(boolean isMatch, List<Hippopotamus> hippopotamuses, String pattern) {
         Tree tree = new Tree.Default(pattern);

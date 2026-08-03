@@ -2,6 +2,7 @@ package ru.mifi.practice.voln.codes;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.nio.charset.StandardCharsets;
 
@@ -15,6 +16,7 @@ final class PrecodeTest {
 
     @DisplayName("Число уравнений совпадает с числом проверочных символов")
     @Test
+    @Timeout(1)
     void givesOneRelationPerParitySymbol() {
         RaptorConfiguration config = RaptorConfiguration.defaults(16, 12345L);
         assertThat("the number of relations dont match the number of parity symbols",
@@ -23,6 +25,7 @@ final class PrecodeTest {
 
     @DisplayName("Уравнение начинается со своего проверочного символа")
     @Test
+    @Timeout(1)
     void startsEveryRelationWithItsOwnParitySymbol() {
         RaptorConfiguration config = RaptorConfiguration.defaults(16, 12345L);
         assertThat("a relation dont start with the parity symbol it defines",
@@ -31,6 +34,7 @@ final class PrecodeTest {
 
     @DisplayName("Правила детерминированы")
     @Test
+    @Timeout(1)
     void repeatsTheSameRelations() {
         RaptorConfiguration config = RaptorConfiguration.defaults(16, 12345L);
         assertThat("the relations differ between two calls",
@@ -44,6 +48,7 @@ final class PrecodeTest {
      */
     @DisplayName("Восстановление укладывается в число исходных символов")
     @Test
+    @Timeout(5)
     void decodesWithoutPayingForTheParitySymbols() {
         assertThat("decoding needs more symbols than there are source symbols",
             symbolsNeeded(), lessThanOrEqualTo(sources()));
@@ -56,6 +61,7 @@ final class PrecodeTest {
      */
     @DisplayName("Недоопределённая система отвергается, а не решается неверно")
     @Test
+    @Timeout(5)
     void refusesAnUnderdeterminedSystem() {
         byte[] data = payload();
         RaptorConfiguration config = RaptorConfiguration.defaults(16, 12345L);
@@ -68,6 +74,7 @@ final class PrecodeTest {
 
     @DisplayName("Восстановленные данные совпадают с исходными")
     @Test
+    @Timeout(5)
     void restoresTheOriginalData() {
         byte[] data = payload();
         RaptorConfiguration config = RaptorConfiguration.defaults(16, 12345L);

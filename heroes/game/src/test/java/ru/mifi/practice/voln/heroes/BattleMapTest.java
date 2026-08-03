@@ -1,6 +1,7 @@
 package ru.mifi.practice.voln.heroes;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -8,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 class BattleMapTest {
     @Test
+    @Timeout(1)
     void testAttackMovement() {
         BattleMap map = new BattleMap();
         Unit.Stack attacker = new Unit.Stack(Unit.Type.WALKER);
@@ -32,6 +34,7 @@ class BattleMapTest {
     }
 
     @Test
+    @Timeout(1)
     void testMoveToOccupiedCellShouldFail() {
         BattleMap map = new BattleMap();
         Unit.Stack walker = new Unit.Stack(Unit.Type.WALKER);

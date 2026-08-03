@@ -2,6 +2,7 @@ package ru.mifi.practice.voln.jt;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -89,12 +90,14 @@ class JohnsonTrotterTest {
     }
 
     @Test
+    @Timeout(5)
     @DisplayName("Не правильное количество перестановок")
     void invalidN() {
         assertThrows(IllegalArgumentException.class, () -> JohnsonTrotter.permutations(0).iterator().next());
     }
 
     @Test
+    @Timeout(5)
     @DisplayName("Единичная перестановка")
     void n1() {
         List<int[]> list = collect(JohnsonTrotter.permutations(1));
@@ -103,6 +106,7 @@ class JohnsonTrotterTest {
     }
 
     @Test
+    @Timeout(5)
     @DisplayName("Перестановка с 2 до 4")
     void countAndUniqueness() {
         for (int n = 2; n <= 4; n++) {
@@ -118,6 +122,7 @@ class JohnsonTrotterTest {
     }
 
     @Test
+    @Timeout(5)
     @DisplayName("Проверка с перестановками")
     void orderProperty() {
         int n = 4;

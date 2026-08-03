@@ -2,6 +2,7 @@ package ru.mifi.practice.vol2.vm;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import ru.mifi.practice.vol2.vm.impl.PolskaMachine;
@@ -19,6 +20,7 @@ final class BytecodeTest {
 
     @DisplayName("Скомпилированная программа считает то же, что и разобранная")
     @ParameterizedTest
+    @Timeout(1)
     @ValueSource(strings = {"1 10 - abs", "3 2 -", "10 2 /", "3 2 +", "7 6 *", "9 3 - 2 /", "1 2 + 3 +"})
     void computesTheSameAsTheInterpreter(String program) throws IOException {
         VirtualMachine machine = new PolskaMachine();
@@ -29,6 +31,7 @@ final class BytecodeTest {
 
     @DisplayName("Число больше байта переживает компиляцию")
     @Test
+    @Timeout(1)
     void keepsANumberLargerThanAByte() throws IOException {
         VirtualMachine machine = new PolskaMachine();
         assertThat("a number above 255 is truncated to a single byte",
@@ -38,6 +41,7 @@ final class BytecodeTest {
 
     @DisplayName("Дробное число переживает компиляцию")
     @Test
+    @Timeout(1)
     void keepsAFractionalNumber() throws IOException {
         VirtualMachine machine = new PolskaMachine();
         assertThat("the fractional part is dropped at compile time",
@@ -47,6 +51,7 @@ final class BytecodeTest {
 
     @DisplayName("Отрицательный результат переживает компиляцию")
     @Test
+    @Timeout(1)
     void keepsANegativeResult() throws IOException {
         VirtualMachine machine = new PolskaMachine();
         assertThat("a negative result is mangled at compile time",
@@ -56,6 +61,7 @@ final class BytecodeTest {
 
     @DisplayName("Кириллица переживает запись и чтение")
     @Test
+    @Timeout(1)
     void keepsCyrillicText() throws IOException {
         assertThat("a cyrillic string dont survive the round trip",
             roundTrip(VirtualMachine.DefaultValue.of("Привет, мир")).value(), is("Привет, мир"));
@@ -63,6 +69,7 @@ final class BytecodeTest {
 
     @DisplayName("Длинная строка переживает запись и чтение")
     @Test
+    @Timeout(1)
     void keepsALongText() throws IOException {
         assertThat("a string longer than a byte length prefix is truncated",
             roundTrip(VirtualMachine.DefaultValue.of("я".repeat(300))).value(), is("я".repeat(300)));
@@ -70,6 +77,7 @@ final class BytecodeTest {
 
     @DisplayName("Логическое значение переживает запись и чтение")
     @Test
+    @Timeout(1)
     void keepsABoolean() throws IOException {
         assertThat("a boolean dont survive the round trip",
             roundTrip(VirtualMachine.DefaultValue.of(true)).value(), is(true));
@@ -77,6 +85,7 @@ final class BytecodeTest {
 
     @DisplayName("Пустое значение переживает запись и чтение")
     @Test
+    @Timeout(1)
     void keepsTheMissingValue() throws IOException {
         assertThat("a missing value dont survive the round trip",
             roundTrip(VirtualMachine.DefaultValue.none()).type(), is(VirtualMachine.Type.NONE));

@@ -1,6 +1,7 @@
 package ru.mifi.practice.vol8.regexp.machine;
 
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import ru.mifi.practice.vol8.regexp.AbstractPatternTest;
@@ -17,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 class MachineTest extends AbstractPatternTest {
     @DisplayName("generator")
     @ParameterizedTest
+    @Timeout(5)
     @MethodSource("patternText")
     void parse(String name, String text) throws IOException {
         MachineGenerator generator = new MachineGenerator();

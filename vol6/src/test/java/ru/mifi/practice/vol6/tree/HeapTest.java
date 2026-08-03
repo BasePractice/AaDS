@@ -2,6 +2,7 @@ package ru.mifi.practice.vol6.tree;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +18,7 @@ final class HeapTest {
 
     @DisplayName("В корне лежит минимум")
     @Test
+    @Timeout(1)
     void keepsTheMinimumAtTheTop() {
         Heap<Integer> heap = new Heap.Minimum<>(10);
         heap.add(5).add(3).add(9).add(1);
@@ -25,6 +27,7 @@ final class HeapTest {
 
     @DisplayName("Минимум остаётся в корне при добавлении большего")
     @Test
+    @Timeout(1)
     void keepsTheMinimumWhenALargerValueArrives() {
         Heap<Integer> heap = new Heap.Minimum<>(10);
         heap.add(1).add(7);
@@ -33,6 +36,7 @@ final class HeapTest {
 
     @DisplayName("Извлечение корня возвращает минимум")
     @Test
+    @Timeout(1)
     void returnsTheMinimumOnDelete() {
         Heap<Integer> heap = new Heap.Minimum<>(10);
         heap.add(5).add(3).add(9).add(1);
@@ -41,6 +45,7 @@ final class HeapTest {
 
     @DisplayName("Извлечение корня уменьшает размер")
     @Test
+    @Timeout(1)
     void shrinksOnDelete() {
         Heap<Integer> heap = new Heap.Minimum<>(10);
         heap.add(5).add(3);
@@ -50,6 +55,7 @@ final class HeapTest {
 
     @DisplayName("Последовательное извлечение даёт возрастающий порядок")
     @Test
+    @Timeout(1)
     void drainsInAscendingOrder() {
         Heap<Integer> heap = new Heap.Minimum<>(10);
         for (int value : new int[]{5, 3, 9, 1, 7, 2}) {
@@ -64,6 +70,7 @@ final class HeapTest {
 
     @DisplayName("Извлечение единственного элемента опустошает кучу")
     @Test
+    @Timeout(1)
     void becomesEmptyAfterTheOnlyElementIsRemoved() {
         Heap<Integer> heap = new Heap.Minimum<>(10);
         heap.add(5);
@@ -73,6 +80,7 @@ final class HeapTest {
 
     @DisplayName("Извлечение не теряет последний элемент")
     @Test
+    @Timeout(1)
     void keepsTheLastElementOnDelete() {
         Heap<Integer> heap = new Heap.Minimum<>(10);
         heap.add(1).add(2);
@@ -82,6 +90,7 @@ final class HeapTest {
 
     @DisplayName("Пустая куча не отдаёт корень")
     @Test
+    @Timeout(1)
     void cannotReadTheTopOfAnEmptyHeap() {
         Heap<Integer> heap = new Heap.Minimum<>(10);
         assertThrows(NoSuchElementException.class, heap::top, "an empty heap returns a top");
@@ -89,6 +98,7 @@ final class HeapTest {
 
     @DisplayName("Переполнение кучи не проходит молча")
     @Test
+    @Timeout(1)
     void cannotAddBeyondCapacity() {
         Heap<Integer> heap = new Heap.Minimum<>(1);
         heap.add(1);
@@ -97,6 +107,7 @@ final class HeapTest {
 
     @DisplayName("Восстановление свойства кучи поднимает минимум в корень")
     @Test
+    @Timeout(1)
     void restoresTheHeapPropertyOnRefresh() {
         Heap<Integer> heap = new Heap.Minimum<>(10);
         heap.add(1).add(2).add(3);

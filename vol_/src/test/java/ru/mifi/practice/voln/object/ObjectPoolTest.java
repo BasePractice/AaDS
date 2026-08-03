@@ -2,6 +2,7 @@ package ru.mifi.practice.voln.object;
 
 import lombok.Getter;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -17,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class ObjectPoolTest {
 
     @Test
+    @Timeout(5)
     void testPoolBasic() throws IOException {
         AtomicInteger counter = new AtomicInteger(0);
         ObjectPool.Generic<TestResource> pool = new ObjectPool.Generic<>(
@@ -51,6 +53,7 @@ class ObjectPoolTest {
     }
 
     @Test
+    @Timeout(5)
     void testValidation() throws IOException {
         AtomicInteger counter = new AtomicInteger(0);
         AtomicBoolean valid = new AtomicBoolean(true);
@@ -78,6 +81,7 @@ class ObjectPoolTest {
     }
 
     @Test
+    @Timeout(5)
     void testPoolLimit() throws InterruptedException, IOException {
         ObjectPool.Generic<TestResource> pool = new ObjectPool.Generic<>(
             TestResource::new,
@@ -107,6 +111,7 @@ class ObjectPoolTest {
 
     //TODO: Can't be final
     @Test
+    @Timeout(5)
     void testNoDefaultConstructor() {
         ObjectPool.Generic<ResourceNoDefaultConstructor> pool = new ObjectPool.Generic<>(
             () -> new ResourceNoDefaultConstructor(1),
@@ -134,6 +139,7 @@ class ObjectPoolTest {
     }
 
     @Test
+    @Timeout(5)
     void testUseAfterClose() throws IOException {
         ObjectPool.Generic<TestResource> pool = new ObjectPool.Generic<>(
             () -> new TestResource(1),
@@ -153,6 +159,7 @@ class ObjectPoolTest {
     }
 
     @Test
+    @Timeout(5)
     void testDisposeNull() {
         ObjectPool.Generic<TestResource> pool = new ObjectPool.Generic<>(
             TestResource::new, r -> {}, r -> true, 0, 1, TestResource.class
@@ -163,6 +170,7 @@ class ObjectPoolTest {
     }
 
     @Test
+    @Timeout(5)
     void testPoolFullWaitAndReturn() throws InterruptedException {
         ObjectPool.Generic<TestResource> pool = new ObjectPool.Generic<>(
             TestResource::new, r -> {}, r -> true, 1, 1, TestResource.class
@@ -184,6 +192,7 @@ class ObjectPoolTest {
     }
 
     @Test
+    @Timeout(5)
     void testRefreshCalled() throws IOException {
         AtomicInteger refreshCount = new AtomicInteger(0);
         ObjectPool.Generic<TestResource> pool = new ObjectPool.Generic<>(
@@ -202,6 +211,7 @@ class ObjectPoolTest {
     }
 
     @Test
+    @Timeout(5)
     void testDestroyOnDisposeIfInvalid() throws IOException {
         AtomicInteger closeCount = new AtomicInteger(0);
         ObjectPool.Generic<CloseableResource> pool = new ObjectPool.Generic<>(
@@ -224,6 +234,7 @@ class ObjectPoolTest {
     }
 
     @Test
+    @Timeout(5)
     void testClosePool() throws IOException {
         AtomicInteger closeCount = new AtomicInteger(0);
         ObjectPool.Generic<CloseableResource> pool = new ObjectPool.Generic<>(

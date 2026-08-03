@@ -3,6 +3,7 @@ package ru.mifi.practice.vol4.map;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import ru.mifi.practice.commons.Counter;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -13,6 +14,7 @@ final class HashTableTest {
 
     @DisplayName("Возвращает положенное значение")
     @Test
+    @Timeout(1)
     void readsBackTheStoredValue() {
         HashTable<String, Integer> table = new HashTable.Default<>(8);
         table.put("a", 1, new Counter.Default());
@@ -22,6 +24,7 @@ final class HashTableTest {
 
     @DisplayName("Повторная запись заменяет значение")
     @Test
+    @Timeout(1)
     void replacesValueOnRepeatedPut() {
         HashTable<String, Integer> table = new HashTable.Default<>(8);
         table.put("a", 1, new Counter.Default());
@@ -32,6 +35,7 @@ final class HashTableTest {
 
     @DisplayName("Повторная запись не увеличивает размер")
     @Test
+    @Timeout(1)
     void keepsSizeOnRepeatedPut() {
         HashTable<String, Integer> table = new HashTable.Default<>(8);
         table.put("a", 1, new Counter.Default());
@@ -41,6 +45,7 @@ final class HashTableTest {
 
     @DisplayName("Размер считает различные ключи")
     @Test
+    @Timeout(1)
     void countsDistinctKeys() {
         HashTable<String, Integer> table = new HashTable.Default<>(8);
         table.put("a", 1, new Counter.Default());
@@ -50,6 +55,7 @@ final class HashTableTest {
 
     @DisplayName("Отсутствующий ключ не читается")
     @Test
+    @Timeout(1)
     void reportsMissingKey() {
         HashTable<String, Integer> table = new HashTable.Default<>(8);
         table.put("a", 1, new Counter.Default());
@@ -59,6 +65,7 @@ final class HashTableTest {
 
     @DisplayName("Удаление отсутствующего ключа ничего не возвращает")
     @Test
+    @Timeout(1)
     void removesMissingKeyWithoutReturningAValue() {
         HashTable<String, Integer> table = new HashTable.Default<>(1);
         table.put("a", 1, new Counter.Default());
@@ -68,6 +75,7 @@ final class HashTableTest {
 
     @DisplayName("Удаление возвращает удалённое значение")
     @Test
+    @Timeout(1)
     void returnsTheRemovedValue() {
         HashTable<String, Integer> table = new HashTable.Default<>(8);
         table.put("a", 1, new Counter.Default());
@@ -77,6 +85,7 @@ final class HashTableTest {
 
     @DisplayName("Удаление уменьшает размер")
     @Test
+    @Timeout(1)
     void shrinksOnRemove() {
         HashTable<String, Integer> table = new HashTable.Default<>(8);
         table.put("a", 1, new Counter.Default());
@@ -86,6 +95,7 @@ final class HashTableTest {
 
     @DisplayName("Разные ключи в одной корзине не мешают друг другу")
     @Test
+    @Timeout(1)
     void keepsCollidingKeysApart() {
         HashTable<String, Integer> table = new HashTable.Default<>(1);
         table.put("a", 1, new Counter.Default());
@@ -104,6 +114,7 @@ final class HashTableTest {
     @Disabled("Учебное задание: в HashTable.Default нет перехеширования")
     @DisplayName("Таблица перехешируется при переполнении корзин")
     @Test
+    @Timeout(1)
     void rehashesWhenBucketsOverflow() {
         HashTable<Integer, Integer> table = new HashTable.Default<>(1);
         for (int i = 0; i < 32; i++) {

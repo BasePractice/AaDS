@@ -2,6 +2,7 @@ package ru.mifi.practice.voln.prime;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.math.BigInteger;
 
@@ -12,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class DiffieHellmanTest {
 
     @Test
+    @Timeout(5)
     @DisplayName("Совпадение общего секрета на малых параметрах")
     void sharedSecretSmallParams() {
         BigInteger p = BigInteger.valueOf(23);
@@ -31,6 +33,7 @@ class DiffieHellmanTest {
     }
 
     @Test
+    @Timeout(5)
     @DisplayName("Конструктор по битности и совпадение секрета")
     void bitLengthConstructorFlow() {
         DiffieHellman party1 = new DiffieHellman(256);

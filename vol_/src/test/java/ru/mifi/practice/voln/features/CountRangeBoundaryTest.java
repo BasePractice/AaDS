@@ -2,6 +2,7 @@ package ru.mifi.practice.voln.features;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -11,12 +12,14 @@ final class CountRangeBoundaryTest {
 
     @DisplayName("Значение внутри диапазона даёт награду этого диапазона")
     @Test
+    @Timeout(1)
     void rewardsAValueInsideARange() {
         assertThat("a value inside a range dont get its reward", reward(101), is(1001L));
     }
 
     @DisplayName("Значение ровно на внутренней границе не проваливается в нулевой диапазон")
     @Test
+    @Timeout(1)
     void keepsAValueOnAnInnerBoundaryInsideItsRange() {
         assertThat("a value exactly on an inner boundary falls through to the first range",
             reward(200), is(1001L));
@@ -24,12 +27,14 @@ final class CountRangeBoundaryTest {
 
     @DisplayName("Значение сразу за внутренней границей переходит в следующий диапазон")
     @Test
+    @Timeout(1)
     void movesToTheNextRangeJustAfterABoundary() {
         assertThat("crossing the boundary dont move to the next range", reward(201), is(1002L));
     }
 
     @DisplayName("Значение выше последней границы остаётся в последнем диапазоне")
     @Test
+    @Timeout(1)
     void staysInTheLastRangeAboveTheLastBoundary() {
         assertThat("a value above the last boundary leaves the last range", reward(1000), is(1002L));
     }

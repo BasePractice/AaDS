@@ -1,11 +1,13 @@
 package ru.mifi.practice.vol6.tree.search;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import ru.mifi.practice.commons.Counter;
 import org.junit.jupiter.api.Assertions;
 
 public class RBTTest {
     @Test
+    @Timeout(1)
     public void testAdd() {
         RBT<Integer> tree = new RBT<>();
         tree.add(10).add(20).add(30).add(15).add(25);
@@ -21,6 +23,7 @@ public class RBTTest {
     }
 
     @Test
+    @Timeout(1)
     public void testDelete() {
         RBT<Integer> tree = new RBT<>();
         tree.add(10).add(20).add(30).add(40).add(50);
@@ -43,6 +46,7 @@ public class RBTTest {
     }
 
     @Test
+    @Timeout(5)
     public void testLargeTree() {
         RBT<Integer> tree = new RBT<>();
         for (int i = 0; i < 100; i++) {

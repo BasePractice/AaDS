@@ -3,6 +3,7 @@ package ru.mifi.practice.vol4.hash;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import ru.mifi.practice.commons.Counter;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -13,6 +14,7 @@ final class SearchTest {
 
     @DisplayName("Находит подстроку в начале")
     @Test
+    @Timeout(1)
     void findsSubstringAtTheStart() {
         assertThat("substring at the start dont get found",
             new Search.SimpleSearch().search("abcabc", "abc", new Counter.Default()).orElseThrow().index(), is(0));
@@ -20,6 +22,7 @@ final class SearchTest {
 
     @DisplayName("Находит подстроку в конце")
     @Test
+    @Timeout(1)
     void findsSubstringAtTheEnd() {
         assertThat("substring ending at the last character dont get found",
             new Search.SimpleSearch().search("abc", "bc", new Counter.Default()).orElseThrow().index(), is(1));
@@ -27,6 +30,7 @@ final class SearchTest {
 
     @DisplayName("Находит подстроку после частичного совпадения")
     @Test
+    @Timeout(1)
     void findsSubstringAfterPartialMatch() {
         assertThat("a partial match makes the search skip the real one",
             new Search.SimpleSearch().search("aab", "ab", new Counter.Default()).orElseThrow().index(), is(1));
@@ -34,6 +38,7 @@ final class SearchTest {
 
     @DisplayName("Находит подстроку, равную всему тексту")
     @Test
+    @Timeout(1)
     void findsSubstringEqualToTheWholeText() {
         assertThat("substring equal to the text dont get found",
             new Search.SimpleSearch().search("abc", "abc", new Counter.Default()).orElseThrow().index(), is(0));
@@ -41,6 +46,7 @@ final class SearchTest {
 
     @DisplayName("Отсутствующая подстрока не находится")
     @Test
+    @Timeout(1)
     void reportsMissingSubstring() {
         assertThat("a missing substring is reported as found",
             new Search.SimpleSearch().search("abc", "xy", new Counter.Default()).isPresent(), is(false));
@@ -54,6 +60,7 @@ final class SearchTest {
     @Disabled("Учебное задание: ошибка в PolynomialSearchCached")
     @DisplayName("Поиск по хешам находит подстроку")
     @Test
+    @Timeout(1)
     void polynomialSearchFindsSubstring() {
         assertThat("hash based search compares a reduced hash against an unreduced product",
             new Search.PolynomialSearchCached().search("abcabc", "cab", new Counter.Default()).orElseThrow().index(),

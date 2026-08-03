@@ -14,6 +14,7 @@ final class StandardStackTest {
 
     @DisplayName("Новый стек пуст")
     @Test
+    @Timeout(1)
     void startsEmpty() {
         assertThat("a fresh stack dont look empty",
             new StandardStack<>(new StandardArray<Integer>(4)).isEmpty(), is(true));
@@ -21,6 +22,7 @@ final class StandardStackTest {
 
     @DisplayName("После помещения стек не пуст")
     @Test
+    @Timeout(1)
     void stopsBeingEmptyOnPush() {
         Stack<Integer> stack = new StandardStack<>(new StandardArray<>(4));
         stack.push(1);
@@ -29,6 +31,7 @@ final class StandardStackTest {
 
     @DisplayName("Извлекает элементы в обратном порядке")
     @Test
+    @Timeout(1)
     void servesElementsInReverseOrder() {
         Stack<Integer> stack = new StandardStack<>(new StandardArray<>(4));
         stack.push(1);
@@ -38,6 +41,7 @@ final class StandardStackTest {
 
     @DisplayName("Просмотр вершины не снимает элемент")
     @Test
+    @Timeout(1)
     void keepsTheTopOnPeek() {
         Stack<Integer> stack = new StandardStack<>(new StandardArray<>(4));
         stack.push(1);
@@ -47,6 +51,7 @@ final class StandardStackTest {
 
     @DisplayName("Извлечение опустошает стек")
     @Test
+    @Timeout(1)
     void becomesEmptyWhenEveryElementIsPopped() {
         Stack<Integer> stack = new StandardStack<>(new StandardArray<>(4));
         stack.push(1);

@@ -1,6 +1,7 @@
 package ru.mifi.practice.vol12;
 
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 import ru.mifi.practice.commons.Counter;
@@ -20,6 +21,7 @@ final class SpanningTreeTest {
 
     @DisplayName("Дерево содержит на одно ребро меньше, чем вершин")
     @ParameterizedTest
+    @Timeout(1)
     @MethodSource("implementations")
     void takesOneEdgeLessThanVertices(SpanningTree tree) {
         assertThat("the tree dont have exactly one edge less than vertices",
@@ -28,6 +30,7 @@ final class SpanningTreeTest {
 
     @DisplayName("Выбирает минимальную сумму весов")
     @ParameterizedTest
+    @Timeout(1)
     @MethodSource("implementations")
     void minimisesTheTotalWeight(SpanningTree tree) {
         assertThat("the tree dont minimise the total weight",
@@ -36,6 +39,7 @@ final class SpanningTreeTest {
 
     @DisplayName("Тяжёлое ребро в дерево не попадает")
     @ParameterizedTest
+    @Timeout(1)
     @MethodSource("implementations")
     void skipsTheHeaviestEdge(SpanningTree tree) {
         assertThat("the heaviest edge gets into the tree",
@@ -44,6 +48,7 @@ final class SpanningTreeTest {
 
     @DisplayName("Одна вершина даёт дерево без рёбер")
     @ParameterizedTest
+    @Timeout(1)
     @MethodSource("implementations")
     void buildsAnEmptyTreeForASingleVertex(SpanningTree tree) {
         assertThat("a single vertex graph produces edges",
@@ -52,6 +57,7 @@ final class SpanningTreeTest {
 
     @DisplayName("Несвязный граф даёт остовный лес")
     @ParameterizedTest
+    @Timeout(1)
     @MethodSource("implementations")
     void buildsAForestForADisconnectedGraph(SpanningTree tree) {
         SpanningTree.Graph graph = new SpanningTree.Graph(4).edge(0, 1, 1).edge(2, 3, 1);
@@ -61,6 +67,7 @@ final class SpanningTreeTest {
 
     @DisplayName("Кратное ребро не создаёт цикла")
     @ParameterizedTest
+    @Timeout(1)
     @MethodSource("implementations")
     void ignoresParallelEdges(SpanningTree tree) {
         SpanningTree.Graph graph = new SpanningTree.Graph(2).edge(0, 1, 5).edge(0, 1, 1);
@@ -70,6 +77,7 @@ final class SpanningTreeTest {
 
     @DisplayName("Из кратных рёбер берётся лёгкое")
     @ParameterizedTest
+    @Timeout(1)
     @MethodSource("implementations")
     void takesTheLighterOfParallelEdges(SpanningTree tree) {
         SpanningTree.Graph graph = new SpanningTree.Graph(2).edge(0, 1, 5).edge(0, 1, 1);

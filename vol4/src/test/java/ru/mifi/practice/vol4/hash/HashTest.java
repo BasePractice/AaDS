@@ -2,6 +2,7 @@ package ru.mifi.practice.vol4.hash;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import ru.mifi.practice.commons.Counter;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -14,6 +15,7 @@ final class HashTest {
 
     @DisplayName("Одинаковый текст даёт одинаковый хеш")
     @Test
+    @Timeout(1)
     void givesTheSameHashForTheSameText() {
         Hash hash = new Hash.PolynomialHash();
         assertThat("the same text hashes differently on a second call",
@@ -22,6 +24,7 @@ final class HashTest {
 
     @DisplayName("Хеш длинного текста остаётся неотрицательным")
     @Test
+    @Timeout(1)
     void keepsTheHashNonNegativeOnLongText() {
         assertThat("modular arithmetic overflows int and produces a negative hash",
             new Hash.PolynomialHash().hash("абвгдеёжзийклмнопрстуфхцчшщъыьэюя", new Counter.Default()),
@@ -30,6 +33,7 @@ final class HashTest {
 
     @DisplayName("Хеш не выходит за модуль")
     @Test
+    @Timeout(1)
     void keepsTheHashBelowTheModulus() {
         assertThat("hash escapes the modulus",
             new Hash.PolynomialHash().hash("абвгдеёжзийклмнопрстуфхцчшщъыьэюя", new Counter.Default()),
@@ -38,6 +42,7 @@ final class HashTest {
 
     @DisplayName("Кешированный хеш длинного текста остаётся неотрицательным")
     @Test
+    @Timeout(1)
     void keepsTheCachedHashNonNegativeOnLongText() {
         assertThat("cached powers overflow int and produce a negative hash",
             new Hash.PolynomialHashCached().hash("абвгдеёжзийклмнопрстуфхцчшщъыьэюя", new Counter.Default()),
@@ -46,6 +51,7 @@ final class HashTest {
 
     @DisplayName("Кешированный хеш пустого текста равен нулю")
     @Test
+    @Timeout(1)
     void hashesEmptyTextToZero() {
         assertThat("empty text dont hash to zero",
             new Hash.PolynomialHashCached().hash("", new Counter.Default()), is(0));

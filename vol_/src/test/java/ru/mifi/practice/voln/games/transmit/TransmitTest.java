@@ -2,6 +2,7 @@ package ru.mifi.practice.voln.games.transmit;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -17,6 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class TransmitTest {
     @DisplayName("Standard.readText")
     @Test
+    @Timeout(5)
     void standardReadText() {
         InputStream in = System.in;
         try {
@@ -31,6 +33,7 @@ class TransmitTest {
 
     @DisplayName("Standard.readInt")
     @Test
+    @Timeout(5)
     void standardReadInt() {
         InputStream in = System.in;
         try {
@@ -50,6 +53,7 @@ class TransmitTest {
 
     @DisplayName("Standard.print")
     @Test
+    @Timeout(5)
     void standardPrint() {
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         PrintStream output = new PrintStream(buffer);

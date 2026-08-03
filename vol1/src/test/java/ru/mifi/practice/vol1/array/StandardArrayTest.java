@@ -2,6 +2,7 @@ package ru.mifi.practice.vol1.array;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -12,6 +13,7 @@ final class StandardArrayTest {
 
     @DisplayName("Читает значение, записанное по индексу")
     @Test
+    @Timeout(1)
     void readsBackValueStoredAtIndex() {
         Array<Integer> array = new StandardArray<>(4);
         array.set(2, 20);
@@ -20,6 +22,7 @@ final class StandardArrayTest {
 
     @DisplayName("Растёт под индекс, превышающий двойную ёмкость")
     @Test
+    @Timeout(1)
     void growsBeyondDoubledCapacity() {
         Array<Integer> array = new StandardArray<>(4);
         array.set(100, 20);
@@ -28,6 +31,7 @@ final class StandardArrayTest {
 
     @DisplayName("Добавление в конец увеличивает размер на единицу")
     @Test
+    @Timeout(1)
     void growsByOneOnAppend() {
         Array<Integer> array = new StandardArray<>(4);
         array.addLast(10);
@@ -37,6 +41,7 @@ final class StandardArrayTest {
 
     @DisplayName("Удаление возвращает удалённое значение")
     @Test
+    @Timeout(1)
     void returnsTheRemovedValue() {
         Array<Integer> array = new StandardArray<>(4);
         array.set(0, 10);
@@ -46,6 +51,7 @@ final class StandardArrayTest {
 
     @DisplayName("После удаления оставшиеся элементы сдвигаются")
     @Test
+    @Timeout(1)
     void shiftsRemainingElementsOnDelete() {
         Array<Integer> array = new StandardArray<>(4);
         array.set(0, 10);
@@ -56,6 +62,7 @@ final class StandardArrayTest {
 
     @DisplayName("Удаление последнего элемента освобождает ссылку")
     @Test
+    @Timeout(1)
     void releasesReferenceOnDeletingLast() {
         Array<Integer> array = new StandardArray<>(4);
         array.set(0, 10);
@@ -66,6 +73,7 @@ final class StandardArrayTest {
 
     @DisplayName("Чтение за последним индексом запрещено")
     @Test
+    @Timeout(1)
     void cannotReadBeyondTheLastIndex() {
         Array<Integer> array = new StandardArray<>(4);
         array.set(0, 10);

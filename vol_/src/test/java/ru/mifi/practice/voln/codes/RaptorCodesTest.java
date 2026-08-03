@@ -2,6 +2,7 @@ package ru.mifi.practice.voln.codes;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class RaptorCodesTest {
 
     @Test
+    @Timeout(5)
     @DisplayName("Базовый сценарий: строка кодируется и восстанавливается")
     void basicEncodeDecode() {
         byte[] data = "Hello, Raptor!".getBytes(StandardCharsets.UTF_8);
@@ -38,6 +40,7 @@ class RaptorCodesTest {
     }
 
     @Test
+    @Timeout(5)
     @DisplayName("Потеря части пакетов: декодер должен восстановить")
     void packetLoss() {
         byte[] data = new byte[10_000];
@@ -67,6 +70,7 @@ class RaptorCodesTest {
     }
 
     @Test
+    @Timeout(5)
     @DisplayName("Пустой ввод: должен вернуться пустой массив")
     void emptyInput() {
         RaptorConfiguration cfg = RaptorConfiguration.defaults(64, 1L);
@@ -86,6 +90,7 @@ class RaptorCodesTest {
     }
 
     @Test
+    @Timeout(5)
     @DisplayName("Один байт и размер символа больше длины")
     void singleByte() {
         RaptorConfiguration cfg = RaptorConfiguration.defaults(128, 99L);
@@ -102,6 +107,7 @@ class RaptorCodesTest {
     }
 
     @Test
+    @Timeout(5)
     @DisplayName("Некорректный пакет: индекс вне диапазона вызывает исключение")
     void invalidNeighborIndex() {
         RaptorConfiguration cfg = RaptorConfiguration.defaults(16, 3L);
@@ -116,6 +122,7 @@ class RaptorCodesTest {
     }
 
     @Test
+    @Timeout(5)
     @DisplayName("Добавление дубликатов пакетов не мешает декодированию")
     void duplicates() {
         byte[] data = "duplicates".getBytes(StandardCharsets.UTF_8);

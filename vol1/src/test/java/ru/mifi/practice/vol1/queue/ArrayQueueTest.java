@@ -14,6 +14,7 @@ final class ArrayQueueTest {
 
     @DisplayName("Новая очередь пуста")
     @Test
+    @Timeout(1)
     void startsEmpty() {
         assertThat("a fresh queue dont look empty",
             new ArrayQueue<>(new StandardArray<Integer>(4)).isEmpty(), is(true));
@@ -21,6 +22,7 @@ final class ArrayQueueTest {
 
     @DisplayName("После добавления очередь не пуста")
     @Test
+    @Timeout(1)
     void stopsBeingEmptyOnEnqueue() {
         Queue<Integer> queue = new ArrayQueue<>(new StandardArray<>(4));
         queue.enqueue(1);
@@ -29,6 +31,7 @@ final class ArrayQueueTest {
 
     @DisplayName("Извлекает элементы в порядке добавления")
     @Test
+    @Timeout(1)
     void servesElementsInArrivalOrder() {
         Queue<Integer> queue = new ArrayQueue<>(new StandardArray<>(4));
         queue.enqueue(1);
@@ -39,6 +42,7 @@ final class ArrayQueueTest {
 
     @DisplayName("Извлечение опустошает очередь")
     @Test
+    @Timeout(1)
     void becomesEmptyWhenEveryElementIsServed() {
         Queue<Integer> queue = new ArrayQueue<>(new StandardArray<>(4));
         queue.enqueue(1);

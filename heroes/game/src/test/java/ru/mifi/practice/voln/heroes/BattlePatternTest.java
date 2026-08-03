@@ -2,6 +2,7 @@ package ru.mifi.practice.voln.heroes;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,12 +22,14 @@ final class BattlePatternTest {
 
     @DisplayName("Стек знает своё количество")
     @Test
+    @Timeout(1)
     void countsItsUnits() {
         assertThat("stack dont count its units", walkers().size(), is(2));
     }
 
     @DisplayName("Наибольшая атака стека — сумма атак юнитов")
     @Test
+    @Timeout(1)
     void sumsUnitAttacksIntoTheMaximum() {
         assertThat("maximum attack dont sum the unit attacks", walkers().maximumAttack(), is(150));
     }
@@ -37,6 +40,7 @@ final class BattlePatternTest {
      */
     @DisplayName("Атака не выходит за разброс от наибольшей")
     @Test
+    @Timeout(1)
     void keepsTheAttackWithinTheSpread() {
         assertThat("attack escapes the spread below the maximum",
             walkers().attack(), allOf(greaterThanOrEqualTo(130), lessThan(150)));
@@ -44,18 +48,21 @@ final class BattlePatternTest {
 
     @DisplayName("Здоровье стека — сумма здоровья юнитов")
     @Test
+    @Timeout(1)
     void sumsUnitHealth() {
         assertThat("stack dont sum the unit health", walkers().totalHealth(), is(150));
     }
 
     @DisplayName("Скорость стека — скорость самого медленного юнита")
     @Test
+    @Timeout(1)
     void takesTheSpeedOfTheSlowestUnit() {
         assertThat("stack dont move at the speed of its slowest unit", walkers().speed(), is(3));
     }
 
     @DisplayName("Расстановка левого стека уведомляет наблюдателя")
     @Test
+    @Timeout(1)
     void notifiesTheObserverOnAddingLeft() {
         BattleMap map = new BattleMap();
         AtomicBoolean fired = new AtomicBoolean(false);
@@ -66,6 +73,7 @@ final class BattlePatternTest {
 
     @DisplayName("Расстановка правого стека уведомляет наблюдателя")
     @Test
+    @Timeout(1)
     void notifiesTheObserverOnAddingRight() {
         BattleMap map = new BattleMap();
         AtomicBoolean fired = new AtomicBoolean(false);
@@ -76,6 +84,7 @@ final class BattlePatternTest {
 
     @DisplayName("Случайная расстановка ставит стеки на поле")
     @Test
+    @Timeout(1)
     void placesStacksOnRandomFill() {
         BattleMap map = new BattleMap();
         map.fillRandomly();
@@ -90,6 +99,7 @@ final class BattlePatternTest {
 
     @DisplayName("Препятствия ставятся только в середине поля")
     @Test
+    @Timeout(1)
     void keepsObstaclesInTheMiddleColumns() {
         BattleMap map = new BattleMap();
         map.fillRandomly();
@@ -106,6 +116,7 @@ final class BattlePatternTest {
 
     @DisplayName("Число препятствий держится в заданных пределах")
     @Test
+    @Timeout(1)
     void placesTheAgreedNumberOfObstacles() {
         BattleMap map = new BattleMap();
         map.fillRandomly();
@@ -123,12 +134,14 @@ final class BattlePatternTest {
 
     @DisplayName("Расстояние до самой клетки равно нулю")
     @Test
+    @Timeout(1)
     void measuresZeroDistanceToTheStart() {
         assertThat("the start cell is not at distance zero", distances()[5][5], is(0));
     }
 
     @DisplayName("Соседняя по стороне клетка стоит один шаг")
     @Test
+    @Timeout(1)
     void measuresOneStepToASideNeighbour() {
         assertThat("a side neighbour dont cost one step", distances()[5][4], is(1));
     }
@@ -139,18 +152,21 @@ final class BattlePatternTest {
      */
     @DisplayName("Клетка по диагонали стоит два шага")
     @Test
+    @Timeout(1)
     void measuresTwoStepsToADiagonalNeighbour() {
         assertThat("movement counts a diagonal as a single step", distances()[6][6], is(2));
     }
 
     @DisplayName("Расстояние растёт по манхэттенской метрике")
     @Test
+    @Timeout(1)
     void measuresDistanceAlongTheGrid() {
         assertThat("distance dont follow the grid metric", distances()[8][8], is(6));
     }
 
     @DisplayName("Бой начинается с хода левых")
     @Test
+    @Timeout(1)
     void startsTheBattleWithTheLeftSide() {
         assertThat("the battle dont start with the left side", twoSided().isLeftTurn(), is(true));
     }
@@ -161,6 +177,7 @@ final class BattlePatternTest {
      */
     @DisplayName("Пропуск хода передаёт очередь правым")
     @Test
+    @Timeout(1)
     void passesTheTurnToTheRightSide() {
         BattleMap map = twoSided();
         map.skipTurn();
@@ -169,6 +186,7 @@ final class BattlePatternTest {
 
     @DisplayName("Второй пропуск возвращает ход левым")
     @Test
+    @Timeout(1)
     void returnsTheTurnToTheLeftSide() {
         BattleMap map = twoSided();
         map.skipTurn();
@@ -178,6 +196,7 @@ final class BattlePatternTest {
 
     @DisplayName("Атака уменьшает здоровье цели")
     @Test
+    @Timeout(1)
     void hurtsTheTarget() {
         BattleMap map = new BattleMap();
         map.addLeft(5, 5, stack(100, 0, 100, 5));
@@ -193,6 +212,7 @@ final class BattlePatternTest {
      */
     @DisplayName("Слабая цель погибает от удара")
     @Test
+    @Timeout(1)
     void destroysAWeakTarget() {
         BattleMap map = new BattleMap();
         map.addLeft(5, 5, stack(100, 0, 100, 5));
@@ -204,6 +224,7 @@ final class BattlePatternTest {
 
     @DisplayName("Погибшая цель снимается с поля")
     @Test
+    @Timeout(1)
     void clearsTheCellOfADestroyedTarget() {
         BattleMap map = new BattleMap();
         map.addLeft(5, 5, stack(100, 0, 100, 5));
@@ -214,18 +235,21 @@ final class BattlePatternTest {
 
     @DisplayName("Атака попадает в журнал боя")
     @Test
+    @Timeout(1)
     void logsTheAttack() {
         assertThat("the attack dont reach the battle log", afterAttack(), hasItem(containsString("бьет")));
     }
 
     @DisplayName("Смена хода попадает в журнал боя")
     @Test
+    @Timeout(1)
     void logsTheTurnChange() {
         assertThat("the turn change dont reach the battle log", afterAttack(), hasItem(containsString("--- Ход")));
     }
 
     @DisplayName("Перемещение попадает в журнал боя")
     @Test
+    @Timeout(1)
     void logsTheMove() {
         BattleMap map = new BattleMap();
         final List<String> logs = logsOf(map);
@@ -243,6 +267,7 @@ final class BattlePatternTest {
      */
     @DisplayName("Пропуск хода попадает в журнал боя")
     @Test
+    @Timeout(1)
     void logsTheSkippedTurn() {
         BattleMap map = new BattleMap();
         final List<String> logs = logsOf(map);

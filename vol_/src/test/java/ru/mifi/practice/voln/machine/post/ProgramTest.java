@@ -1,6 +1,7 @@
 package ru.mifi.practice.voln.machine.post;
 
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -48,6 +49,7 @@ class ProgramTest {
     }
 
     @ParameterizedTest
+    @Timeout(1)
     @MethodSource("programs")
     void execute(MechanicalHead head, Program program, MechanicalHead result) {
         program.execute(head);

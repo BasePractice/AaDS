@@ -2,6 +2,7 @@ package ru.mifi.practice.vol6.tree.search;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import ru.mifi.practice.commons.Counter;
 
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ final class AVLTest {
 
     @DisplayName("Находит добавленное значение")
     @Test
+    @Timeout(1)
     void findsAnAddedValue() {
         AVL<Integer> tree = new AVL<>();
         tree.add(5);
@@ -26,6 +28,7 @@ final class AVLTest {
 
     @DisplayName("Не находит отсутствующее значение")
     @Test
+    @Timeout(1)
     void reportsMissingValue() {
         AVL<Integer> tree = new AVL<>();
         tree.add(5);
@@ -34,6 +37,7 @@ final class AVLTest {
 
     @DisplayName("Балансирует возрастающую последовательность")
     @Test
+    @Timeout(1)
     void balancesAnAscendingSequence() {
         AVL<Integer> tree = new AVL<>();
         for (int i = 1; i <= 15; i++) {
@@ -44,6 +48,7 @@ final class AVLTest {
 
     @DisplayName("Сохраняет баланс после каждого удаления в случайном порядке")
     @Test
+    @Timeout(5)
     void keepsBalanceAfterEveryDelete() {
         Random random = new Random(42);
         int unbalanced = 0;
@@ -70,6 +75,7 @@ final class AVLTest {
 
     @DisplayName("Сохраняет порядок двоичного дерева поиска после удалений")
     @Test
+    @Timeout(1)
     void keepsSearchOrderAfterDeletes() {
         AVL<Integer> tree = new AVL<>();
         for (int i = 1; i <= 20; i++) {
@@ -83,6 +89,7 @@ final class AVLTest {
 
     @DisplayName("Удалённое значение не находится")
     @Test
+    @Timeout(1)
     void forgetsADeletedValue() {
         AVL<Integer> tree = new AVL<>();
         tree.add(5);

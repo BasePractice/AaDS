@@ -2,6 +2,7 @@ package ru.mifi.practice.vol7.wildcard;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import ru.mifi.practice.commons.Counter;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -12,6 +13,7 @@ final class MatchTest {
 
     @DisplayName("Звёздочка покрывает произвольный хвост")
     @Test
+    @Timeout(1)
     void letsAsteriskCoverAnyTail() {
         assertThat("asterisk dont cover the tail",
             new Match.DefaultMatch().isMatch("no*", "none", Counter.create()), is(true));
@@ -19,6 +21,7 @@ final class MatchTest {
 
     @DisplayName("Вопрос покрывает ровно один символ")
     @Test
+    @Timeout(1)
     void letsQuestionCoverExactlyOneCharacter() {
         assertThat("question dont cover exactly one character",
             new Match.DefaultMatch().isMatch("non?", "none", Counter.create()), is(true));
@@ -26,6 +29,7 @@ final class MatchTest {
 
     @DisplayName("Несовпадающий шаблон отвергается")
     @Test
+    @Timeout(1)
     void rejectsANonMatchingPattern() {
         assertThat("a non matching pattern is accepted",
             new Match.DefaultMatch().isMatch("no?", "none", Counter.create()), is(false));
@@ -33,6 +37,7 @@ final class MatchTest {
 
     @DisplayName("Аббревиатура принимается в том же порядке аргументов, что и шаблон")
     @Test
+    @Timeout(1)
     void takesAbbreviationAsThePatternArgument() {
         assertThat("abbreviation matching swaps the interface arguments",
             new Match.AbbreviationMatch().isMatch("ADS", "Algorithm and Data Structure", Counter.create()),
@@ -41,6 +46,7 @@ final class MatchTest {
 
     @DisplayName("Чужая аббревиатура отвергается")
     @Test
+    @Timeout(1)
     void rejectsAForeignAbbreviation() {
         assertThat("a foreign abbreviation is accepted",
             new Match.AbbreviationMatch().isMatch("XYZ", "Algorithm and Data Structure", Counter.create()),

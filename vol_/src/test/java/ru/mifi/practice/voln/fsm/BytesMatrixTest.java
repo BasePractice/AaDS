@@ -2,6 +2,7 @@ package ru.mifi.practice.voln.fsm;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -11,6 +12,7 @@ final class BytesMatrixTest {
 
     @DisplayName("Матрица на массиве возвращает записанное значение")
     @Test
+    @Timeout(1)
     void readsBackTheStoredValueFromAnArray() {
         BytesMatrix matrix = new BytesMatrix.BytesTorusMatrix(4, 5);
         matrix.set(1, 2, (byte) 1);
@@ -19,6 +21,7 @@ final class BytesMatrixTest {
 
     @DisplayName("Матрица на битах возвращает записанное значение")
     @Test
+    @Timeout(1)
     void readsBackTheStoredValueFromBits() {
         BytesMatrix matrix = new BytesMatrix.BytesTorusBits(4, 5);
         matrix.set(1, 2, (byte) 1);
@@ -27,6 +30,7 @@ final class BytesMatrixTest {
 
     @DisplayName("Сброс бита не ломает матрицу")
     @Test
+    @Timeout(1)
     void clearsABitWithoutFailing() {
         BytesMatrix matrix = new BytesMatrix.BytesTorusBits(4, 5);
         matrix.set(1, 2, (byte) 1);
@@ -36,6 +40,7 @@ final class BytesMatrixTest {
 
     @DisplayName("Столбец слева от нулевого — последний столбец")
     @Test
+    @Timeout(1)
     void wrapsTheColumnBeforeTheFirstToTheLast() {
         BytesMatrix matrix = new BytesMatrix.BytesTorusMatrix(4, 5);
         matrix.set(0, 4, (byte) 1);
@@ -44,6 +49,7 @@ final class BytesMatrixTest {
 
     @DisplayName("Строка выше нулевой — последняя строка")
     @Test
+    @Timeout(1)
     void wrapsTheRowBeforeTheFirstToTheLast() {
         BytesMatrix matrix = new BytesMatrix.BytesTorusMatrix(4, 5);
         matrix.set(3, 0, (byte) 1);
@@ -52,6 +58,7 @@ final class BytesMatrixTest {
 
     @DisplayName("Отрицательные координаты на битовой матрице заворачиваются")
     @Test
+    @Timeout(1)
     void wrapsNegativeCoordinatesOnBits() {
         BytesMatrix matrix = new BytesMatrix.BytesTorusBits(4, 5);
         matrix.set(0, 4, (byte) 1);
@@ -60,6 +67,7 @@ final class BytesMatrixTest {
 
     @DisplayName("Столбец за последним — нулевой столбец")
     @Test
+    @Timeout(1)
     void wrapsTheColumnAfterTheLastToTheFirst() {
         BytesMatrix matrix = new BytesMatrix.BytesTorusMatrix(4, 5);
         matrix.set(0, 0, (byte) 1);

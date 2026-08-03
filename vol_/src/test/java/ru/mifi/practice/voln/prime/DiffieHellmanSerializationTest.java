@@ -2,6 +2,7 @@ package ru.mifi.practice.voln.prime;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.math.BigInteger;
@@ -15,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class DiffieHellmanSerializationTest {
 
     @Test
+    @Timeout(5)
     @DisplayName("Строковая сериализация/десериализация (малые p,g)")
     void stringRoundTripSmallParams() {
         BigInteger p = BigInteger.valueOf(23);
@@ -33,6 +35,7 @@ class DiffieHellmanSerializationTest {
     }
 
     @Test
+    @Timeout(5)
     @DisplayName("Файловая сериализация/десериализация (малые p,g)")
     void fileRoundTripSmallParams(@TempDir Path tmp) throws Exception {
         BigInteger p = BigInteger.valueOf(23);
@@ -62,6 +65,7 @@ class DiffieHellmanSerializationTest {
     }
 
     @Test
+    @Timeout(5)
     @DisplayName("Строки и файлы для случайных параметров по битности")
     void stringAndFileRandomParams(@TempDir Path tmp) throws Exception {
         DiffieHellman x = new DiffieHellman(64);
