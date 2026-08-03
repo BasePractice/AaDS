@@ -6,62 +6,105 @@ import org.junit.jupiter.api.Timeout;
 
 import java.math.BigInteger;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.both;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.lessThan;
 
 @DisplayName("Диффи-Хеллман")
-class DiffieHellmanTest {
+final class DiffieHellmanTest {
 
     @Test
     @Timeout(5)
-    @DisplayName("Совпадение общего секрета на малых параметрах")
-    void sharedSecretSmallParams() {
+    @DisplayName("Общий секрет совпадает у сторон на малых параметрах")
+    void sharedSecretMatchesSmallParams() {
         BigInteger p = BigInteger.valueOf(23);
         BigInteger g = BigInteger.valueOf(5);
-
         DiffieHellman alice = new DiffieHellman(p, g);
         DiffieHellman bob = new DiffieHellman(p, g);
-
         alice.calculateSharedSecret(bob.getPublicKey());
         bob.calculateSharedSecret(alice.getPublicKey());
-
-        assertEquals(alice.getSharedSecret(), bob.getSharedSecret());
-        // секрет должен быть в диапазоне [1, p-1]
-        BigInteger secret = alice.getSharedSecret();
-        assertTrue(secret.compareTo(BigInteger.ONE) >= 0);
-        assertTrue(secret.compareTo(p) < 0);
+        assertThat("shared secrets of alice and bob dont match",
+            alice.getSharedSecret(), is(bob.getSharedSecret()));
     }
 
     @Test
     @Timeout(5)
-    @DisplayName("Конструктор по битности и совпадение секрета")
-    void bitLengthConstructorFlow() {
+    @DisplayName("Общий секрет в диапазоне на малых параметрах")
+    void sharedSecretInRangeSmallParams() {
+        BigInteger p = BigInteger.valueOf(23);
+        BigInteger g = BigInteger.valueOf(5);
+        DiffieHellman alice = new DiffieHellman(p, g);
+        DiffieHellman bob = new DiffieHellman(p, g);
+        alice.calculateSharedSecret(bob.getPublicKey());
+        assertThat("shared secret is outside range one to prime",
+            alice.getSharedSecret(), both(greaterThanOrEqualTo(BigInteger.ONE)).and(lessThan(p)));
+    }
+
+    @Test
+    @Timeout(5)
+    @DisplayName("Генератор в диапазоне при конструкторе по битности")
+    void generatorInRangeBitLength() {
+        DiffieHellman party = new DiffieHellman(256);
+        BigInteger p = party.getPrime();
+        assertThat("generator is outside range one to prime",
+            party.getGenerator(), both(greaterThanOrEqualTo(BigInteger.ONE)).and(lessThan(p)));
+    }
+
+    @Test
+    @Timeout(5)
+    @DisplayName("Закрытый ключ первой стороны в диапазоне")
+    void privateKeyFirstInRange() {
+        DiffieHellman party1 = new DiffieHellman(256);
+        BigInteger p = party1.getPrime();
+        assertThat("first private key is outside range one to prime minus one",
+            party1.getPrivateKey(),
+            both(greaterThanOrEqualTo(BigInteger.ONE)).and(lessThan(p.subtract(BigInteger.ONE))));
+    }
+
+    @Test
+    @Timeout(5)
+    @DisplayName("Закрытый ключ второй стороны в диапазоне")
+    void privateKeySecondInRange() {
         DiffieHellman party1 = new DiffieHellman(256);
         DiffieHellman party2 = new DiffieHellman(party1.getPrime(), party1.getGenerator());
-
-        // Проверяем диапазоны генератора и ключей
         BigInteger p = party1.getPrime();
-        BigInteger g = party1.getGenerator();
-        assertTrue(g.compareTo(BigInteger.ONE) >= 0);
-        assertTrue(g.compareTo(p) < 0);
+        assertThat("second private key is outside range one to prime minus one",
+            party2.getPrivateKey(),
+            both(greaterThanOrEqualTo(BigInteger.ONE)).and(lessThan(p.subtract(BigInteger.ONE))));
+    }
 
-        BigInteger privateKey1 = party1.getPrivateKey();
-        BigInteger privateKey2 = party2.getPrivateKey();
-        assertTrue(privateKey1.compareTo(BigInteger.ONE) >= 0);
-        assertTrue(privateKey1.compareTo(p.subtract(BigInteger.ONE)) < 0);
-        assertTrue(privateKey2.compareTo(BigInteger.ONE) >= 0);
-        assertTrue(privateKey2.compareTo(p.subtract(BigInteger.ONE)) < 0);
+    @Test
+    @Timeout(5)
+    @DisplayName("Открытый ключ первой стороны в диапазоне")
+    void publicKeyFirstInRange() {
+        DiffieHellman party1 = new DiffieHellman(256);
+        BigInteger p = party1.getPrime();
+        assertThat("first public key is outside range one to prime",
+            party1.getPublicKey(), both(greaterThanOrEqualTo(BigInteger.ONE)).and(lessThan(p)));
+    }
 
-        BigInteger publicKey1 = party1.getPublicKey();
-        BigInteger publicKey2 = party2.getPublicKey();
-        assertTrue(publicKey1.compareTo(BigInteger.ONE) >= 0);
-        assertTrue(publicKey1.compareTo(p) < 0);
-        assertTrue(publicKey2.compareTo(BigInteger.ONE) >= 0);
-        assertTrue(publicKey2.compareTo(p) < 0);
+    @Test
+    @Timeout(5)
+    @DisplayName("Открытый ключ второй стороны в диапазоне")
+    void publicKeySecondInRange() {
+        DiffieHellman party1 = new DiffieHellman(256);
+        DiffieHellman party2 = new DiffieHellman(party1.getPrime(), party1.getGenerator());
+        BigInteger p = party1.getPrime();
+        assertThat("second public key is outside range one to prime",
+            party2.getPublicKey(), both(greaterThanOrEqualTo(BigInteger.ONE)).and(lessThan(p)));
+    }
 
+    @Test
+    @Timeout(5)
+    @DisplayName("Общий секрет совпадает при конструкторе по битности")
+    void sharedSecretMatchesBitLength() {
+        DiffieHellman party1 = new DiffieHellman(256);
+        DiffieHellman party2 = new DiffieHellman(party1.getPrime(), party1.getGenerator());
         party1.calculateSharedSecret(party2.getPublicKey());
         party2.calculateSharedSecret(party1.getPublicKey());
-
-        assertEquals(party1.getSharedSecret(), party2.getSharedSecret());
+        assertThat("shared secrets of parties dont match",
+            party1.getSharedSecret(), is(party2.getSharedSecret()));
     }
 }
