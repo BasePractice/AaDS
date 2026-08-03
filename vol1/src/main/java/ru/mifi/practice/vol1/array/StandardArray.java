@@ -16,14 +16,14 @@ public final class StandardArray<T> implements Array<T> {
     @SuppressWarnings("unchecked")
     @Override
     public T get(int index) {
-        Objects.checkIndex(index, array.length);
+        Objects.checkIndex(index, size);
         return (T) array[index];
     }
 
     @Override
     public void set(int index, T value) {
         if (index >= capacity) {
-            capacity *= 2;
+            capacity = Math.max(index + 1, capacity * 2);
             Object[] newArray = new Object[capacity];
             System.arraycopy(array, 0, newArray, 0, array.length);
             array = newArray;
@@ -37,21 +37,12 @@ public final class StandardArray<T> implements Array<T> {
     @SuppressWarnings("unchecked")
     @Override
     public T delete(int index) {
-        Objects.checkIndex(index, array.length);
         Objects.checkIndex(index, size);
-        if (index < size && index >= 0) {
-            T value = (T) array[index];
-            if (index != size - 1) {
-                //FIXME: Заменить на System.arraycopy
-                for (int i = index; i < size - 1; i++) {
-                    array[i] = array[i + 1];
-                }
-                array[size - 1] = null;
-            }
-            --size;
-            return value;
-        }
-        return null;
+        final T value = (T) array[index];
+        System.arraycopy(array, index + 1, array, index, size - index - 1);
+        array[size - 1] = null;
+        --size;
+        return value;
     }
 
     @Override

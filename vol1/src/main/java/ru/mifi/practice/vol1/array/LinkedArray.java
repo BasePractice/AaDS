@@ -1,5 +1,7 @@
 package ru.mifi.practice.vol1.array;
 
+import java.util.Objects;
+
 public final class LinkedArray<T> implements Array<T> {
     private Node<T> head;
     private Node<T> tail;
@@ -7,56 +9,69 @@ public final class LinkedArray<T> implements Array<T> {
 
     @Override
     public T get(int index) {
-        for (Node<T> node = head; node != null; node = node.next) {
-            if (index == 0) {
-                return node.value;
-            }
-            --index;
-        }
-        return null;
+        return node(Objects.checkIndex(index, size)).value;
     }
 
     @Override
     public void set(int index, T value) {
-        if (index >= size) {
-            for (int i = index - size; i <= size; ++i) {
-                Node<T> node = new Node<>();
-                if (head == null) {
-                    head = node;
-                    tail = node;
-                    tail.next = node;
-                    node.prev = tail;
-                    continue;
-                }
-                node.prev = tail;
-                tail.next = node;
-                tail = node;
-            }
-            tail.value = value;
-            size = index;
-        } else {
-            for (Node<T> node = head; node != null; node = node.next) {
-                if (index == 0) {
-                    node.value = value;
-                    return;
-                }
-                --index;
-            }
+        if (index < size) {
+            node(index).value = value;
+            return;
         }
+        while (size <= index) {
+            append();
+        }
+        tail.value = value;
     }
 
     @Override
     public T delete(int index) {
-        //FIXME: Реализовать удаление произвольного элемента списка
-        return null;
+        Node<T> node = node(Objects.checkIndex(index, size));
+        unlink(node);
+        --size;
+        return node.value;
     }
 
     @Override
     public int size() {
-        return size + 1;
+        return size;
     }
 
-    @SuppressWarnings("unused")
+    private Node<T> node(int index) {
+        Node<T> node = head;
+        for (int i = 0; i < index; i++) {
+            node = node.next;
+        }
+        return node;
+    }
+
+    private void append() {
+        Node<T> node = new Node<>();
+        node.prev = tail;
+        if (tail == null) {
+            head = node;
+        } else {
+            tail.next = node;
+        }
+        tail = node;
+        ++size;
+    }
+
+    private void unlink(Node<T> node) {
+        if (node.prev == null) {
+            head = node.next;
+        } else {
+            node.prev.next = node.next;
+        }
+        if (node.next == null) {
+            tail = node.prev;
+        } else {
+            node.next.prev = node.prev;
+        }
+        node.next = null;
+        node.prev = null;
+    }
+
     private static final class Node<T> {
         private T value;
         private Node<T> next;

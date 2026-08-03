@@ -44,7 +44,8 @@ public interface ReversePolishNotation {
             MINUS("-") {
                 @Override
                 boolean eval(Stack<Number> stack) {
-                    stack.push(stack.pop().doubleValue() - stack.pop().doubleValue());
+                    final double right = stack.pop().doubleValue();
+                    stack.push(stack.pop().doubleValue() - right);
                     return true;
                 }
             },
@@ -58,7 +59,8 @@ public interface ReversePolishNotation {
             DIVIDE("/") {
                 @Override
                 boolean eval(Stack<Number> stack) {
-                    stack.push(stack.pop().doubleValue() / stack.pop().doubleValue());
+                    final double divisor = stack.pop().doubleValue();
+                    stack.push(stack.pop().doubleValue() / divisor);
                     return true;
                 }
             },

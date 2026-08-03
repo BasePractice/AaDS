@@ -51,11 +51,13 @@ public interface CorrectBriceSequence {
                     if (brice.kind == Kind.OPEN) {
                         stack.push(brice);
                     } else if (brice.kind == Kind.CLOSE) {
+                        if (stack.isEmpty()) {
+                            return false;
+                        }
                         Brice peek = stack.peek();
                         if (peek.kind == Kind.OPEN && peek.type == brice.type) {
                             stack.pop();
                         } else {
-                            System.err.println();
                             return false;
                         }
                     }

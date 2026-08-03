@@ -1,49 +1,66 @@
 package ru.mifi.practice.vol1.stack;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
+import ru.mifi.practice.vol1.array.LinkedArray;
 import ru.mifi.practice.vol1.array.StandardArray;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 
 @DisplayName("Стек")
-class StandardStackTest {
+final class StandardStackTest {
 
-    private Stack<Integer> stack;
-
-    @BeforeEach
-    void setUp() {
-        stack = new StandardStack<>(new StandardArray<>(100));
+    @DisplayName("Новый стек пуст")
+    @Test
+    void startsEmpty() {
+        assertThat("a fresh stack dont look empty",
+            new StandardStack<>(new StandardArray<Integer>(4)).isEmpty(), is(true));
     }
 
-    @DisplayName("Помещение элемента на вершину стека")
+    @DisplayName("После помещения стек не пуст")
     @Test
-    void push() {
+    void stopsBeingEmptyOnPush() {
+        Stack<Integer> stack = new StandardStack<>(new StandardArray<>(4));
         stack.push(1);
+        assertThat("stack still looks empty after push", stack.isEmpty(), is(false));
     }
 
-    @DisplayName("Извлечение элемента из вершины стека")
+    @DisplayName("Извлекает элементы в обратном порядке")
     @Test
-    void pop() {
+    void servesElementsInReverseOrder() {
+        Stack<Integer> stack = new StandardStack<>(new StandardArray<>(4));
         stack.push(1);
-        assertEquals(1, stack.pop());
+        stack.push(2);
+        assertThat("stack dont serve the newest element first", stack.pop(), is(2));
     }
 
-    @DisplayName("Получение элемента на вершине стека")
+    @DisplayName("Просмотр вершины не снимает элемент")
     @Test
-    void peek() {
+    void keepsTheTopOnPeek() {
+        Stack<Integer> stack = new StandardStack<>(new StandardArray<>(4));
         stack.push(1);
-        assertEquals(1, stack.peek());
-        assertFalse(stack.isEmpty());
+        stack.peek();
+        assertThat("peek removes the element it shows", stack.pop(), is(1));
     }
 
+    @DisplayName("Извлечение опустошает стек")
     @Test
-    void isEmpty() {
-        assertTrue(stack.isEmpty());
+    void becomesEmptyWhenEveryElementIsPopped() {
+        Stack<Integer> stack = new StandardStack<>(new StandardArray<>(4));
         stack.push(1);
-        assertFalse(stack.isEmpty());
+        stack.pop();
+        assertThat("stack dont become empty after every element is popped", stack.isEmpty(), is(true));
+    }
+
+    @DisplayName("Работает поверх связного списка")
+    @Test
+    @Timeout(1)
+    void servesElementsInReverseOrderOnLinkedStorage() {
+        Stack<Integer> stack = new StandardStack<>(new LinkedArray<>());
+        stack.push(1);
+        stack.push(2);
+        assertThat("linked storage dont keep the stack order", stack.pop(), is(2));
     }
 }
