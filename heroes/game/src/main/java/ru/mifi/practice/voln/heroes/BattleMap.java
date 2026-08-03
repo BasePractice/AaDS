@@ -290,7 +290,10 @@ public final class BattleMap {
             pendingAttack = null;
             Long id = turnQueue.peekFirst();
             int[] pos = getStackCoord(id);
-            performAttack(pos[0], pos[1], tr, tc);
+            //Атакующий стек мог быть уничтожен контратакой и снят с карты — атаковать некому
+            if (pos.length == 2) {
+                performAttack(pos[0], pos[1], tr, tc);
+            }
         }
         finishTurn();
     }
@@ -377,6 +380,7 @@ public final class BattleMap {
         int[] drs = {0, 0, 1, -1};
         int[] dcs = {1, -1, 0, 0};
         while (currentRow != sourceRow || currentColumn != sourceColumn) {
+            boolean stepped = false;
             for (int i = 0; i < 4; i++) {
                 int nextRow = currentRow + drs[i];
                 int nextColumn = currentColumn + dcs[i];
@@ -385,8 +389,13 @@ public final class BattleMap {
                     currentRow = nextRow;
                     currentColumn = nextColumn;
                     path.add(0, new int[]{currentRow, currentColumn});
+                    stepped = true;
                     break;
                 }
+            }
+            //Матрица расстояний рассогласована с целью: раньше цикл крутился здесь вечно
+            if (!stepped) {
+                return List.of();
             }
         }
         return path;

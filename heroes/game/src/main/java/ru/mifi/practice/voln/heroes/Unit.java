@@ -57,6 +57,7 @@ public final class Unit {
     }
 
     public static final class Stack {
+        private static final int ATTACK_SPREAD = 20;
         @Getter
         private final Type type;
         private final Queue<Unit> units = new PriorityQueue<>(Comparator.comparing(Unit::health));
@@ -91,14 +92,25 @@ public final class Unit {
 
         public int counterAttack() {
             int maximum = units.stream().mapToInt(Unit::attack).sum();
-            int minimum = maximum / 2;
-            return ThreadLocalRandom.current().nextInt(minimum, maximum);
+            return between(maximum / 2, maximum);
         }
 
         public int attack() {
             int maximum = units.stream().mapToInt(Unit::attack).sum();
-            int minimum = maximum - 20;
-            return ThreadLocalRandom.current().nextInt(minimum, maximum);
+            return between(maximum - ATTACK_SPREAD, maximum);
+        }
+
+        /**
+         * Урон стека раненых юнитов вырождается в ноль, а разброс уводит нижнюю границу в минус.
+         * Отрицательный урон молча не наносился, а пустой диапазон ронял бросок исключением.
+         */
+        private static int between(int minimum, int maximum) {
+            int high = Math.max(maximum, 0);
+            int low = Math.min(Math.max(minimum, 0), high);
+            if (low == high) {
+                return high;
+            }
+            return ThreadLocalRandom.current().nextInt(low, high);
         }
 
         public int totalHealth() {

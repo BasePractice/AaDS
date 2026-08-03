@@ -10,8 +10,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@Disabled
 public final class BattlePatternTest {
+    @Disabled("Требует разбора: Ожидает формат строки лога боя, который разошёлся с BattleMap.move")
     @Test
     public void testLogging() {
         BattleMap map = new BattleMap();
@@ -50,6 +50,7 @@ public final class BattlePatternTest {
         assertTrue(logs.stream().anyMatch(s -> s.contains("пропустил ход")));
     }
 
+    @Disabled("Требует разбора: Ожидает суммарное здоровье 150 при текущих правилах набора стека")
     @Test
     public void testStackInfo() {
         Unit.Stack stack = new Unit.Stack(Unit.Type.WALKER);
@@ -121,6 +122,7 @@ public final class BattlePatternTest {
         assertTrue(obstaclesCount >= 5 && obstaclesCount <= 9);
     }
 
+    @Disabled("Требует разбора: Ожидает одного ходока там, где поиск пути находит двух")
     @Test
     public void testDijkstraWalkers() {
         BattleMap map = new BattleMap();
@@ -138,6 +140,7 @@ public final class BattlePatternTest {
         assertEquals(3, dists[8][8]);
     }
 
+    @Disabled("Требует разбора: Ожидает порядок очереди ходов, не совпадающий с turnQueue")
     @Test
     public void testTurnLogic() {
         BattleMap map = new BattleMap();
@@ -156,6 +159,7 @@ public final class BattlePatternTest {
         assertTrue(map.isLeftTurn());
     }
 
+    @Disabled("Требует разбора: Ожидает нулевые потери после контратаки")
     @Test
     public void testAttackAndCounter() {
         BattleMap map = new BattleMap();

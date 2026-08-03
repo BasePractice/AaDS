@@ -12,7 +12,6 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Contact;
@@ -84,7 +83,12 @@ public class TelegramHandlerService implements TelegramHandler {
         }
     }
 
-    @Transactional
+    /**
+     * Метод вызывается напрямую из received, то есть через this и мимо прокси Spring, поэтому
+     * стоявший здесь @Transactional не создавал транзакции вообще и лишь вводил в заблуждение.
+     * Аннотация убрана: каждая запись — одиночный saveAndFlush, которому хватает autocommit.
+     * Если появится запись в несколько таблиц, транзакцию надо будет открывать снаружи прокси.
+     */
     protected void processing(TelegramLongPollingBot bot, Update update) {
         Message message = update.getMessage();
         if (message == null) {
@@ -95,6 +99,13 @@ public class TelegramHandlerService implements TelegramHandler {
         }
         Long chatId = message.getChatId();
         User user = message.getFrom();
+        //В сообщениях каналов автора нет
+        if (user == null) {
+            if (log.isDebugEnabled()) {
+                log.debug("Skip message without author {}", update);
+            }
+            return;
+        }
         Long userId = user.getId();
         if (chatId == null || !chatId.equals(userId)) {
             if (log.isDebugEnabled()) {
@@ -130,7 +141,6 @@ public class TelegramHandlerService implements TelegramHandler {
         }
     }
 
-    @Transactional
     @SneakyThrows
     @SuppressWarnings("PMD.UnusedFormalParameter")
     protected void processing(TelegramLongPollingBot bot, Update update, UserEntity entity) {
