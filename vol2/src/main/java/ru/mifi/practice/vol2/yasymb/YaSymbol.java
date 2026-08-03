@@ -7,8 +7,6 @@ import java.util.Optional;
 import java.util.Set;
 
 public interface YaSymbol {
-    int START_DIGIT = 1;
-
     Optional<Equation> process(String x, String y, String z);
 
     enum StateType {
@@ -41,9 +39,7 @@ public interface YaSymbol {
         final Metrics metrics;
 
         Context() {
-            this.symbols = new HashMap<>();
-            this.digits = new HashSet<>();
-            this.metrics = new Metrics();
+            this(new HashMap<>(), new HashSet<>(), new Metrics());
         }
 
         Context(Map<Character, Integer> symbols, Set<Integer> digits, Metrics metrics) {

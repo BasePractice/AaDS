@@ -9,15 +9,15 @@ public record RaptorConfiguration(int symbolSize, int parityCount, double c, dou
     /**
      * Значение по умолчанию для параметра c устойчивого солитона.
      */
-    public static final double DEFAULT_C = 0.1d;
+    private static final double DEFAULT_C = 0.1d;
     /**
      * Значение по умолчанию для параметра delta устойчивого солитона.
      */
-    public static final double DEFAULT_DELTA = 0.5d;
+    private static final double DEFAULT_DELTA = 0.5d;
     /**
      * Значение по умолчанию для количества проверочных символов.
      */
-    public static final int DEFAULT_PARITIES = 8;
+    private static final int DEFAULT_PARITIES = 8;
 
     public RaptorConfiguration {
         if (symbolSize <= 0) {

@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
-public class SimpleCacheableValue implements CacheableValue {
+public final class SimpleCacheableValue implements CacheableValue {
     private static final int MINIMUM_L1_DELTA_MS = 100;
     private static final String UPDATE_DATE = "update_date";
     private static final String VALUE = "value";

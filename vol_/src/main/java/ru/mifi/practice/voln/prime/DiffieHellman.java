@@ -20,11 +20,7 @@ public final class DiffieHellman {
     private BigInteger sharedSecret;
 
     public DiffieHellman(BigInteger prime, BigInteger generator) {
-        Random random = new SecureRandom();
-        this.prime = prime;
-        this.generator = generator;
-        this.privateKey = generatePrivateKey(prime, random);
-        this.publicKey = generatePublicKey(prime, generator, privateKey);
+        this(prime, generator, generatePrivateKey(prime, new SecureRandom()));
     }
 
     @SuppressWarnings("unused")

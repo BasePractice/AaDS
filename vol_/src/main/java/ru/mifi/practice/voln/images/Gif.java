@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings("PMD.EmptyCatchBlock")
 @UtilityClass
-public class Gif {
+public final class Gif {
 
     public void create2(Iterable<BufferedImage> frames, String outputPath, int delayMs, boolean loop) throws IOException {
         try (FileOutputStream fos = new FileOutputStream(outputPath)) {

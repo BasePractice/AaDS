@@ -13,7 +13,7 @@ import java.awt.image.BufferedImage;
 import java.util.function.Function;
 
 @UtilityClass
-public class BytesMatrixImage {
+public final class BytesMatrixImage {
 
     public BufferedImage createImage(int tick, BytesMatrix matrix, ByteMatrixConfiguration configuration) {
         BufferedImage result = new BufferedImage(matrix.cols() * configuration.weight(),

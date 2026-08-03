@@ -18,7 +18,7 @@ public interface Heap<T extends Comparable<T>> {
     int size();
 
     final class Minimum<T extends Comparable<T>> implements Heap<T> {
-        public static final String FORMAT = "%5s %5s %5s%n";
+        private static final String FORMAT = "%5s %5s %5s%n";
         private static final int TOP = 0;
         private final Object[] heap;
         private final int capacity;

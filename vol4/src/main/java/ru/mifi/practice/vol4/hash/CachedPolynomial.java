@@ -5,7 +5,7 @@ import ru.mifi.practice.commons.Counter;
 import static ru.mifi.practice.vol4.hash.Hash.POLY_MOD;
 import static ru.mifi.practice.vol4.hash.Hash.POLY_PRIME;
 
-class CachedPolynomial {
+final class CachedPolynomial {
     static final int CACHED_POLYNOMIALS = Character.MAX_VALUE;
     final int[] polynomials;
     final int mod;

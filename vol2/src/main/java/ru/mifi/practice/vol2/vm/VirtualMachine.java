@@ -175,7 +175,7 @@ public interface VirtualMachine {
             }
 
             private Default(String text) {
-                this.data = HexFormat.of().parseHex(text);
+                this(HexFormat.of().parseHex(text));
             }
 
             @Override

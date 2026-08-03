@@ -8,11 +8,7 @@ public final class OTPMachine extends Machine {
     public static final Key PERSISTENCE_CODE = () -> "persist_code";
 
     public OTPMachine() {
-        super();
-        Context context = getContext();
-        context.setCurrentState(OTP.INITIATE);
-        context.set(MACHINE_CLASS, OTPMachine.class);
-        context.set(MACHINE_HANDLER, new OTPHandler());
+        this(new Context.Standard());
     }
 
     @SuppressWarnings("unused")
