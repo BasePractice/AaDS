@@ -1,14 +1,43 @@
 package ru.mifi.practice.vol6.tree.search;
 
+import ru.mifi.practice.commons.Counter;
+
+import java.util.Optional;
+
 /** Self-balancing red-black binary search tree. */
 @SuppressWarnings("PMD.CompareObjectsWithEquals")
-public final class RBT<T extends Comparable<T>> extends BinaryTree.AbstractBinaryTree<T> {
+public final class RBT<T extends Comparable<T>> implements BinaryTree<T> {
     private static final int RED = 0;
     private static final int BLACK = 1;
+    private final Nodes<T> nodes = new Nodes<>();
+    Node<T> root;
 
     @Override
-    protected Node<T> add(Node<T> node, T value) {
-        Node<T> newNode = BinaryTree.create(value);
+    public BinaryTree<T> add(T value) {
+        insert(value);
+        return this;
+    }
+
+    @Override
+    public void delete(T value) {
+        Node<T> target = findNode(root, value);
+        if (target != null) {
+            deleteNode(target);
+        }
+    }
+
+    @Override
+    public Optional<Node<T>> search(T value, Counter counter) {
+        return nodes.search(root, value, counter);
+    }
+
+    @Override
+    public String toString() {
+        return nodes.print(root);
+    }
+
+    private void insert(T value) {
+        Node<T> newNode = new Node<>(value);
         newNode.custom = RED;
         Node<T> parent = null;
         Node<T> current = root;
@@ -21,7 +50,7 @@ public final class RBT<T extends Comparable<T>> extends BinaryTree.AbstractBinar
                 current = current.right;
             } else {
                 current.value = value;
-                return root;
+                return;
             }
         }
         newNode.parent = parent;
@@ -33,7 +62,6 @@ public final class RBT<T extends Comparable<T>> extends BinaryTree.AbstractBinar
             parent.right = newNode;
         }
         fixInsert(newNode);
-        return root;
     }
 
     private void fixInsert(Node<T> inserted) {
@@ -110,15 +138,6 @@ public final class RBT<T extends Comparable<T>> extends BinaryTree.AbstractBinar
         }
         left.right = node;
         node.parent = left;
-    }
-
-    @Override
-    protected Node<T> delete(Node<T> node, T value) {
-        Node<T> target = findNode(node, value);
-        if (target != null) {
-            deleteNode(target);
-        }
-        return root;
     }
 
     private void deleteNode(Node<T> target) {

@@ -13,10 +13,6 @@ public interface BinaryTree<T extends Comparable<T>> {
 
     Optional<Node<T>> search(T value, Counter counter);
 
-    static <T extends Comparable<T>> Node<T> create(T value) {
-        return new Node<>(value);
-    }
-
     @SuppressWarnings("PMD.OverrideBothEqualsAndHashCodeOnComparable")
     final class Node<T extends Comparable<T>> implements Comparable<Node<T>> {
         T value;
@@ -25,7 +21,7 @@ public interface BinaryTree<T extends Comparable<T>> {
         Node<T> right;
         int custom;
 
-        private Node(T value) {
+        Node(T value) {
             this.value = value;
         }
 
@@ -40,41 +36,24 @@ public interface BinaryTree<T extends Comparable<T>> {
         }
     }
 
-    abstract class AbstractBinaryTree<T extends Comparable<T>> implements BinaryTree<T> {
-        protected Node<T> root;
-
-        @Override
-        public BinaryTree<T> add(T value) {
-            root = add(root, value);
-            return this;
+    /** Чтение дерева поиска: находит значение и печатает узлы в порядке обхода. */
+    final class Nodes<T extends Comparable<T>> {
+        Optional<Node<T>> search(Node<T> root, T value, Counter counter) {
+            return Optional.ofNullable(descend(root, value, counter));
         }
 
-        protected abstract Node<T> add(Node<T> node, T value);
-
-        @Override
-        public void delete(T value) {
-            root = delete(root, value);
-        }
-
-        protected abstract Node<T> delete(Node<T> node, T value);
-
-        @Override
-        public Optional<Node<T>> search(T value, Counter counter) {
-            return Optional.ofNullable(search(root, value, counter));
-        }
-
-        private Node<T> search(Node<T> node, T value, Counter counter) {
+        private Node<T> descend(Node<T> node, T value, Counter counter) {
             counter.increment();
             if (node == null || node.value.compareTo(value) == 0) {
                 return node;
             }
             if (value.compareTo(node.value) < 0) {
-                return search(node.left, value, counter);
+                return descend(node.left, value, counter);
             }
-            return search(node.right, value, counter);
+            return descend(node.right, value, counter);
         }
 
-        private String print(Node<T> node) {
+        String print(Node<T> node) {
             if (node == null) {
                 return "";
             }
@@ -87,11 +66,5 @@ public interface BinaryTree<T extends Comparable<T>> {
             }
             return result;
         }
-
-        @Override
-        public String toString() {
-            return print(root);
-        }
     }
-
 }

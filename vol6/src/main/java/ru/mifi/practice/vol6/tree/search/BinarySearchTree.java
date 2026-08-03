@@ -1,12 +1,39 @@
 package ru.mifi.practice.vol6.tree.search;
 
+import ru.mifi.practice.commons.Counter;
+
+import java.util.Optional;
+
 /** Unbalanced binary search tree. */
 @SuppressWarnings("PMD.OverrideBothEqualsAndHashCodeOnComparable")
-public final class BinarySearchTree<T extends Comparable<T>> extends BinaryTree.AbstractBinaryTree<T> {
-
+public final class BinarySearchTree<T extends Comparable<T>> implements BinaryTree<T> {
+    private final Nodes<T> nodes = new Nodes<>();
+    Node<T> root;
 
     @Override
-    protected Node<T> delete(Node<T> node, T value) {
+    public BinaryTree<T> add(T value) {
+        root = add(root, value);
+        return this;
+    }
+
+    private Node<T> add(Node<T> node, T value) {
+        if (node == null) {
+            return new Node<>(value);
+        }
+        if (value.compareTo(node.value) < 0) {
+            node.left = add(node.left, value);
+        } else if (value.compareTo(node.value) > 0) {
+            node.right = add(node.right, value);
+        }
+        return node;
+    }
+
+    @Override
+    public void delete(T value) {
+        root = delete(root, value);
+    }
+
+    private Node<T> delete(Node<T> node, T value) {
         if (node == null) {
             return null;
         }
@@ -26,6 +53,16 @@ public final class BinarySearchTree<T extends Comparable<T>> extends BinaryTree.
         return node;
     }
 
+    @Override
+    public Optional<Node<T>> search(T value, Counter counter) {
+        return nodes.search(root, value, counter);
+    }
+
+    @Override
+    public String toString() {
+        return nodes.print(root);
+    }
+
     private T minimum(Node<T> node) {
         T value = node.value;
         while (node.left != null) {
@@ -34,19 +71,4 @@ public final class BinarySearchTree<T extends Comparable<T>> extends BinaryTree.
         }
         return value;
     }
-
-    @Override
-    protected Node<T> add(Node<T> node, T value) {
-        if (node == null) {
-            return BinaryTree.create(value);
-        }
-        if (value.compareTo(node.value) < 0) {
-            node.left = add(node.left, value);
-        } else if (value.compareTo(node.value) > 0) {
-            node.right = add(node.right, value);
-        }
-        return node;
-    }
-
-
 }

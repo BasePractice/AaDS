@@ -1,7 +1,14 @@
 package ru.mifi.practice.vol6.tree.search;
 
+import ru.mifi.practice.commons.Counter;
+
+import java.util.Optional;
+
 /** Self-balancing AVL binary search tree. */
-public final class AVL<T extends Comparable<T>> extends BinaryTree.AbstractBinaryTree<T> {
+public final class AVL<T extends Comparable<T>> implements BinaryTree<T> {
+    private final Nodes<T> nodes = new Nodes<>();
+    Node<T> root;
+
     private static <E extends Comparable<E>> int height(Node<E> node) {
         if (node == null) {
             return -1;
@@ -9,47 +16,15 @@ public final class AVL<T extends Comparable<T>> extends BinaryTree.AbstractBinar
         return node.custom;
     }
 
-    private int balance(Node<T> node) {
-        if (node == null) {
-            return 0;
-        }
-        return height(node.left) - height(node.right);
-    }
-
-    private void up(Node<T> node) {
-        node.custom = 1 + Math.max(height(node.left), height(node.right));
-    }
-
-    private Node<T> lr(Node<T> node) {
-        Node<T> next = node.right;
-        node.right = next.left;
-        next.left = node;
-        up(node);
-        up(next);
-        return next;
-    }
-
-    private Node<T> minimum(Node<T> node) {
-        Node<T> it = node;
-        while (it.left != null) {
-            it = it.left;
-        }
-        return it;
-    }
-
-    private Node<T> rr(Node<T> node) {
-        Node<T> next = node.left;
-        node.left = next.right;
-        next.right = node;
-        up(node);
-        up(next);
-        return next;
-    }
-
     @Override
-    protected Node<T> add(Node<T> node, T value) {
+    public BinaryTree<T> add(T value) {
+        root = add(root, value);
+        return this;
+    }
+
+    private Node<T> add(Node<T> node, T value) {
         if (node == null) {
-            return BinaryTree.create(value);
+            return new Node<>(value);
         }
         if (node.value.compareTo(value) > 0) {
             node.left = add(node.left, value);
@@ -78,7 +53,11 @@ public final class AVL<T extends Comparable<T>> extends BinaryTree.AbstractBinar
     }
 
     @Override
-    protected Node<T> delete(Node<T> node, T value) {
+    public void delete(T value) {
+        root = delete(root, value);
+    }
+
+    private Node<T> delete(Node<T> node, T value) {
         if (node == null) {
             return null;
         }
@@ -121,5 +100,52 @@ public final class AVL<T extends Comparable<T>> extends BinaryTree.AbstractBinar
             return lr(node);
         }
         return node;
+    }
+
+    @Override
+    public Optional<Node<T>> search(T value, Counter counter) {
+        return nodes.search(root, value, counter);
+    }
+
+    @Override
+    public String toString() {
+        return nodes.print(root);
+    }
+
+    private int balance(Node<T> node) {
+        if (node == null) {
+            return 0;
+        }
+        return height(node.left) - height(node.right);
+    }
+
+    private void up(Node<T> node) {
+        node.custom = 1 + Math.max(height(node.left), height(node.right));
+    }
+
+    private Node<T> lr(Node<T> node) {
+        Node<T> next = node.right;
+        node.right = next.left;
+        next.left = node;
+        up(node);
+        up(next);
+        return next;
+    }
+
+    private Node<T> minimum(Node<T> node) {
+        Node<T> it = node;
+        while (it.left != null) {
+            it = it.left;
+        }
+        return it;
+    }
+
+    private Node<T> rr(Node<T> node) {
+        Node<T> next = node.left;
+        node.left = next.right;
+        next.right = node;
+        up(node);
+        up(next);
+        return next;
     }
 }
