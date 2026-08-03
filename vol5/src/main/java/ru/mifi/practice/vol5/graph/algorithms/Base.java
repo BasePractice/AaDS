@@ -17,9 +17,11 @@ public final class Base<T, W extends Number & Comparable<W>>
 
     @Override
     public void dfs(Graph<T, W> graph, Algorithms.Visitor<T, W> visitor) {
-        if (graph.notEmpty()) {
-            Set<Graph.Vertex<T, W>> visited = new HashSet<>();
-            dfs(graph.getVertex(0), visitor, visited);
+        Set<Graph.Vertex<T, W>> visited = new HashSet<>();
+        for (Graph.Vertex<T, W> vertex : graph.getVertices()) {
+            if (!visited.contains(vertex)) {
+                dfs(vertex, visitor, visited);
+            }
         }
     }
 
@@ -38,20 +40,21 @@ public final class Base<T, W extends Number & Comparable<W>>
     @Override
     public void bfs(Graph<T, W> graph, Algorithms.Visitor<T, W> visitor) {
         Set<Graph.Vertex<T, W>> visited = new HashSet<>();
-        if (graph.isEmpty()) {
-            return;
-        }
-        var source = graph.getVertex(0);
         Queue<Graph.Vertex<T, W>> queue = new LinkedList<>();
-        queue.add(source);
-        while (!queue.isEmpty()) {
-            var current = queue.poll();
-            if (visited.contains(current)) {
+        for (Graph.Vertex<T, W> source : graph.getVertices()) {
+            if (visited.contains(source)) {
                 continue;
             }
-            visited.add(current);
-            visitor.visit(current);
-            current.edges().forEach(edge -> queue.add(edge.target()));
+            queue.add(source);
+            while (!queue.isEmpty()) {
+                var current = queue.poll();
+                if (visited.contains(current)) {
+                    continue;
+                }
+                visited.add(current);
+                visitor.visit(current);
+                current.edges().forEach(edge -> queue.add(edge.target()));
+            }
         }
     }
 

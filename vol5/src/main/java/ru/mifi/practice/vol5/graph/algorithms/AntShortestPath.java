@@ -16,7 +16,6 @@ public final class AntShortestPath<T, W extends Number & Comparable<W>> implemen
 
     @Override
     public List<Graph.Vertex<T, W>> shortestPath(Graph<T, W> graph, Graph.Vertex<T, W> source, Graph.Vertex<T, W> target) {
-        Matrix pheromones = new Matrix(graph.size(), parameters.kPheromone.doubleValue());
         Colony<T, W> colony = new Colony<>(graph, source, target, parameters);
         int counter = 0;
         double distance = Double.MAX_VALUE;
@@ -26,25 +25,29 @@ public final class AntShortestPath<T, W extends Number & Comparable<W>> implemen
             colony.createAnts(source, target);
             for (var ant : colony.ants) {
                 while (ant.canContinue) {
-                    ant.step(pheromones, parameters);
+                    ant.step(colony.pheromones, parameters);
                 }
-                if (!ant.path.isEmpty()) {
-                    if (distance > ant.distance) {
-                        distance = ant.distance;
-                        path = ant.path;
-                        counter = 0;
-                    }
-
-                    for (int i = 1; i < ant.path.size() - 1; i++) {
-                        Graph.Vertex<T, W> v1 = ant.path.get(i - 1);
-                        Graph.Vertex<T, W> v2 = ant.path.get(i);
-                        summaryPheromones.values[v1.index()][v2.index()] += parameters.kQ.doubleValue() / ant.distance;
-                    }
+                if (!arrived(ant, target)) {
+                    continue;
                 }
-                colony.pheromoneStage(summaryPheromones);
+                if (distance > ant.distance) {
+                    distance = ant.distance;
+                    path = ant.path;
+                    counter = 0;
+                }
+                for (int i = 1; i < ant.path.size(); i++) {
+                    Graph.Vertex<T, W> v1 = ant.path.get(i - 1);
+                    Graph.Vertex<T, W> v2 = ant.path.get(i);
+                    summaryPheromones.values[v1.index()][v2.index()] += parameters.kQ.doubleValue() / ant.distance;
+                }
             }
+            colony.pheromoneStage(summaryPheromones);
         }
         return path;
+    }
+
+    private boolean arrived(Ant<T, W> ant, Graph.Vertex<T, W> target) {
+        return !ant.path.isEmpty() && ant.path.get(ant.path.size() - 1).equals(target);
     }
 
     record Parameters(Number kAlpha,
@@ -188,6 +191,7 @@ public final class AntShortestPath<T, W extends Number & Comparable<W>> implemen
         }
 
         private void createAnts(Graph.Vertex<T, W> source, Graph.Vertex<T, W> target) {
+            ants.clear();
             final int size;
             if (source == null) {
                 size = graph.size();
@@ -198,8 +202,7 @@ public final class AntShortestPath<T, W extends Number & Comparable<W>> implemen
             int length = size * 2;
             for (int i = 0; i < length; i++) {
                 if (source == null) {
-                    int v = (int) random.nextDouble(size - 1);
-                    ants.add(new Ant<>(random, vertices.get(v), target));
+                    ants.add(new Ant<>(random, vertices.get(random.nextInt(size)), target));
                 } else {
                     ants.add(new Ant<>(random, source, target));
                 }
