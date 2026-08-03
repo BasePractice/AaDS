@@ -38,7 +38,9 @@ public abstract class MainSort {
         MERGE(new MergeSort<>()),
         QUICK_H(new QuickSort<>()),
         QUICK_R(new QuickSort<>(new QuickSort.Strategy.Randomly<Integer>())),
-        COUNT(new CountSort(MAX_GENERATED_ELEMENT_VALUE));
+        COUNT(new CountSort(MAX_GENERATED_ELEMENT_VALUE)),
+        RADIX(new RadixSort()),
+        HEAP(new HeapSort<>());
 
         private final Sort<Integer> sort;
 

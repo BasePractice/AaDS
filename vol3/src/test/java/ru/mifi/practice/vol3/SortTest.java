@@ -77,6 +77,59 @@ final class SortTest {
             contains(1, 3, 3, 5, 9));
     }
 
+    @DisplayName("Пирамидальная сортировка упорядочивает элементы")
+    @Test
+    void heapSortOrdersElements() {
+        assertThat("heap sort dont order the elements",
+            new HeapSort<Integer>().sort(List.of(5, 3, 9, 1, 3), new Counter.Default(), false),
+            contains(1, 3, 3, 5, 9));
+    }
+
+    @DisplayName("Пирамидальная сортировка не меняет длину")
+    @Test
+    void heapSortKeepsTheLength() {
+        assertThat("heap sort changes the number of elements",
+            new HeapSort<Integer>().sort(List.of(5, 3, 9, 1, 3), new Counter.Default(), false).size(), is(5));
+    }
+
+    @DisplayName("Пирамидальная сортировка справляется с пустым входом")
+    @Test
+    void heapSortHandlesEmptyInput() {
+        assertThat("empty input dont produce an empty result",
+            new HeapSort<Integer>().sort(List.of(), new Counter.Default(), false).size(), is(0));
+    }
+
+    @DisplayName("Поразрядная сортировка упорядочивает элементы")
+    @Test
+    void radixSortOrdersElements() {
+        assertThat("radix sort dont order the elements",
+            new RadixSort().sort(List.of(500, 3, 9000, 1, 3), new Counter.Default(), false),
+            contains(1, 3, 3, 500, 9000));
+    }
+
+    @DisplayName("Поразрядная сортировка кладёт отрицательные числа левее")
+    @Test
+    void radixSortKeepsNegativesOnTheLeft() {
+        assertThat("radix sort dont handle the sign bit",
+            new RadixSort().sort(List.of(3, -1, 0, -500, 2), new Counter.Default(), false),
+            contains(-500, -1, 0, 2, 3));
+    }
+
+    @DisplayName("Поразрядная сортировка справляется с граничными значениями")
+    @Test
+    void radixSortHandlesExtremeValues() {
+        assertThat("radix sort dont handle the extremes of int",
+            new RadixSort().sort(List.of(Integer.MAX_VALUE, Integer.MIN_VALUE, 0), new Counter.Default(), false),
+            contains(Integer.MIN_VALUE, 0, Integer.MAX_VALUE));
+    }
+
+    @DisplayName("Поразрядная сортировка справляется с пустым входом")
+    @Test
+    void radixSortHandlesEmptyInput() {
+        assertThat("empty input dont produce an empty result",
+            new RadixSort().sort(List.of(), new Counter.Default(), false).size(), is(0));
+    }
+
     /**
      * Задание к разделу «Сортировка»: в QuickSort есть ошибка, помеченная в JavaDoc класса.
      * Разбиение Хоара возвращает границу, а не итоговую позицию опорного элемента, поэтому
