@@ -29,6 +29,13 @@ public final class RaptorDecoder {
         this.totalIntermediates = k + config.parityCount();
         this.symbolSize = config.symbolSize();
         this.originalLength = originalLength;
+        //Уравнения precode известны заранее и не требуют ни одного принятого символа.
+        //Без них проверочные символы добавляли неизвестные, не добавляя уравнений, и
+        //декодеру требовалось на parityCount символов больше, чем без precode вообще.
+        for (int[] relation : Precode.relations(k, config)) {
+            rows.add(relation.clone());
+            rhs.add(BytesXor.zeros(symbolSize));
+        }
     }
 
     /**
@@ -78,6 +85,15 @@ public final class RaptorDecoder {
         int[] row = Arrays.copyOf(compact, degree);
         rows.add(row);
         rhs.add(symbol.payload());
+    }
+
+    private static boolean dependsOnFree(boolean[] row, int[] pivotRowByCol, int n) {
+        for (int c = 0; c < n; c++) {
+            if (row[c] && pivotRowByCol[c] < 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -156,9 +172,13 @@ public final class RaptorDecoder {
             }
         }
 
-        // Проверим, что все первые k столбцов решены
+        // Проверим, что все первые k столбцов решены. Одного ведущего элемента мало: если в его
+        // строке осталась единица в свободном столбце, значение зависит от неизвестной величины,
+        // и правая часть строки — не ответ, а мусор. Раньше такая система молча объявлялась
+        // решённой, и декодер возвращал искажённые данные вместо отказа.
         for (int c = 0; c < k; c++) {
-            if (pivotRowByCol[c] < 0) {
+            int row = pivotRowByCol[c];
+            if (row < 0 || dependsOnFree(a[row], pivotRowByCol, n)) {
                 throw new IllegalStateException("Недостаточно независимых символов для восстановления исходных данных");
             }
         }

@@ -26,7 +26,6 @@ public record RaptorEncoder(RaptorConfiguration config,
                             int originalLength,
                             byte[][] intermediates,
                             RobustSolitonDistribution distribution) {
-    private static final int MIN_PARITY_DEGREE = 2;
 
     private RaptorEncoder(RaptorConfiguration config, byte[][] sources, int originalLength) {
         this(config, sources.length, sources.length + config.parityCount(), config.symbolSize(),
@@ -81,15 +80,13 @@ public record RaptorEncoder(RaptorConfiguration config,
         for (int i = 0; i < k; i++) {
             intermediates[i] = Arrays.copyOf(sources[i], config.symbolSize());
         }
-        int baseDegree = Math.max(MIN_PARITY_DEGREE, (int) Math.round(Math.log(Math.max(2, k))));
-        for (int j = 0; j < config.parityCount(); j++) {
-            int deg = Math.min(baseDegree + (j % 2), k);
-            Set<Integer> idx = uniqueIndices(k, deg, new DeterministicRandom(config.seed() ^ (0x5EEDL + j)));
+        //Те же уравнения знает и декодер: проверочный символ равен XOR своих слагаемых
+        for (int[] relation : Precode.relations(k, config)) {
             byte[] acc = BytesXor.zeros(config.symbolSize());
-            for (int id : idx) {
-                BytesXor.xorInPlace(acc, intermediates[id]);
+            for (int at = 1; at < relation.length; at++) {
+                BytesXor.xorInPlace(acc, intermediates[relation[at]]);
             }
-            intermediates[k + j] = acc;
+            intermediates[relation[0]] = acc;
         }
         return intermediates;
     }
