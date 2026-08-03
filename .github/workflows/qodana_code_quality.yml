@@ -20,7 +20,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
       - name: 'Scan'
-        uses: JetBrains/qodana-action@v2025.2
+        uses: JetBrains/qodana-action@v2026.2
         with:
           pr-mode: false
         env:
