@@ -108,7 +108,7 @@ public interface Stage2 {
 
         public boolean isComplete() {
             for (Step step : steps) {
-                if (step.x == -1 || step.y == -1 || step.z == -1) {
+                if (step.x.value == -1 || step.y.value == -1 || step.z.value == -1) {
                     return false;
                 }
             }
@@ -149,13 +149,10 @@ public interface Stage2 {
         final Solution solution;
         final Step parent;
         final Slice slice;
+        final Digit x = new Digit();
+        final Digit y = new Digit();
+        final Digit z = new Digit();
         boolean hasNext;
-        int x = -1;
-        boolean hasX = false;
-        int y = -1;
-        boolean hasY = false;
-        int z = -1;
-        boolean hasZ = false;
         boolean carrier;
         boolean needCarrier;
         boolean up;
@@ -180,12 +177,9 @@ public interface Stage2 {
         void reset() {
             carrier = false;
             needCarrier = false;
-            x = -1;
-            y = -1;
-            z = -1;
-            hasX = false;
-            hasY = false;
-            hasZ = false;
+            x.clear();
+            y.clear();
+            z.clear();
         }
 
         Step refresh() {
@@ -194,20 +188,17 @@ public interface Stage2 {
             if (parent != null) {
                 int t = parent.numberOf(slice.x);
                 if (t >= 0) {
-                    x = t;
-                    hasX = true;
+                    x.set(t);
                 }
                 t = parent.numberOf(slice.y);
                 if (t >= 0) {
-                    y = t;
-                    hasY = true;
+                    y.set(t);
                 }
                 t = parent.numberOf(slice.z);
                 if (t >= 0) {
-                    z = t;
-                    hasZ = true;
+                    z.set(t);
                 } else {
-                    z = -1;
+                    z.value = -1;
                 }
                 carrier = parent.needCarrier;
             }
@@ -219,11 +210,11 @@ public interface Stage2 {
                 return -1;
             }
             if (slice.x == ch) {
-                return x;
+                return x.value;
             } else if (slice.y == ch) {
-                return y;
+                return y.value;
             } else if (slice.z == ch) {
-                return z;
+                return z.value;
             }
             if (parent != null) {
                 return parent.numberOf(ch);
@@ -232,20 +223,20 @@ public interface Stage2 {
         }
 
         private char trX() {
-            return tr(slice.x, x);
+            return tr(slice.x, x.value);
         }
 
         private char trY() {
-            return tr(slice.y, y);
+            return tr(slice.y, y.value);
         }
 
         private char trZ() {
-            return tr(slice.z, z);
+            return tr(slice.z, z.value);
         }
 
         boolean isComplete() {
-            return (slice.x == 0 || x != -1)
-                && (slice.y == 0 || y != -1) && z != -1;
+            return (slice.x == 0 || x.value != -1)
+                && (slice.y == 0 || y.value != -1) && z.value != -1;
         }
 
         @Override
@@ -255,15 +246,15 @@ public interface Stage2 {
 
         @SuppressWarnings("SuspiciousNameCombination")
         public boolean step() {
-            if (hasX && hasY && hasZ) {
-                int sum = sum(x, y);
+            if (x.has && y.has && z.has) {
+                int sum = sum(x.value, y.value);
                 if (sum >= 10) {
                     needCarrier = true;
                 }
                 if (needCarrier && !hasNext) {
                     return false;
                 }
-                return sum % 10 == z;
+                return sum % 10 == z.value;
             }
             boolean xChanged = false;
             boolean nextGeneration = true;
@@ -273,51 +264,51 @@ public interface Stage2 {
                 if (solution.isComplete()) {
                     return true;
                 }
-                if (nextGeneration && !hasX && slice.x != 0 && (y == -1 || hasY)) {
+                if (nextGeneration && !x.has && slice.x != 0 && (y.value == -1 || y.has)) {
                     xChanged = true;
                     nextGeneration = false;
-                    x = nextNumber(!hasNext && x == -1 ? 0 : x);
-                    if (x == -1) {
+                    x.value = nextNumber(!hasNext && x.value == -1 ? 0 : x.value);
+                    if (x.value == -1) {
                         break;
                     }
                 }
                 if (xChanged) {
                     xChanged = false;
-                    if (!hasY) {
+                    if (!y.has) {
                         if (slice.y != 0 && slice.y == slice.x) {
-                            y = x;
+                            y.value = x.value;
                         } else {
-                            y = nextNumber(hasNext ? y : 1);
+                            y.value = nextNumber(hasNext ? y.value : 1);
                         }
                     }
                 } else {
-                    if (!hasY) {
+                    if (!y.has) {
                         if (slice.y != 0 && slice.y == slice.x) {
-                            if (y == x) {
-                                y = -1;
+                            if (y.value == x.value) {
+                                y.value = -1;
                                 nextGeneration = true;
                                 needCarrier = false;
                                 continue;
                             }
-                            y = x;
+                            y.value = x.value;
                         } else if (slice.y == 0) {
-                            y = -1;
+                            y.value = -1;
                         } else {
-                            y = nextNumber(!hasNext && y == -1 ? 0 : y);
+                            y.value = nextNumber(!hasNext && y.value == -1 ? 0 : y.value);
                         }
                     }
                 }
-                if (!hasZ) {
-                    z = -1;
+                if (!z.has) {
+                    z.value = -1;
                 }
-                if (y == -1) {
+                if (y.value == -1) {
                     if (slice.x == 0 && slice.y != 0) {
                         return false;
-                    } else if (hasX) {
+                    } else if (x.has) {
                         return false;
                     } else if (slice.x == 0) {
                         if (carrier) {
-                            z = 1;
+                            z.value = 1;
                             return true;
                         }
                         if (parent != null) {
@@ -328,100 +319,100 @@ public interface Stage2 {
                     nextGeneration = true;
                     continue;
                 }
-                int nX = x;
+                int nX = x.value;
                 if (slice.x == 0) {
                     nX = 0;
                 }
-                int nY = y;
+                int nY = y.value;
                 if (slice.y == 0) {
                     nY = 0;
                 }
                 int sum = sum(nX, nY);
-                if (!hasZ) {
+                if (!z.has) {
                     if (slice.z == slice.x) {
-                        if (sum != x) {
-                            z = -1;
-                            y = -1;
+                        if (sum != x.value) {
+                            z.value = -1;
+                            y.value = -1;
                             needCarrier = false;
                             nextGeneration = true;
                             continue;
                         }
-                        z = x;
+                        z.value = x.value;
                     } else if (slice.z == slice.y) {
-                        if (sum != y) {
-                            z = -1;
+                        if (sum != y.value) {
+                            z.value = -1;
                             needCarrier = false;
-                            if (!hasX) {
-                                y = -1;
+                            if (!x.has) {
+                                y.value = -1;
                                 nextGeneration = true;
                             }
                             continue;
                         }
-                        z = y;
+                        z.value = y.value;
                     } else if (sum >= 10) {
-                        z = sum % 10;
+                        z.value = sum % 10;
                         needCarrier = true;
                     } else {
-                        z = sum;
+                        z.value = sum;
                     }
-                    if (z == x && slice.z != slice.x && !carrier) {
+                    if (z.value == x.value && slice.z != slice.x && !carrier) {
                         if (slice.y == slice.x) {
-                            y = -1;
+                            y.value = -1;
                             nextGeneration = true;
-                        } else if (hasY) {
+                        } else if (y.has) {
                             nextGeneration = true;
                         }
                         continue;
-                    } else if (z == y && slice.z != slice.y) {
-                        if (hasY) {
-                            if (hasX) {
+                    } else if (z.value == y.value && slice.z != slice.y) {
+                        if (y.has) {
+                            if (x.has) {
                                 return false;
                             }
                             nextGeneration = true;
                         }
                         continue;
-                    } else if (z == x && z == y) {
-                        y = -1;
+                    } else if (z.value == x.value && z.value == y.value) {
+                        y.value = -1;
                         nextGeneration = true;
                         continue;
-                    } else if (parent != null && parent.hasNumber(z)) {
-                        if (slice.x == slice.y || hasY) {
-                            y = -1;
+                    } else if (parent != null && parent.hasNumber(z.value)) {
+                        if (slice.x == slice.y || y.has) {
+                            y.value = -1;
                             nextGeneration = true;
                         }
-                        z = -1;
+                        z.value = -1;
                         needCarrier = false;
                         continue;
                     }
                 } else {
                     needCarrier = sum >= 10;
                 }
-                if (sum % 10 == z) {
+                if (sum % 10 == z.value) {
                     if (slice.x == 0) {
-                        x = -1;
+                        x.value = -1;
                     }
                     if (slice.y == 0) {
-                        y = -1;
+                        y.value = -1;
                     }
                     if (needCarrier) {
                         if (hasNext) {
                             return true;
-                        } else if (hasZ && slice.x == slice.y) {
-                            if (!hasY) {
-                                y = -1;
+                        } else if (z.has && slice.x == slice.y) {
+                            if (!y.has) {
+                                y.value = -1;
                             }
                             nextGeneration = true;
-                        } else if (hasX && hasY) {
+                        } else if (x.has && y.has) {
                             return false;
                         }
-                        z = -1;
+                        z.value = -1;
                     } else {
                         return true;
                     }
                 } else if (slice.x == slice.y) {
-                    y = -1;
+                    y.value = -1;
                     nextGeneration = true;
-                } else if (hasY) {
+                } else if (y.has) {
                     nextGeneration = true;
                 }
                 needCarrier = false;
@@ -430,7 +421,7 @@ public interface Stage2 {
         }
 
         private boolean hasNumber(int n) {
-            if (z == n || x == n || y == n) {
+            if (z.value == n || x.value == n || y.value == n) {
                 return true;
             } else if (parent != null) {
                 return parent.hasNumber(n);
@@ -446,7 +437,7 @@ public interface Stage2 {
         private int nextNumber(int n) {
             int search = n + 1;
             while (search < 10) {
-                if (search == x || search == y || search == z) {
+                if (search == x.value || search == y.value || search == z.value) {
                     ++search;
                     continue;
                 } else {
@@ -464,6 +455,21 @@ public interface Stage2 {
                 return search;
             }
             return -1;
+        }
+
+        static final class Digit {
+            int value = -1;
+            boolean has;
+
+            void set(int number) {
+                value = number;
+                has = true;
+            }
+
+            void clear() {
+                value = -1;
+                has = false;
+            }
         }
     }
 
