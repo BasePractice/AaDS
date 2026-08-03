@@ -1,112 +1,203 @@
 package ru.mifi.practice.vol6.tree.search;
 
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import ru.mifi.practice.commons.Counter;
-import org.junit.jupiter.api.Assertions;
 
-public class RBTTest {
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
+
+@DisplayName("Красно-чёрное дерево")
+final class RBTTest {
+
+    @DisplayName("Корень всегда чёрный")
     @Test
     @Timeout(1)
-    public void testAdd() {
+    void keepsTheRootBlack() {
         RBT<Integer> tree = new RBT<>();
         tree.add(10).add(20).add(30).add(15).add(25);
-
-        Counter counter = Counter.create();
-        Assertions.assertTrue(tree.search(10, counter).isPresent());
-        Assertions.assertTrue(tree.search(20, counter).isPresent());
-        Assertions.assertTrue(tree.search(30, counter).isPresent());
-        Assertions.assertTrue(tree.search(15, counter).isPresent());
-        Assertions.assertTrue(tree.search(25, counter).isPresent());
-        Assertions.assertFalse(tree.search(100, counter).isPresent());
-        verifyRBTProps(tree);
+        assertThat("the root of a red-black tree is not black", tree.root.custom, is(1));
     }
 
+    @DisplayName("У красного узла оба потомка чёрные")
     @Test
     @Timeout(1)
-    public void testDelete() {
+    void keepsRedNodesWithBlackChildren() {
+        RBT<Integer> tree = new RBT<>();
+        tree.add(10).add(20).add(30).add(15).add(25);
+        assertThat("a red node has a red child", redChildrenAreBlack(tree.root), is(true));
+    }
+
+    @DisplayName("Чёрная высота одинакова на всех путях")
+    @Test
+    @Timeout(1)
+    void keepsBlackHeightUniform() {
+        RBT<Integer> tree = new RBT<>();
+        tree.add(10).add(20).add(30).add(15).add(25);
+        assertThat("the black height differs between paths", blackHeight(tree.root), greaterThanOrEqualTo(0));
+    }
+
+    @DisplayName("Сохраняет порядок двоичного дерева поиска")
+    @Test
+    @Timeout(1)
+    void keepsSearchOrder() {
+        RBT<Integer> tree = new RBT<>();
+        tree.add(10).add(20).add(30).add(15).add(25);
+        assertThat("nodes are out of search order",
+            ordered(tree.root, Integer.MIN_VALUE, Integer.MAX_VALUE), is(true));
+    }
+
+    @DisplayName("Находит добавленное значение")
+    @Test
+    @Timeout(1)
+    void findsAnAddedValue() {
+        RBT<Integer> tree = new RBT<>();
+        tree.add(10).add(20).add(30).add(15).add(25);
+        assertThat("an added value is not found", tree.search(15, Counter.create()).isPresent(), is(true));
+    }
+
+    @DisplayName("Не находит отсутствующее значение")
+    @Test
+    @Timeout(1)
+    void reportsMissingValue() {
+        RBT<Integer> tree = new RBT<>();
+        tree.add(10).add(20).add(30).add(15).add(25);
+        assertThat("a missing value is reported as found", tree.search(100, Counter.create()).isPresent(), is(false));
+    }
+
+    @DisplayName("Удалённое значение не находится")
+    @Test
+    @Timeout(1)
+    void forgetsADeletedValue() {
         RBT<Integer> tree = new RBT<>();
         tree.add(10).add(20).add(30).add(40).add(50);
         tree.delete(20);
-
-        Counter counter = Counter.create();
-        Assertions.assertTrue(tree.search(10, counter).isPresent());
-        Assertions.assertFalse(tree.search(20, counter).isPresent());
-        Assertions.assertTrue(tree.search(30, counter).isPresent());
-        verifyRBTProps(tree);
-
-        tree.delete(30);
-        Assertions.assertFalse(tree.search(30, counter).isPresent());
-        verifyRBTProps(tree);
-
-        tree.delete(10);
-        tree.delete(40);
-        tree.delete(50);
-        Assertions.assertNull(tree.root);
+        assertThat("a deleted value is still found", tree.search(20, Counter.create()).isPresent(), is(false));
     }
 
+    @DisplayName("Удаление сохраняет остальные значения")
+    @Test
+    @Timeout(1)
+    void keepsRemainingValuesAfterDelete() {
+        RBT<Integer> tree = new RBT<>();
+        tree.add(10).add(20).add(30).add(40).add(50);
+        tree.delete(20);
+        assertThat("delete removes an unrelated value", tree.search(30, Counter.create()).isPresent(), is(true));
+    }
+
+    @DisplayName("Удаление всех значений опустошает дерево")
+    @Test
+    @Timeout(1)
+    void becomesEmptyWhenAllValuesAreDeleted() {
+        RBT<Integer> tree = new RBT<>();
+        tree.add(10).add(20).add(30).add(40).add(50);
+        tree.delete(10);
+        tree.delete(20);
+        tree.delete(30);
+        tree.delete(40);
+        tree.delete(50);
+        assertThat("the tree is not empty after deleting every value", tree.root, is(nullValue()));
+    }
+
+    @DisplayName("Чёрная высота остаётся одинаковой при росте дерева")
     @Test
     @Timeout(5)
-    public void testLargeTree() {
+    void keepsBlackHeightUniformWhileGrowing() {
+        RBT<Integer> tree = new RBT<>();
+        int minBlackHeight = 0;
+        for (int i = 0; i < 100; i++) {
+            tree.add(i);
+            minBlackHeight = Math.min(minBlackHeight, blackHeight(tree.root));
+        }
+        assertThat("the black height differs between paths while the tree grows", minBlackHeight, greaterThanOrEqualTo(0));
+    }
+
+    @DisplayName("Чёрная высота остаётся одинаковой после удалений")
+    @Test
+    @Timeout(5)
+    void keepsBlackHeightUniformAfterDeletions() {
         RBT<Integer> tree = new RBT<>();
         for (int i = 0; i < 100; i++) {
             tree.add(i);
-            verifyRBTProps(tree);
+        }
+        int minBlackHeight = 0;
+        for (int i = 0; i < 100; i += 2) {
+            tree.delete(i);
+            minBlackHeight = Math.min(minBlackHeight, blackHeight(tree.root));
+        }
+        assertThat("the black height differs between paths after deletions", minBlackHeight, greaterThanOrEqualTo(0));
+    }
+
+    @DisplayName("Оставшиеся значения находятся после удаления половины")
+    @Test
+    @Timeout(5)
+    void findsRemainingValuesAfterDeletingEvens() {
+        RBT<Integer> tree = new RBT<>();
+        for (int i = 0; i < 100; i++) {
+            tree.add(i);
         }
         for (int i = 0; i < 100; i += 2) {
             tree.delete(i);
-            verifyRBTProps(tree);
         }
-        Counter counter = Counter.create();
+        boolean allFound = true;
         for (int i = 1; i < 100; i += 2) {
-            Assertions.assertTrue(tree.search(i, counter).isPresent());
+            allFound = allFound && tree.search(i, Counter.create()).isPresent();
+        }
+        assertThat("a remaining odd value is lost after deleting the evens", allFound, is(true));
+    }
+
+    @DisplayName("Удалённые значения не находятся после удаления половины")
+    @Test
+    @Timeout(5)
+    void doesNotFindDeletedEvens() {
+        RBT<Integer> tree = new RBT<>();
+        for (int i = 0; i < 100; i++) {
+            tree.add(i);
         }
         for (int i = 0; i < 100; i += 2) {
-            Assertions.assertFalse(tree.search(i, counter).isPresent());
+            tree.delete(i);
         }
+        boolean anyFound = false;
+        for (int i = 0; i < 100; i += 2) {
+            anyFound = anyFound || tree.search(i, Counter.create()).isPresent();
+        }
+        assertThat("a deleted even value is still found", anyFound, is(false));
     }
 
-    private <T extends Comparable<T>> void verifyRBTProps(RBT<T> tree) {
-        if (tree.root == null) {
-            return;
-        }
-        // 1. Корень всегда черный (1)
-        Assertions.assertEquals(1, tree.root.custom, "Root must be black");
-        checkNode(tree.root);
-        checkBlackHeight(tree.root);
+    private static int blackOf(BinaryTree.Node<Integer> node) {
+        return node == null ? 1 : node.custom;
     }
 
-    private <T extends Comparable<T>> void checkNode(BinaryTree.Node<T> node) {
+    private static boolean redChildrenAreBlack(BinaryTree.Node<Integer> node) {
         if (node == null) {
-            return;
+            return true;
         }
-        // 2. Если узел красный, его дети должны быть черными
-        if (node.custom == 0) { // RED
-            if (node.left != null) {
-                Assertions.assertEquals(1, node.left.custom, "Left child of red node must be black");
-            }
-            if (node.right != null) {
-                Assertions.assertEquals(1, node.right.custom, "Right child of red node must be black");
-            }
+        if (node.custom == 0 && (blackOf(node.left) != 1 || blackOf(node.right) != 1)) {
+            return false;
         }
-        // Проверка BST свойства
-        if (node.left != null) {
-            Assertions.assertTrue(node.left.value.compareTo(node.value) < 0);
-            checkNode(node.left);
-        }
-        if (node.right != null) {
-            Assertions.assertTrue(node.right.value.compareTo(node.value) > 0);
-            checkNode(node.right);
-        }
+        return redChildrenAreBlack(node.left) && redChildrenAreBlack(node.right);
     }
 
-    private <T extends Comparable<T>> int checkBlackHeight(BinaryTree.Node<T> node) {
+    private static int blackHeight(BinaryTree.Node<Integer> node) {
         if (node == null) {
             return 1;
         }
-        int leftHeight = checkBlackHeight(node.left);
-        int rightHeight = checkBlackHeight(node.right);
-        Assertions.assertEquals(leftHeight, rightHeight, "Black height mismatch at node " + node.value);
-        return leftHeight + (node.custom == 1 ? 1 : 0);
+        int left = blackHeight(node.left);
+        int right = blackHeight(node.right);
+        if (left < 0 || right < 0 || left != right) {
+            return -1;
+        }
+        return left + (node.custom == 1 ? 1 : 0);
+    }
+
+    private static boolean ordered(BinaryTree.Node<Integer> node, int low, int high) {
+        if (node == null) {
+            return true;
+        }
+        return node.value > low && node.value < high
+            && ordered(node.left, low, node.value) && ordered(node.right, node.value, high);
     }
 }

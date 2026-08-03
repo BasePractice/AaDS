@@ -22,7 +22,12 @@ final class SudokuBlocksTest {
     @Test
     @Timeout(1)
     void readsEveryPuzzleIncludingTheLast() throws IOException {
-        assertThat("the puzzle without a trailing separator is lost", Main.blocks(sudoku()).size(), is(50));
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+            Objects.requireNonNull(SudokuBlocksTest.class.getResourceAsStream("/sudoku.sud")),
+            StandardCharsets.UTF_8))) {
+            assertThat("the puzzle without a trailing separator is lost",
+                Main.blocks(reader.lines().toList()).size(), is(50));
+        }
     }
 
     @DisplayName("Пропускает строки-разделители")
@@ -39,13 +44,5 @@ final class SudokuBlocksTest {
     void readsDigitsByPosition() {
         List<String> lines = Collections.nCopies(9, "123456789");
         assertThat("digit dont land on its own position", Main.blocks(lines).get(0)[0][4], is(5));
-    }
-
-    private static List<String> sudoku() throws IOException {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-            Objects.requireNonNull(SudokuBlocksTest.class.getResourceAsStream("/sudoku.sud")),
-            StandardCharsets.UTF_8))) {
-            return reader.lines().toList();
-        }
     }
 }

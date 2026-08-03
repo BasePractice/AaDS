@@ -63,39 +63,47 @@ final class BytecodeTest {
     @Test
     @Timeout(1)
     void keepsCyrillicText() throws IOException {
-        assertThat("a cyrillic string dont survive the round trip",
-            roundTrip(VirtualMachine.DefaultValue.of("Привет, мир")).value(), is("Привет, мир"));
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        VirtualMachine.DefaultValue.of("Привет, мир").write(output);
+        try (ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray())) {
+            assertThat("a cyrillic string dont survive the round trip",
+                VirtualMachine.Type.of(input.read()).read(input).value(), is("Привет, мир"));
+        }
     }
 
     @DisplayName("Длинная строка переживает запись и чтение")
     @Test
     @Timeout(1)
     void keepsALongText() throws IOException {
-        assertThat("a string longer than a byte length prefix is truncated",
-            roundTrip(VirtualMachine.DefaultValue.of("я".repeat(300))).value(), is("я".repeat(300)));
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        VirtualMachine.DefaultValue.of("я".repeat(300)).write(output);
+        try (ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray())) {
+            assertThat("a string longer than a byte length prefix is truncated",
+                VirtualMachine.Type.of(input.read()).read(input).value(), is("я".repeat(300)));
+        }
     }
 
     @DisplayName("Логическое значение переживает запись и чтение")
     @Test
     @Timeout(1)
     void keepsABoolean() throws IOException {
-        assertThat("a boolean dont survive the round trip",
-            roundTrip(VirtualMachine.DefaultValue.of(true)).value(), is(true));
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        VirtualMachine.DefaultValue.of(true).write(output);
+        try (ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray())) {
+            assertThat("a boolean dont survive the round trip",
+                VirtualMachine.Type.of(input.read()).read(input).value(), is(true));
+        }
     }
 
     @DisplayName("Пустое значение переживает запись и чтение")
     @Test
     @Timeout(1)
     void keepsTheMissingValue() throws IOException {
-        assertThat("a missing value dont survive the round trip",
-            roundTrip(VirtualMachine.DefaultValue.none()).type(), is(VirtualMachine.Type.NONE));
-    }
-
-    private static VirtualMachine.Value roundTrip(VirtualMachine.Value value) throws IOException {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
-        value.write(output);
+        VirtualMachine.DefaultValue.none().write(output);
         try (ByteArrayInputStream input = new ByteArrayInputStream(output.toByteArray())) {
-            return VirtualMachine.Type.of(input.read()).read(input);
+            assertThat("a missing value dont survive the round trip",
+                VirtualMachine.Type.of(input.read()).read(input).type(), is(VirtualMachine.Type.NONE));
         }
     }
 }
