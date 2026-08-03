@@ -14,7 +14,7 @@ class StateTest {
     @Timeout(5)
     void printsItsSymbol() {
         assertThat("symbol state dont print its own character",
-            new Manager.Default().newState(State.Symbol.class, 'p').toString(), is("p"));
+            new Manager.Default().symbol('p').toString(), is("p"));
     }
 
     @DisplayName("Пустая последовательность печатается пустой строкой")
@@ -22,7 +22,7 @@ class StateTest {
     @Timeout(5)
     void printsEmptySequenceAsBlank() {
         assertThat("empty sequence dont print as a blank string",
-            new Manager.Default().newState(State.Sequence.class).toString(), is(""));
+            new Manager.Default().sequence().toString(), is(""));
     }
 
     @DisplayName("Пустая параллель печатается пустыми скобками")
@@ -30,6 +30,6 @@ class StateTest {
     @Timeout(5)
     void printsEmptyParallelAsBrackets() {
         assertThat("empty parallel dont print as empty brackets",
-            new Manager.Default().newState(State.Parallel.class).toString(), is("[]"));
+            new Manager.Default().parallel().toString(), is("[]"));
     }
 }

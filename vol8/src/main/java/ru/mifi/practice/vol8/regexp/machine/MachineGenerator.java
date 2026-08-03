@@ -27,37 +27,37 @@ public final class MachineGenerator extends AbstractVisitor {
     @Override
     public void enter(Tree.And and) {
         if (states.isEmpty()) {
-            states.add(manager.newState(State.Sequence.class));
+            states.add(manager.sequence());
             return;
         }
         State last = states.getLast();
         if (last instanceof State.Sequence) {
             return;
         }
-        states.add(manager.newState(State.Sequence.class));
+        states.add(manager.sequence());
     }
 
     @Override
     public void enter(Tree.Group group) {
-        states.add(manager.newState(State.Group.class));
+        states.add(manager.group());
     }
 
     @Override
     public void enter(Tree.Or or) {
         if (states.isEmpty()) {
-            states.add(manager.newState(State.Parallel.class));
+            states.add(manager.parallel());
             return;
         }
         State last = states.getLast();
         if (last instanceof State.Parallel) {
             return;
         }
-        states.add(manager.newState(State.Parallel.class));
+        states.add(manager.parallel());
     }
 
     @Override
     public void enter(Tree.Set set) {
-        states.add(manager.newState(State.Parallel.class));
+        states.add(manager.parallel());
     }
 
     @Override
@@ -98,7 +98,7 @@ public final class MachineGenerator extends AbstractVisitor {
         exitParallel();
         if (!set.positive()) {
             State excluded = last();
-            states.add(manager.newState(State.Excluding.class, excluded));
+            states.add(manager.excluding(excluded));
         }
     }
 
@@ -118,9 +118,9 @@ public final class MachineGenerator extends AbstractVisitor {
     public void exit(Tree.Unary unary) {
         State state = last();
         switch (unary.operator()) {
-            case STAR -> states.add(manager.newState(State.NoneOrMore.class, state));
-            case PLUS -> states.add(manager.newState(State.OneOrMore.class, state));
-            case QUESTION -> states.add(manager.newState(State.NoneOrOne.class, state));
+            case STAR -> states.add(manager.noneOrMore(state));
+            case PLUS -> states.add(manager.oneOrMore(state));
+            case QUESTION -> states.add(manager.noneOrOne(state));
             default -> throw new IllegalStateException("Unexpected operator: " + unary.operator());
         }
     }
@@ -140,9 +140,9 @@ public final class MachineGenerator extends AbstractVisitor {
         if (start > end) {
             throw new IllegalArgumentException("Начало диапазона больше конца: " + range);
         }
-        State.Parallel parallel = manager.newState(State.Parallel.class);
+        State.Parallel parallel = manager.parallel();
         for (char ch = start; ch <= end; ch++) {
-            parallel.add(manager.newState(State.Symbol.class, ch));
+            parallel.add(manager.symbol(ch));
         }
         states.add(parallel);
     }
@@ -193,17 +193,17 @@ public final class MachineGenerator extends AbstractVisitor {
 
     @Override
     public void visit(Tree.Char ch) {
-        states.add(manager.newState(State.Symbol.class, ch.ch()));
+        states.add(manager.symbol(ch.ch()));
     }
 
     @Override
     public void visit(Tree.Escape escape) {
-        states.add(manager.newState(State.Symbol.class, escape.ch()));
+        states.add(manager.symbol(escape.ch()));
     }
 
     @Override
     public void any() {
-        states.add(manager.newState(State.Any.class));
+        states.add(manager.any());
     }
 
     private char bound(Tree.Node node, Tree.Range range) {

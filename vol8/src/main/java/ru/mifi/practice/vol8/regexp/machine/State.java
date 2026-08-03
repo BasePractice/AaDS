@@ -60,7 +60,7 @@ public abstract class State {
     public static final class Symbol extends State {
         final Object symbol;
 
-        private Symbol(Manager manager, int index, Object symbol) {
+        Symbol(Manager manager, int index, Object symbol) {
             super(manager, index);
             this.symbol = symbol;
         }
@@ -100,7 +100,7 @@ public abstract class State {
     }
 
     static final class Group extends State {
-        private Group(Manager manager, int index) {
+        Group(Manager manager, int index) {
             super(manager, index);
         }
 
@@ -114,7 +114,7 @@ public abstract class State {
         State last;
         private State start;
 
-        private Sequence(Manager manager, int index) {
+        Sequence(Manager manager, int index) {
             super(manager, index);
         }
 
@@ -169,7 +169,7 @@ public abstract class State {
      * Точка регулярного выражения: принимает любой символ, лишь бы он был.
      */
     public static final class Any extends State {
-        private Any(Manager manager, int index) {
+        Any(Manager manager, int index) {
             super(manager, index);
         }
 
@@ -203,7 +203,7 @@ public abstract class State {
     public static final class Excluding extends State {
         private final State excluded;
 
-        private Excluding(Manager manager, int index, State excluded) {
+        Excluding(Manager manager, int index, State excluded) {
             super(manager, index);
             this.excluded = excluded;
         }
@@ -264,7 +264,7 @@ public abstract class State {
     public static class Parallel extends State {
         final List<State> states = new ArrayList<>();
 
-        private Parallel(Manager manager, int index) {
+        Parallel(Manager manager, int index) {
             super(manager, index);
         }
 
@@ -335,7 +335,7 @@ public abstract class State {
     }
 
     public static final class NoneOrOne extends SingleState {
-        private NoneOrOne(Manager manager, int index, State state) {
+        NoneOrOne(Manager manager, int index, State state) {
             super(manager, index, state);
         }
 
@@ -379,7 +379,7 @@ public abstract class State {
     }
 
     public static final class NoneOrMore extends SingleState {
-        private NoneOrMore(Manager manager, int index, State state) {
+        NoneOrMore(Manager manager, int index, State state) {
             super(manager, index, state);
         }
 
@@ -433,7 +433,7 @@ public abstract class State {
     }
 
     public static final class OneOrMore extends SingleState {
-        private OneOrMore(Manager manager, int index, State state) {
+        OneOrMore(Manager manager, int index, State state) {
             super(manager, index, state);
         }
 

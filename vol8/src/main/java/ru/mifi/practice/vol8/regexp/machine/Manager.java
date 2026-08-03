@@ -1,6 +1,5 @@
 package ru.mifi.practice.vol8.regexp.machine;
 
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -8,7 +7,23 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /** Фабрика и реестр состояний конечного автомата. */
 public interface Manager {
-    <S extends State> S newState(Class<S> stateClass, Object... args);
+    State.Symbol symbol(char symbol);
+
+    State.Sequence sequence();
+
+    State.Group group();
+
+    State.Parallel parallel();
+
+    State.Any any();
+
+    State.Excluding excluding(State excluded);
+
+    State.NoneOrOne noneOrOne(State state);
+
+    State.NoneOrMore noneOrMore(State state);
+
+    State.OneOrMore oneOrMore(State state);
 
     Optional<State> of(int index);
 
@@ -19,7 +34,6 @@ public interface Manager {
         T map(Character c);
     }
 
-    @SuppressWarnings("PMD.AvoidAccessibilityAlteration")
     final class Default implements Manager {
         private final AtomicInteger counter = new AtomicInteger();
         private final List<State> states = new ArrayList<>();
@@ -34,39 +48,48 @@ public interface Manager {
         }
 
         @Override
-        public <S extends State> S newState(Class<S> stateClass, Object... args) {
-            try {
-                List<Class<?>> paramsClass = new ArrayList<>();
-                paramsClass.add(Manager.class);
-                paramsClass.add(int.class);
-                for (Object arg : args) {
-                    Class<?> aClass = arg.getClass();
-                    if (arg instanceof State) {
-                        paramsClass.add(State.class);
-                    } else if (arg instanceof Character) {
-                        paramsClass.add(Object.class);
-                    } else {
-                        paramsClass.add(aClass);
-                    }
-                }
-                Constructor<S> constructor = stateClass.getDeclaredConstructor(paramsClass.toArray(new Class[0]));
-                constructor.setAccessible(true);
-                List<Object> params = new ArrayList<>();
-                params.add(this);
-                params.add(counter.getAndIncrement());
-                for (Object arg : args) {
-                    if (arg instanceof Character ch) {
-                        params.add(map(ch));
-                    } else {
-                        params.add(arg);
-                    }
-                }
-                S newed = constructor.newInstance(params.toArray(new Object[0]));
-                states.add(newed);
-                return newed;
-            } catch (ReflectiveOperationException ex) {
-                throw new IllegalStateException("Cannot create state instance for " + stateClass, ex);
-            }
+        public State.Symbol symbol(char symbol) {
+            return register(new State.Symbol(this, counter.getAndIncrement(), map(symbol)));
+        }
+
+        @Override
+        public State.Sequence sequence() {
+            return register(new State.Sequence(this, counter.getAndIncrement()));
+        }
+
+        @Override
+        public State.Group group() {
+            return register(new State.Group(this, counter.getAndIncrement()));
+        }
+
+        @Override
+        public State.Parallel parallel() {
+            return register(new State.Parallel(this, counter.getAndIncrement()));
+        }
+
+        @Override
+        public State.Any any() {
+            return register(new State.Any(this, counter.getAndIncrement()));
+        }
+
+        @Override
+        public State.Excluding excluding(State excluded) {
+            return register(new State.Excluding(this, counter.getAndIncrement(), excluded));
+        }
+
+        @Override
+        public State.NoneOrOne noneOrOne(State state) {
+            return register(new State.NoneOrOne(this, counter.getAndIncrement(), state));
+        }
+
+        @Override
+        public State.NoneOrMore noneOrMore(State state) {
+            return register(new State.NoneOrMore(this, counter.getAndIncrement(), state));
+        }
+
+        @Override
+        public State.OneOrMore oneOrMore(State state) {
+            return register(new State.OneOrMore(this, counter.getAndIncrement(), state));
         }
 
         @Override
@@ -75,6 +98,11 @@ public interface Manager {
                 return Optional.empty();
             }
             return Optional.of(states.get(index));
+        }
+
+        private <S extends State> S register(S state) {
+            states.add(state);
+            return state;
         }
 
         @SuppressWarnings("unchecked")
