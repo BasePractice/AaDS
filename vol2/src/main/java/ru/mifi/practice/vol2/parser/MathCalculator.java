@@ -24,9 +24,7 @@ public interface MathCalculator {
 
         @Override
         public Number evaluate(String expression) {
-            Expression parsed = new Parser(expression).parseExpr();
-            System.out.println("Parsed: " + parsed);
-            return parsed.evaluate();
+            return new Parser(expression).parse().evaluate();
         }
 
         enum TokenType {
@@ -119,16 +117,23 @@ public interface MathCalculator {
                 lexer = new Lexer(expression);
             }
 
+            private Expression parse() {
+                Expression expression = parseExpr();
+                if (!lexer.eof()) {
+                    throw new IllegalArgumentException("Выражение разобрано не полностью");
+                }
+                return expression;
+            }
+
             private Expression parseExpr() {
                 Expression left = parseTerm();
                 Optional<Token> nexted = lexer.nextToken();
+                while (nexted.isPresent() && nexted.get().type == TokenType.PLUS) {
+                    left = Expression.of(left, parseTerm(), '+');
+                    nexted = lexer.nextToken();
+                }
                 if (nexted.isPresent()) {
-                    Token token = nexted.get();
-                    if (token.type == TokenType.PLUS) {
-                        Expression right = parseExpr();
-                        return Expression.of(left, right, '+');
-                    }
-                    lexer.revert(token);
+                    lexer.revert();
                 }
                 return left;
             }
@@ -136,13 +141,12 @@ public interface MathCalculator {
             private Expression parseTerm() {
                 Expression left = parseFactor();
                 Optional<Token> nexted = lexer.nextToken();
+                while (nexted.isPresent() && nexted.get().type == TokenType.MUL) {
+                    left = Expression.of(left, parseFactor(), '*');
+                    nexted = lexer.nextToken();
+                }
                 if (nexted.isPresent()) {
-                    Token token = nexted.get();
-                    if (token.type == TokenType.MUL) {
-                        Expression right = parseFactor();
-                        return Expression.of(left, right, '*');
-                    }
-                    lexer.revert(token);
+                    lexer.revert();
                 }
                 return left;
             }
@@ -162,30 +166,32 @@ public interface MathCalculator {
                                 return Expression.of(expression);
                             }
                         }
-                        throw new IllegalArgumentException();
+                        throw new IllegalArgumentException("Не найдена закрывающая скобка");
                     } else {
-                        throw new IllegalArgumentException();
+                        throw new IllegalArgumentException("Ожидалось число или скобка, получено " + token.type);
                     }
                 }
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("Выражение оборвалось на месте множителя");
             }
         }
 
-        @SuppressWarnings("PMD.UnusedPrivateMethod")
         private static final class Lexer {
             private final char[] chars;
             private int index;
+            private int previous;
 
             private Lexer(String expression) {
                 this.chars = expression.toCharArray();
             }
 
             private boolean eof() {
+                skipWhitespace();
                 return index >= chars.length;
             }
 
             private Optional<Token> nextToken() {
                 skipWhitespace();
+                previous = index;
                 if (index < chars.length) {
                     char c = chars[index];
                     if (Character.isDigit(c)) {
@@ -233,8 +239,8 @@ public interface MathCalculator {
                 }
             }
 
-            public void revert(Token token) {
-                --index;
+            private void revert() {
+                index = previous;
             }
         }
 

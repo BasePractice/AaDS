@@ -33,6 +33,10 @@ public interface VirtualMachine {
             }
         },
         NUMBER(1) {
+            //TODO: число пишется одним байтом, поэтому значения больше 255, отрицательные и дробные
+            // искажаются при компиляции, а строка пишет длину в символах при теле в байтах UTF-8 —
+            // кириллица ломает чтение. Чинится сменой формата байт-кода целиком, что выходит за
+            // рамки правки арифметики, поэтому вынесено в отдельную задачу
             @Override
             public void write(ByteArrayOutputStream output, Object value) {
                 Number number = (Number) value;
@@ -176,7 +180,7 @@ public interface VirtualMachine {
         }
 
         public static Value none() {
-            return new DefaultValue(Type.NUMBER, null);
+            return new DefaultValue(Type.NONE, null);
         }
 
         @Override

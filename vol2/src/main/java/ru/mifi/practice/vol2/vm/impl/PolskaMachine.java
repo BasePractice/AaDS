@@ -101,7 +101,8 @@ public final class PolskaMachine implements VirtualMachine {
         MINUS("-", (byte) 2, 2) {
             @Override
             boolean eval(Deque<Value> stack) {
-                stack.push(DefaultValue.of(stack.pop().doubleValue() - stack.pop().doubleValue()));
+                final double right = stack.pop().doubleValue();
+                stack.push(DefaultValue.of(stack.pop().doubleValue() - right));
                 return true;
             }
         },
@@ -115,7 +116,8 @@ public final class PolskaMachine implements VirtualMachine {
         DIVIDE("/", (byte) 4, 2) {
             @Override
             boolean eval(Deque<Value> stack) {
-                stack.push(DefaultValue.of(stack.pop().doubleValue() / stack.pop().doubleValue()));
+                final double divisor = stack.pop().doubleValue();
+                stack.push(DefaultValue.of(stack.pop().doubleValue() / divisor));
                 return true;
             }
         },

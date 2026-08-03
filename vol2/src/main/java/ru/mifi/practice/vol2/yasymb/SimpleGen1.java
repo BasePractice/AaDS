@@ -162,20 +162,10 @@ public final class SimpleGen1 implements YaSymbol {
                     State zState = next.get();
                     nZ = zState.digit();
                     context.assign(zSymbol, nZ);
-                    var summary = nX + nY;
-                    var needCarrier = carrier;
-                    if (summary > 10) {
-                        summary = summary % 10;
-                        needCarrier = true;
-                    }
+                    var summary = nX + nY + (carrier ? 1 : 0);
                     Context copy = context.copy();
-                    if (carrier && summary + 1 == nZ) {
-                        var result = process(copy, input, index + 1, summary + 1 > 10);
-                        if (result.isPresent()) {
-                            return result;
-                        }
-                    } else if (summary == nZ) {
-                        var result = process(copy, input, index + 1, needCarrier);
+                    if (summary % 10 == nZ) {
+                        var result = process(copy, input, index + 1, summary >= 10);
                         if (result.isPresent()) {
                             return result;
                         }

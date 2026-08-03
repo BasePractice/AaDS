@@ -45,11 +45,11 @@ public final class Generator {
             yFactor *= 10;
         }
         int x = random.nextInt(xFactor + 1) + xFactor;
-        int y = random.nextInt(yFactor + 1) + xFactor;
+        int y = random.nextInt(yFactor + 1) + yFactor;
 
         Map<Integer, Character> characters = new HashMap<>();
         Deque<Character> symbols = new ArrayDeque<>();
-        for (int i = 'a'; i < 'z'; i++) {
+        for (int i = 'a'; i <= 'z'; i++) {
             symbols.add((char) i);
         }
         String xT = String.valueOf(x);
