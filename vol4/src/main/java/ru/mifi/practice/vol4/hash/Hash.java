@@ -36,14 +36,14 @@ public interface Hash {
 
         @Override
         public int hash(String text, Counter counter) {
-            int hash = 0;
-            int next = 1;
+            long hash = 0;
+            long next = 1;
             for (int i = 0; i < text.length(); i++) {
                 hash = (hash + next * text.charAt(i)) % mod;
                 next = next * k % mod;
                 counter.increment();
             }
-            return hash;
+            return (int) hash;
         }
     }
 

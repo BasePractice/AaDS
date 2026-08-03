@@ -48,7 +48,7 @@ public interface HashTable<K, V> {
      */
     final class Entry<K, V> {
         public final K key;
-        public final V value;
+        public V value;
         private Entry<K, V> next;
 
         Entry(K key, V value) {
@@ -127,20 +127,21 @@ public interface HashTable<K, V> {
             counter.increment();
             if (entries[index] == null) {
                 entries[index] = new Entry<>(key, value);
-            } else {
-                Entry<K, V> entry = entries[index];
-                for (; entry != null; entry = entry.next) {
-                    counter.increment();
-                    if (keyEquals(key, entry.key)) {
-                        //TODO: Уже есть. Надо заменить?
-                        break;
-                    } else if (entry.next == null) {
-                        entry.next = new Entry<>(key, value);
-                        break;
-                    }
+                ++size;
+                return;
+            }
+            for (Entry<K, V> entry = entries[index]; entry != null; entry = entry.next) {
+                counter.increment();
+                if (keyEquals(key, entry.key)) {
+                    entry.value = value;
+                    return;
+                }
+                if (entry.next == null) {
+                    entry.next = new Entry<>(key, value);
+                    ++size;
+                    return;
                 }
             }
-            ++size;
         }
 
         @Override
@@ -170,7 +171,7 @@ public interface HashTable<K, V> {
                 return Optional.empty();
             }
             Entry<K, V> prev = entry;
-            Entry<K, V> removed = entry;
+            Entry<K, V> removed = null;
             for (; entry != null; entry = entry.next) {
                 counter.increment();
                 if (keyEquals(key, entry.key)) {
@@ -178,7 +179,6 @@ public interface HashTable<K, V> {
                     if (entry.next == null) {
                         if (prev == entry) {
                             entries[index] = null;
-                            break;
                         } else {
                             prev.next = null;
                         }
@@ -194,7 +194,7 @@ public interface HashTable<K, V> {
                 }
                 prev = entry;
             }
-            return Optional.of(removed).map(p -> p.value);
+            return Optional.ofNullable(removed).map(p -> p.value);
         }
 
         @Override

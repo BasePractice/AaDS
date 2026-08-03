@@ -30,7 +30,7 @@ public interface Search {
 
         @Override
         public Optional<Index> search(String text, String subtext, Counter counter) {
-            for (int i = 0; i + subtext.length() < text.length(); i++) {
+            for (int i = 0; i + subtext.length() <= text.length(); i++) {
                 int k = i;
                 counter.increment();
                 for (int j = 0; j < subtext.length(); j++) {
@@ -43,7 +43,6 @@ public interface Search {
                 if (k - i == subtext.length()) {
                     return Optional.of(new Index(text, subtext, i));
                 }
-                i = k;
             }
             return Optional.empty();
         }

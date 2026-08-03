@@ -5,6 +5,8 @@ import ru.mifi.practice.vol4.Counter;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -12,6 +14,8 @@ import java.util.stream.Stream;
 
 public abstract class MainMap {
     private static final int CAPACITY = 10;
+    private static final String TEXT = "/90202836.txt";
+    private static final int MINIMAL_WORD_LENGTH = 3;
 
     public static void main(String[] args) {
         HashTable<String, String> map = new HashTable.Default<>(3);
@@ -32,11 +36,13 @@ public abstract class MainMap {
         System.out.println(map);
         map.clear();
         HashTable<String, Integer> stat = new HashTable.Default<>(CAPACITY);
-        stream("/90202836.txt").forEach(text -> {
-            Counter.Default counter = new Counter.Default();
-            Optional<Integer> element = stat.remove(text, counter);
-            stat.put(text, element.map(n -> n + 1).orElse(1), counter);
-        });
+        try (Stream<String> words = stream(TEXT)) {
+            words.forEach(text -> {
+                Counter.Default counter = new Counter.Default();
+                Optional<Integer> element = stat.remove(text, counter);
+                stat.put(text, element.map(n -> n + 1).orElse(1), counter);
+            });
+        }
         System.out.println("=================");
         stat.sorted((o1, o2) -> Integer.compare(o2.value, o1.value))
             .limit(10).forEach(entry -> {
@@ -44,14 +50,16 @@ public abstract class MainMap {
             });
         System.out.println("=================");
         SetTable<String> using = new SetTable.Default<>(CAPACITY);
-        stream("/90202836.txt").forEach(text -> {
-            Counter.Default counter = new Counter.Default();
-            if (using.contains(text, counter)) {
-                System.out.printf("Prn. %15s: %s%n", text, counter);
-            } else {
-                using.add(text, counter);
-            }
-        });
+        try (Stream<String> words = stream(TEXT)) {
+            words.forEach(text -> {
+                Counter.Default counter = new Counter.Default();
+                if (using.contains(text, counter)) {
+                    System.out.printf("Prn. %15s: %s%n", text, counter);
+                } else {
+                    using.add(text, counter);
+                }
+            });
+        }
     }
 
     private static void add(String key, String value, HashTable<String, String> map) {
@@ -67,7 +75,8 @@ public abstract class MainMap {
     }
 
     private static Stream<String> stream(String resourceName) {
-        return Stream.generate(new StringStream(resourceName)).takeWhile(Objects::nonNull);
+        StringStream source = new StringStream(resourceName);
+        return Stream.generate(source).takeWhile(Objects::nonNull).onClose(source::close);
     }
 
     @SuppressWarnings("PMD.AvoidStringBufferField")
@@ -81,7 +90,16 @@ public abstract class MainMap {
 
         private StringStream(String resourceName) {
             this.reader = new BufferedReader(new InputStreamReader(
-                Objects.requireNonNull(MainMap.class.getResourceAsStream(resourceName))));
+                Objects.requireNonNull(MainMap.class.getResourceAsStream(resourceName)),
+                StandardCharsets.UTF_8));
+        }
+
+        private void close() {
+            try {
+                reader.close();
+            } catch (IOException e) {
+                throw new UncheckedIOException("Не удалось закрыть поток текста", e);
+            }
         }
 
         private void skipWhitespace() throws IOException {
@@ -116,12 +134,12 @@ public abstract class MainMap {
         public String get() {
             try {
                 while (nextText()) {
-                    if (builder.length() > 3) {
+                    if (builder.length() > MINIMAL_WORD_LENGTH) {
                         return builder.toString();
                     }
                 }
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new UncheckedIOException("Не удалось прочитать текст", e);
             }
             return null;
         }
