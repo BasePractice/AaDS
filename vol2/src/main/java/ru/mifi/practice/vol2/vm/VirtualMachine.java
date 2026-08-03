@@ -200,7 +200,7 @@ public interface VirtualMachine {
             if (type() == Type.NUMBER) {
                 return ((Number) value()).doubleValue();
             }
-            throw new IllegalStateException();
+            throw new IllegalStateException("Значение не является числом: " + type());
         }
 
         void write(ByteArrayOutputStream output) throws IOException;

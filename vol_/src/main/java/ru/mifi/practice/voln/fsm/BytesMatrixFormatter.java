@@ -25,9 +25,8 @@ public final class BytesMatrixFormatter implements BytesMatrix.Formatter {
     private static byte[] stringHex(String hexString) {
         if (hexString.length() % 2 == 1) {
             throw new IllegalArgumentException(
-                "Invalid hexadecimal String supplied.");
+                "Invalid hexadecimal String supplied");
         }
-
         byte[] bytes = new byte[hexString.length() / 2];
         for (int i = 0; i < hexString.length(); i += 2) {
             bytes[i / 2] = hexToByte(hexString.substring(i, i + 2));
@@ -76,7 +75,7 @@ public final class BytesMatrixFormatter implements BytesMatrix.Formatter {
             line = bufferedReader.readLine();
             byte[] bytes = stringHex(line);
             if (bytes.length != cols) {
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("Row length does not match columns count");
             }
             matrix.writeAt(row, bytes);
         }

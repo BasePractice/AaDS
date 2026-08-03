@@ -24,7 +24,6 @@ public record NodeFinder(Maze.Representation repr, Color pathColor) implements M
     public Maze.Point[] findPath(Maze.Grid maze) {
         final int rows = maze.rows();
         final int cols = maze.cols();
-
         int[][] dist = new int[rows][cols];
         for (int r = 0; r < rows; r++) {
             for (int c = 0; c < cols; c++) {
@@ -33,16 +32,13 @@ public record NodeFinder(Maze.Representation repr, Color pathColor) implements M
         }
         int[][] pr = new int[rows][cols];
         int[][] pc = new int[rows][cols];
-
         final Deque<int[]> q = new ArrayDeque<>();
         dist[0][0] = 0;
         pr[0][0] = -1;
         pc[0][0] = -1;
-        q.add(new int[]{0, 0}); // (row, col)
-
+        q.add(new int[]{0, 0});
         int snapshotIndex = 0;
         List<Maze.Point> discoveredPoints = repr != null ? new ArrayList<>() : null;
-
         while (!q.isEmpty()) {
             int[] cur = q.poll();
             int r = cur[0];
@@ -52,7 +48,6 @@ public record NodeFinder(Maze.Representation repr, Color pathColor) implements M
             }
 
             char data = maze.data(r, c);
-            // Up
             if (r > 0 && (data & Maze.SQUARE_UP) == 0 && (maze.data(r - 1, c) & Maze.SQUARE_DOWN) == 0 && dist[r - 1][c] == -1) {
                 dist[r - 1][c] = dist[r][c] + 1;
                 pr[r - 1][c] = r;
@@ -64,7 +59,6 @@ public record NodeFinder(Maze.Representation repr, Color pathColor) implements M
                     snapshotIndex++;
                 }
             }
-            // Down
             if (r + 1 < rows && (data & Maze.SQUARE_DOWN) == 0 && (maze.data(r + 1, c) & Maze.SQUARE_UP) == 0 && dist[r + 1][c] == -1) {
                 dist[r + 1][c] = dist[r][c] + 1;
                 pr[r + 1][c] = r;
@@ -76,7 +70,6 @@ public record NodeFinder(Maze.Representation repr, Color pathColor) implements M
                     snapshotIndex++;
                 }
             }
-            // Left
             if (c > 0 && (data & Maze.SQUARE_LEFT) == 0 && (maze.data(r, c - 1) & Maze.SQUARE_RIGHT) == 0 && dist[r][c - 1] == -1) {
                 dist[r][c - 1] = dist[r][c] + 1;
                 pr[r][c - 1] = r;
@@ -88,7 +81,6 @@ public record NodeFinder(Maze.Representation repr, Color pathColor) implements M
                     snapshotIndex++;
                 }
             }
-            // Right
             if (c + 1 < cols && (data & Maze.SQUARE_RIGHT) == 0 && (maze.data(r, c + 1) & Maze.SQUARE_LEFT) == 0 && dist[r][c + 1] == -1) {
                 dist[r][c + 1] = dist[r][c] + 1;
                 pr[r][c + 1] = r;
@@ -101,7 +93,6 @@ public record NodeFinder(Maze.Representation repr, Color pathColor) implements M
                 }
             }
         }
-
         List<Maze.Point> path = new ArrayList<>();
         int r = rows - 1;
         int c = cols - 1;

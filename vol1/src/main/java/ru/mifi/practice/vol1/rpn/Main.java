@@ -11,7 +11,7 @@ public abstract class Main {
     private static void assertEquals(ReversePolishNotation rpn, String text, Number expected) {
         Number evaluated = rpn.evaluate(text);
         if (expected.intValue() != evaluated.intValue()) {
-            throw new AssertionError();
+            throw new AssertionError(text);
         }
     }
 }

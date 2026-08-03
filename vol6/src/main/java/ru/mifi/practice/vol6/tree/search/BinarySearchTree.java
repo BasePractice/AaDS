@@ -39,7 +39,6 @@ public final class BinarySearchTree<T extends Comparable<T>> extends BinaryTree.
         if (node == null) {
             return BinaryTree.create(value);
         }
-
         if (value.compareTo(node.value) < 0) {
             node.left = add(node.left, value);
         } else if (value.compareTo(node.value) > 0) {

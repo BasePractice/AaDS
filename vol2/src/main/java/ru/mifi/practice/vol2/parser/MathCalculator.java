@@ -99,7 +99,7 @@ public interface MathCalculator {
                     return switch (operator) {
                         case '+' -> left.evaluate().doubleValue() + right.evaluate().doubleValue();
                         case '*' -> left.evaluate().doubleValue() * right.evaluate().doubleValue();
-                        default -> throw new ArithmeticException();
+                        default -> throw new ArithmeticException("Неизвестный оператор " + operator);
                     };
                 }
 

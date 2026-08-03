@@ -14,10 +14,8 @@ public abstract class Main {
 
     public static void main(String[] args) throws Exception {
         MeterRegistry registry = new SimpleMeterRegistry();
-//        CacheableMap map = new CacheableMapRedis("redis://localhost/1");
         CacheableMap map = new CacheableMapMemory(registry);
         Notifiable notify = new NotifiableMemory(10000, registry);
-//        Notifiable notify = new NotifiableRedis("redis://localhost/1", registry);
         try (SimpleCacheableValue cachableValue = new SimpleCacheableValue(map, notify, Main::fetchValue, 1000, 1000)) {
             CacheableValue.Value last = null;
             AtomicInteger hint = new AtomicInteger(0);

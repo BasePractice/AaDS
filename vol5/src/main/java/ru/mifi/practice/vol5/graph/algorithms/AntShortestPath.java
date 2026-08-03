@@ -140,7 +140,6 @@ public final class AntShortestPath<T, W extends Number & Comparable<W>> implemen
                     wish.add(w);
                     summary += w;
                 }
-
                 Graph.Vertex<T, W> prev = null;
                 for (int i = 0; i < neighbours.size(); i++) {
                     var vertex = neighbours.get(i);

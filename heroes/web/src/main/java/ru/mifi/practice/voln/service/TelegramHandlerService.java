@@ -99,7 +99,6 @@ public class TelegramHandlerService implements TelegramHandler {
         }
         Long chatId = message.getChatId();
         User user = message.getFrom();
-        //В сообщениях каналов автора нет
         if (user == null) {
             if (log.isDebugEnabled()) {
                 log.debug("Skip message without author {}", update);
@@ -127,7 +126,6 @@ public class TelegramHandlerService implements TelegramHandler {
                 .build());
             return;
         }
-
         Optional<UserEntity> userEntity = userRepository.findByTelegramId(userId);
         if (userEntity.isPresent()) {
             UserEntity ue = userEntity.get();

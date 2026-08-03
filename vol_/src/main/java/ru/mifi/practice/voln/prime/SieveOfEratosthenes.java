@@ -15,7 +15,6 @@ public final class SieveOfEratosthenes {
         int limit = (int) Math.sqrt(n);
         for (int p = 2; p <= limit; p++) {
             if (!composite[p]) {
-                // начинаем вычеркивать с p*p
                 for (long k = (long) p * (long) p; k <= n; k += p) {
                     composite[(int) k] = true;
                 }

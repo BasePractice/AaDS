@@ -39,7 +39,6 @@ public record DeterministicRandom(AtomicLong state) {
         if (bound <= 0) {
             throw new IllegalArgumentException("bound должен быть > 0");
         }
-        // Используем только 31 младший бит, чтобы избежать отрицательных значений при приведении к int
         int v = (int) (nextLong() & 0x7FFFFFFFL);
         return v % bound;
     }
@@ -51,7 +50,6 @@ public record DeterministicRandom(AtomicLong state) {
      */
     public double nextDouble() {
         long bits = nextLong();
-        // 53 случайных бит на мантиссу
         long mantissa = (bits >>> 11) & ((1L << 53) - 1);
         return mantissa / (double) (1L << 53);
     }

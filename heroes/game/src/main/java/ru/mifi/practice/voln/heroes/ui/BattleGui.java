@@ -22,7 +22,6 @@ public final class BattleGui extends JFrame {
         setLayout(new BorderLayout());
         BattlePanel panel = new BattlePanel(this);
         add(panel, BorderLayout.CENTER);
-
         JPanel btnPanel = new JPanel();
         JButton waitBtn = new JButton("Ожидание");
         waitBtn.addActionListener(e -> {
@@ -37,7 +36,6 @@ public final class BattleGui extends JFrame {
         btnPanel.add(waitBtn);
         btnPanel.add(skipBtn);
         add(btnPanel, BorderLayout.SOUTH);
-
         map.addPropertyChangeListener(e -> {
             if ("log".equals(e.getPropertyName())) {
                 panel.addLog((String) e.getNewValue());

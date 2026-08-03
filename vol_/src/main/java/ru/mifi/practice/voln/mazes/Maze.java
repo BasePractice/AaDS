@@ -39,7 +39,6 @@ public interface Maze {
         public Grid {
             assert cols > 0;
             assert rows > 0;
-            // Internal storage is row-major: data[rows][cols]
             assert data.length == rows;
             assert data[0].length == cols;
         }

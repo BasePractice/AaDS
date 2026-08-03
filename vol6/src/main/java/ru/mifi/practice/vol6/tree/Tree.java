@@ -65,7 +65,7 @@ public interface Tree<T> extends Visitor.Visit<T>, Hashable {
             } else {
                 Node<T> find = root.search(owner);
                 if (find == null) {
-                    throw new IllegalArgumentException("No such element: " + owner);
+                    throw new IllegalArgumentException("No node found for owner " + owner);
                 }
                 find.left(left);
                 find.right(right);

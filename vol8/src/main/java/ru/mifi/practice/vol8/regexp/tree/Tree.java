@@ -325,8 +325,6 @@ public interface Tree {
 
         private Node parseElementary() {
             if (peekChar() == '.') {
-                //Курсор двигает parseBasic, как и для обычного символа: лишний сдвиг здесь
-                //съедал символ, стоящий после точки
                 return new Any();
             } else if (peekChar() == '[') {
                 return parseSet();

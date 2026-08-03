@@ -78,7 +78,6 @@ public abstract class Main {
         collision("Polynomial", ORIGINAL_TEXT, hash);
         hash = new Hash.PolynomialHashCached();
         collision("PolyCached", ORIGINAL_TEXT, hash);
-
         System.out.println("=====Searching====");
         Search search = new Search.PolynomialSearchCached();
         search("Cached", "100000045608889", "4560", search);

@@ -62,9 +62,9 @@ public interface MechanicalHead {
                 default -> throw new UnsupportedOperationException();
             }
             if (it.intValue() < 0) {
-                throw new IllegalStateException();
+                throw new IllegalStateException("Головка ушла левее начала ленты");
             } else if (it.intValue() >= values.length) {
-                throw new IllegalStateException();
+                throw new IllegalStateException("Головка ушла правее конца ленты");
             }
             return num;
         }

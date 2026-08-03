@@ -51,14 +51,12 @@ public class ChatController {
                 "Имя пользователя уже занято"
             );
         }
-
         SseEmitter emitter = new SseEmitter(60L * 1000 * 60);
         RoomUser user = userPresenceService.addUser(username, sessionId, emitter);
         Map<String, Object> userInfo = new HashMap<>();
         userInfo.put("sessionId", sessionId);
         userInfo.put("username", username);
         userInfo.put("connectedAt", user.connected());
-
         try {
             emitter.send(SseEmitter.event()
                 .name("connected")
@@ -69,63 +67,47 @@ public class ChatController {
                     .data(message));
             }
             sendUserListUpdate();
-
         } catch (IOException e) {
             userPresenceService.removeUser(sessionId);
             emitter.completeWithError(e);
         }
         emitter.onCompletion(() -> handleUserDisconnect(sessionId, username, "disconnected"));
-
         emitter.onTimeout(() -> handleUserDisconnect(sessionId, username, "timeout"));
-
         emitter.onError((e) -> handleUserDisconnect(sessionId, username, "error"));
-
         return emitter;
     }
 
     @PostMapping("/api/chat/send")
     public ResponseEntity<?> sendMessage(@RequestBody RoomMessage message,
                                          @RequestHeader(value = "X-Session-Id", required = false) UUID sessionId) {
-
         message = message.toBuilder().timestamp(LocalDateTime.now()).build();
-
-        // Обновляем активность пользователя
         if (sessionId != null) {
             userPresenceService.updateUserActivity(sessionId);
         }
-
-        // Сохраняем в историю
         messageHistory.add(message);
         if (messageHistory.size() > MAX_HISTORY) {
             messageHistory.remove(0);
         }
-
-        // Рассылаем всем подключенным клиентам
         broadcastMessage(message);
-
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/api/chat/users")
     public Map<String, Object> getActiveUsers() {
         Map<String, Object> response = new HashMap<>();
-
         response.put("uniqueUsers", userPresenceService.getUniqueUsernames());
         response.put("totalConnections", userPresenceService.getTotalConnections());
         response.put("uniqueUsersCount", userPresenceService.getUniqueUsersCount());
         response.put("usersWithInfo", userPresenceService.getUsersWithInfo());
-
         return response;
     }
 
     @GetMapping("/api/chat/users/{username}")
     public ResponseEntity<?> getUserInfo(@PathVariable String username) {
         List<RoomUser> users = userPresenceService.getUsersByUsername(username);
-
         if (users.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
-
         Map<String, Object> userInfo = new HashMap<>();
         userInfo.put("username", username);
         userInfo.put("activeConnections", users.size());
@@ -140,7 +122,6 @@ public class ChatController {
             .map(RoomUser::lastActivity)
             .max(LocalDateTime::compareTo)
             .orElse(null));
-
         return ResponseEntity.ok(userInfo);
     }
 
@@ -162,36 +143,28 @@ public class ChatController {
     @GetMapping("/api/chat/stats")
     public Map<String, Object> getChatStats() {
         Map<String, Object> stats = new HashMap<>();
-
         stats.put("totalMessages", messageHistory.size());
         stats.put("uniqueUsers", userPresenceService.getUniqueUsersCount());
         stats.put("totalConnections", userPresenceService.getTotalConnections());
         stats.put("activeSince", messageHistory.isEmpty() ? null : messageHistory.get(0).getTimestamp());
-
         return stats;
     }
 
     private void handleUserDisconnect(UUID sessionId, String username, String reason) {
         userPresenceService.removeUser(sessionId);
-
-        // Отправляем уведомление об отключении
         RoomEvent disconnectEvent = new RoomEvent(
             "user_disconnected",
             String.format("%s отключился (%s)", username, reason),
             LocalDateTime.now(),
             Map.of("username", username, "reason", reason)
         );
-
         broadcastEvent(disconnectEvent);
-
-        // Обновляем список пользователей
         sendUserListUpdate();
     }
 
     private void broadcastMessage(RoomMessage message) {
         List<RoomUser> allUsers = userPresenceService.getAllUsers();
         List<RoomUser> deadEmitters = new ArrayList<>();
-
         for (RoomUser user : allUsers) {
             try {
                 user.emitter().send(SseEmitter.event()
@@ -201,8 +174,6 @@ public class ChatController {
                 deadEmitters.add(user);
             }
         }
-
-        // Удаляем мертвые соединения
         for (RoomUser deadUser : deadEmitters) {
             userPresenceService.removeUser(deadUser.userId());
         }
@@ -211,7 +182,6 @@ public class ChatController {
     private void broadcastEvent(RoomEvent event) {
         List<RoomUser> allUsers = userPresenceService.getAllUsers();
         List<RoomUser> deadEmitters = new ArrayList<>();
-
         for (RoomUser user : allUsers) {
             try {
                 user.emitter().send(SseEmitter.event()
@@ -221,7 +191,6 @@ public class ChatController {
                 deadEmitters.add(user);
             }
         }
-
         for (RoomUser deadUser : deadEmitters) {
             userPresenceService.removeUser(deadUser.userId());
         }
@@ -229,14 +198,12 @@ public class ChatController {
 
     private void sendUserListUpdate() {
         List<String> onlineUsers = userPresenceService.getUniqueUsernames();
-
         Map<String, Object> userListEvent = new HashMap<>();
         userListEvent.put("type", "user_list_update");
         userListEvent.put("users", onlineUsers);
         userListEvent.put("timestamp", new Date());
         userListEvent.put("totalConnections", userPresenceService.getTotalConnections());
         userListEvent.put("uniqueUsers", userPresenceService.getUniqueUsersCount());
-
         broadcastEvent(new RoomEvent("user_list", "Обновление списка пользователей",
             LocalDateTime.now(), userListEvent));
     }

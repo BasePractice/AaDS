@@ -19,10 +19,8 @@ public class BytesMatrixImage {
         BufferedImage result = new BufferedImage(matrix.cols() * configuration.weight(),
             matrix.rows() * configuration.weight(), BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = result.createGraphics();
-//        g.setComposite(AlphaComposite.Clear);
         g.setColor(Color.WHITE);
         g.fillRect(0, 0, result.getWidth(), result.getHeight());
-//        g.setComposite(AlphaComposite.SrcOver);
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
         g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);

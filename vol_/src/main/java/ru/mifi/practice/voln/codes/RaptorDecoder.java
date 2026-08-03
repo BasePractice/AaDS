@@ -29,9 +29,6 @@ public final class RaptorDecoder {
         this.totalIntermediates = k + config.parityCount();
         this.symbolSize = config.symbolSize();
         this.originalLength = originalLength;
-        //Уравнения precode известны заранее и не требуют ни одного принятого символа.
-        //Без них проверочные символы добавляли неизвестные, не добавляя уравнений, и
-        //декодеру требовалось на parityCount символов больше, чем без precode вообще.
         for (int[] relation : Precode.relations(k, config)) {
             rows.add(relation.clone());
             rhs.add(BytesXor.zeros(symbolSize));
@@ -65,7 +62,6 @@ public final class RaptorDecoder {
                 throw new IllegalArgumentException("Индекс соседа вне допустимых границ: " + v);
             }
         }
-        // Нормализация: отсортируем и удалим повторы по модулю 2 (двойные включения обнуляются)
         boolean[] mark = new boolean[totalIntermediates];
         int degree = 0;
         for (int v : neigh) {
@@ -79,7 +75,6 @@ public final class RaptorDecoder {
             }
         }
         if (degree == 0) {
-            // Полезной информации нет
             return;
         }
         int[] row = Arrays.copyOf(compact, degree);
@@ -110,7 +105,6 @@ public final class RaptorDecoder {
         }
         int m = rows.size();
         int n = totalIntermediates;
-        // Построим матрицу MxN над GF(2) и правую часть Mx(symbolSize)
         boolean[][] a = new boolean[m][n];
         byte[][] b = new byte[m][symbolSize];
         for (int i = 0; i < m; i++) {
@@ -138,7 +132,6 @@ public final class RaptorDecoder {
             if (pivot == -1) {
                 continue;
             }
-            // Переместить найденную строку наверх блока
             if (pivot != r) {
                 boolean[] tmpA = a[pivot];
                 a[pivot] = a[r];
@@ -150,10 +143,8 @@ public final class RaptorDecoder {
             pivotColByRow[r] = c;
             pivotRowByCol[c] = r;
 
-            // Обнулим все остальные единицы в столбце c
             for (int i = 0; i < m; i++) {
                 if (i != r && a[i][c]) {
-                    // row_i = row_i XOR row_r
                     for (int j = c; j < n; j++) {
                         a[i][j] ^= a[r][j];
                     }
@@ -163,7 +154,6 @@ public final class RaptorDecoder {
             r++;
         }
 
-        // Соберём решения для всех столбцов
         byte[][] x = new byte[n][symbolSize];
         for (int row = 0; row < m; row++) {
             int c = pivotColByRow[row];
@@ -172,10 +162,6 @@ public final class RaptorDecoder {
             }
         }
 
-        // Проверим, что все первые k столбцов решены. Одного ведущего элемента мало: если в его
-        // строке осталась единица в свободном столбце, значение зависит от неизвестной величины,
-        // и правая часть строки — не ответ, а мусор. Раньше такая система молча объявлялась
-        // решённой, и декодер возвращал искажённые данные вместо отказа.
         for (int c = 0; c < k; c++) {
             int row = pivotRowByCol[c];
             if (row < 0 || dependsOnFree(a[row], pivotRowByCol, n)) {
@@ -183,7 +169,6 @@ public final class RaptorDecoder {
             }
         }
 
-        // Соберём байтовый массив исходной длины из первых k символов
         byte[] result = new byte[k * symbolSize];
         for (int i = 0; i < k; i++) {
             System.arraycopy(x[i], 0, result, i * symbolSize, symbolSize);

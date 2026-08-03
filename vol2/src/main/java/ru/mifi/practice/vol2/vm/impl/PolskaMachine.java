@@ -38,7 +38,6 @@ public final class PolskaMachine implements VirtualMachine {
                         if (arg < 0) {
                             throw new EOFException("Байт-код оборвался на аргументе операции " + op);
                         }
-                        //Ноль — это Type.NONE: операнд уже лежит на стеке как результат прошлой операции
                         if (arg > 0) {
                             stack.push(Type.of(arg).read(stream));
                         }
@@ -61,8 +60,6 @@ public final class PolskaMachine implements VirtualMachine {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         processing(input, stackInput, (op, stack) -> {
             output.write(op.code());
-            //Аргументы снимаются с вершины, а при исполнении кладутся в порядке чтения,
-            //поэтому записывать их надо в обратном порядке снятия — иначе операнды поменяются местами
             Deque<Value> arguments = new ArrayDeque<>(op.args());
             for (int i = 0; i < op.args(); i++) {
                 arguments.push(stack.isEmpty() ? DefaultValue.none() : stack.pop());
@@ -74,8 +71,6 @@ public final class PolskaMachine implements VirtualMachine {
                     throw new UncheckedIOException("Не удалось записать аргумент операции " + op, e);
                 }
             }
-            //Результат операции остаётся на стеке: пустое значение в аргументе означает
-            //«операнд уже посчитан и лежит на стеке исполнителя»
             stack.push(DefaultValue.none());
             return true;
         });

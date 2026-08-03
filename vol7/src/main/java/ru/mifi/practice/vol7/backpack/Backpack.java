@@ -33,7 +33,6 @@ public interface Backpack {
                     if (i == 0 || j == 0) {
                         states[i][j] = new State(List.of());
                     } else if (i == 1) {
-                        /* NOTICE: Кладем в зависимости от веса */
                         states[i][j] = items.get(0).weight() <= j ? new State(List.of(items.get(0))) : new State(List.of());
                     } else {
                         Item item = items.get(i - 1);
@@ -41,7 +40,6 @@ public interface Backpack {
                             System.out.printf("[%2d][%2d]: ", i, j);
                         }
                         if (item.weight() > j) {
-                            //NOTICE: Если предмет не влезает, записываем предыдущий
                             states[i][j] = states[i - 1][j];
                             if (debug) {
                                 System.out.printf("Item weight %2d more then %2d, set last items %s%n",
@@ -51,7 +49,6 @@ public interface Backpack {
                             State state = states[i - 1][j - item.weight()];
                             int needed = item.needed() + state.needed();
                             if (states[i - 1][j].needed() > needed) {
-                                //NOTICE: Если предыдущий максимум больше, оставляем его
                                 states[i][j] = states[i - 1][j];
                                 if (debug) {
                                     System.out.printf(
@@ -60,7 +57,6 @@ public interface Backpack {
                                         needed, states[i - 1][j].items);
                                 }
                             } else {
-                                //NOTICE: Записываем новый максимум
                                 List<Item> list = new ArrayList<>(state.items());
                                 list.add(item);
                                 states[i][j] = new State(list);

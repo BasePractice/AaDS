@@ -24,14 +24,12 @@ public class UserPresenceService {
     @Scheduled(fixedDelay = 60000, scheduler = "schedulingService")
     public void cleanupInactiveUsers() {
         List<UUID> toRemove = new ArrayList<>();
-
         for (RoomUser user : activeUsers.values()) {
             long inactiveTime = Duration.between(user.lastActivity(), LocalDateTime.now()).toMillis();
             if (inactiveTime > INACTIVITY_TIMEOUT) {
                 toRemove.add(user.userId());
             }
         }
-
         for (UUID userId : toRemove) {
             removeUser(userId);
         }
@@ -78,7 +76,6 @@ public class UserPresenceService {
         if (sessions == null) {
             return new ArrayList<>();
         }
-
         List<RoomUser> users = new ArrayList<>();
         for (UUID userId : sessions) {
             RoomUser user = activeUsers.get(userId);
@@ -107,12 +104,10 @@ public class UserPresenceService {
 
     public List<Map<String, Object>> getUsersWithInfo() {
         List<Map<String, Object>> usersInfo = new ArrayList<>();
-
         for (Map.Entry<String, Set<UUID>> entry : usernameToSessions.entrySet()) {
             String username = entry.getKey();
             Set<UUID> sessions = entry.getValue();
             List<RoomUser> users = getUsersByUsername(username);
-
             Map<String, Object> userInfo = new HashMap<>();
             userInfo.put("username", username);
             userInfo.put("connections", sessions.size());
@@ -125,10 +120,8 @@ public class UserPresenceService {
                 .max(LocalDateTime::compareTo)
                 .orElse(null));
             userInfo.put("sessions", sessions.size());
-
             usersInfo.add(userInfo);
         }
-
         return usersInfo;
     }
 }

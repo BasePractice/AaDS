@@ -13,7 +13,6 @@ public class WebConfiguration implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/web/**")
             .addResourceLocations("classpath:/web/")
-//            .setCachePeriod(3600)
             .resourceChain(true)
             .addResolver(new VersionResourceResolver().addContentVersionStrategy("/**"));
     }

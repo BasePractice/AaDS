@@ -30,7 +30,6 @@ public class AuthenticationService {
             .enabled(true)
             .build();
         userRepository.saveAndFlush(user);
-
         var jwt = jwtService.generateToken(user);
         return new JwtAuthenticationResponse(jwt);
     }

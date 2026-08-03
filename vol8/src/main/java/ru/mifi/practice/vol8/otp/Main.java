@@ -18,7 +18,7 @@ public abstract class Main {
         }
         state = machine.execute();
         if (!state.equals(OTP.FAILED_VERIFIED)) {
-            throw new IllegalStateException();
+            throw new IllegalStateException("Expected failed verification but got " + state);
         }
         OTPKey.RESENT.set(context, Boolean.TRUE);
         state = machine.execute();
@@ -27,7 +27,7 @@ public abstract class Main {
         }
         state = machine.execute();
         if (!state.equals(OTP.VERIFIED)) {
-            throw new IllegalStateException();
+            throw new IllegalStateException("Expected verification but got " + state);
         }
     }
 }

@@ -35,10 +35,8 @@ public interface CircularBuffer<T> {
             if (item == null) {
                 throw new NullPointerException("Cannot add null to buffer");
             }
-
             buffer[tail] = item;
             tail = (tail + 1) % buffer.length;
-
             if (size == buffer.length) {
                 head = (head + 1) % buffer.length;
             } else {
@@ -51,7 +49,6 @@ public interface CircularBuffer<T> {
             if (isEmpty()) {
                 return Optional.empty();
             }
-
             final T item = buffer[head];
             buffer[head] = null;
             head = (head + 1) % buffer.length;

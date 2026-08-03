@@ -97,7 +97,6 @@ public interface ObjectPool<T extends Closeable> extends Closeable {
                 Thread.currentThread().interrupt();
                 return Optional.empty();
             }
-
             try {
                 T obj = pool.poll();
                 if (obj == null) {
@@ -115,18 +114,15 @@ public interface ObjectPool<T extends Closeable> extends Closeable {
                         }
                     }
                 }
-
                 if (obj != null && !validator.test(obj)) {
                     destroyObject(obj);
                     obj = creator.get();
                     createdCount.incrementAndGet();
                 }
-
                 if (obj == null) {
                     semaphore.release();
                     return Optional.empty();
                 }
-
                 return Optional.of(Wrapper.proxy(this, obj, type));
             } catch (RuntimeException e) {
                 semaphore.release();
@@ -143,12 +139,10 @@ public interface ObjectPool<T extends Closeable> extends Closeable {
                 semaphore.release();
                 return;
             }
-
             T target = object;
             if (object instanceof ProxyMarker) {
                 target = (T) ((ProxyMarker) object).getTarget();
             }
-
             try {
                 if (validator.test(target)) {
                     refresh.accept(target);
@@ -208,7 +202,6 @@ public interface ObjectPool<T extends Closeable> extends Closeable {
                     .load(clazz.getClassLoader() != null ? clazz.getClassLoader() : ClassLoader.getSystemClassLoader(),
                         ClassLoadingStrategy.Default.INJECTION)
                     .getLoaded();
-
                 try {
                     try {
                         return proxyClass.getDeclaredConstructor().newInstance();
@@ -227,7 +220,6 @@ public interface ObjectPool<T extends Closeable> extends Closeable {
             public Object intercept(@Origin Method method, @AllArguments Object[] args) throws Throwable {
                 String name = method.getName();
                 int params = method.getParameterCount();
-
                 if ("close".equals(name) && params == 0) {
                     if (closed.compareAndSet(false, true)) {
                         pool.dispose(target);
@@ -237,11 +229,9 @@ public interface ObjectPool<T extends Closeable> extends Closeable {
                 if ("getTarget".equals(name) && params == 0) {
                     return target;
                 }
-
                 if (closed.get()) {
                     throw new IllegalStateException("Object pool proxy is closed");
                 }
-
                 try {
                     return method.invoke(target, args);
                 } catch (InvocationTargetException e) {

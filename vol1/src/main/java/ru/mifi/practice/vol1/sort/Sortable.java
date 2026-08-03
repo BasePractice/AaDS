@@ -103,7 +103,6 @@ public interface Sortable<T extends Comparable<T>> {
                 System.arraycopy(src, low, dest, destLow, length);
                 return;
             }
-
             for (int i = destLow, p = low, q = mid; i < destHigh; i++) {
                 if (q >= high || p < mid && src[p].compareTo(src[q]) <= 0) {
                     dest[i] = src[p];

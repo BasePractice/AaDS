@@ -48,7 +48,6 @@ public record RaptorEncoder(RaptorConfiguration config,
         }
         int symbolSize = config.symbolSize();
         if (data.length == 0) {
-            // Пустой поток: k = 0, но для совместимости создаём k=1 с нулевым символом и длиной 0
             byte[][] oneZero = new byte[][]{new byte[symbolSize]};
             return new RaptorEncoder(config, oneZero, 0);
         }
@@ -80,7 +79,6 @@ public record RaptorEncoder(RaptorConfiguration config,
         for (int i = 0; i < k; i++) {
             intermediates[i] = Arrays.copyOf(sources[i], config.symbolSize());
         }
-        //Те же уравнения знает и декодер: проверочный символ равен XOR своих слагаемых
         for (int[] relation : Precode.relations(k, config)) {
             byte[] acc = BytesXor.zeros(config.symbolSize());
             for (int at = 1; at < relation.length; at++) {

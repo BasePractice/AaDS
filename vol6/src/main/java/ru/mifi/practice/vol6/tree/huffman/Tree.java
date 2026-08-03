@@ -36,11 +36,9 @@ public final class Tree {
     private static Node buildTree(Map<Character, Integer> frequency) {
         PriorityQueue<Node> min = new PriorityQueue<>();
         frequency.forEach((k, v) -> min.add(new Node(k, v, null, null)));
-
         while (min.size() > 1) {
             Node left = Objects.requireNonNull(min.poll());
             Node right = Objects.requireNonNull(min.poll());
-
             Node node = new Node((char) 0, left.frequency + right.frequency, left, right);
             min.add(node);
         }

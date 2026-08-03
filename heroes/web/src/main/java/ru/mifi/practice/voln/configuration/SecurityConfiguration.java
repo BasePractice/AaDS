@@ -131,23 +131,19 @@ public class SecurityConfiguration {
         protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
                                         @NonNull FilterChain filterChain
         ) throws ServletException, IOException {
-
             var authHeader = request.getHeader(HEADER_NAME);
             if (!StringUtils.hasText(authHeader) || !authHeader.startsWith(BEARER_PREFIX)) {
                 filterChain.doFilter(request, response);
                 return;
             }
-
             var jwt = authHeader.substring(BEARER_PREFIX.length());
             final Optional<UUID> userId;
             try {
                 userId = jwtService.extractUserId(jwt);
             } catch (JwtException | IllegalArgumentException ex) {
-                //Протухший, подделанный или битый токен — это отказ в доступе, а не ошибка сервера
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Токен недействителен");
                 return;
             }
-
             if (SecurityContextHolder.getContext().getAuthentication() == null && userId.isPresent()) {
                 UserDetails userDetails = userService.loadUserById(userId.get());
                 if (jwtService.isTokenValid(jwt, userDetails)) {

@@ -78,7 +78,7 @@ public interface PathTree<K, V> {
                 if (node.value == null) {
                     node.value = value;
                 } else if (!node.value.equals(value)) {
-                    System.err.println("Node. Expected = " + node.value + " but assignee = " + value);
+                    System.err.println("Node value conflict, expected " + node.value + " but assigned " + value);
                 }
             }
         }

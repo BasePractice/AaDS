@@ -62,17 +62,6 @@ public interface Stage {
         start("four", "seven", "eight");
         start("a", "b", "a");
         start("odin", "odin", "mnogo");
-//        Generator generator = new Generator(4, 4);
-//        for (int i = 0; i < 1; i++) {
-//            Generator.Result generated = generator.generate();
-//            Generator.Equation letters = generated.letters();
-//            Generation generation = process(letters.x(), letters.y(), letters.z(), true);
-//            if (generation.isComplete()) {
-//                System.out.println("SUCCESS");
-//            } else {
-//                System.out.println("FAILURE");
-//            }
-//        }
     }
 
     interface Stepper {
@@ -257,7 +246,6 @@ public interface Stage {
                 System.err.println("Такого быть не может");
                 return false;
             }
-
             while (true) {
                 int cxn = cx == -1 ? gx : cx;
                 int cyn = cy == -1 ? gy : cy;
@@ -297,7 +285,6 @@ public interface Stage {
                         if (czn >= 10) {
                             czn %= 10;
                         }
-
                         if (!isComplete(x, y, z, cxn, cyn, czn) || hasNumber(czn)) {
                             if (x == y) {
                                 break;

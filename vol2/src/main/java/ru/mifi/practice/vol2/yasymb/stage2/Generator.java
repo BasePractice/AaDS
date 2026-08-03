@@ -46,7 +46,6 @@ public final class Generator {
         }
         int x = random.nextInt(xFactor + 1) + xFactor;
         int y = random.nextInt(yFactor + 1) + yFactor;
-
         Map<Integer, Character> characters = new HashMap<>();
         Deque<Character> symbols = new ArrayDeque<>();
         for (int i = 'a'; i <= 'z'; i++) {
@@ -64,7 +63,6 @@ public final class Generator {
             exchange(yT, i, characters, symbols, yR);
             exchange(zT, i, characters, symbols, zR);
         }
-
         return new Result(new Equation(xT, yT, zT), new Equation(xR.toString(), yR.toString(), zR.toString()));
     }
 

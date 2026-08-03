@@ -74,7 +74,6 @@ public final class DiffieHellman {
     }
 
     public void calculateSharedSecret(BigInteger otherPublicKey) {
-        // sharedSecret = otherPublicKey^privateKey mod prime
         this.sharedSecret = otherPublicKey.modPow(privateKey, prime);
     }
 

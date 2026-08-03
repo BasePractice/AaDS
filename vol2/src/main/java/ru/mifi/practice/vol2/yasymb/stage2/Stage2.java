@@ -20,15 +20,7 @@ public interface Stage2 {
     }
 
     static void simple(boolean debug) {
-//        start("x", "y", "z", debug);
-//        start("win", "lose", "game", debug);
-//        start("love", "hate", "feel", debug);
         start("four", "seven", "eight", debug);
-//        start("a", "b", "a", debug);
-//        start("odin", "odin", "mnogo", debug);
-//        start("acdf", "adbg", "baeg", debug);
-//        start("accb", "adeg", "bcfe", debug);
-//        start("acef", "abfg", "bdcf", debug);
     }
 
     static void generated(boolean debug) {
@@ -46,7 +38,6 @@ public interface Stage2 {
     static void main(String[] args) {
         boolean debug = false;
         simple(debug);
-//        generated(debug);
     }
 
     final class Solution {
@@ -280,7 +271,6 @@ public interface Stage2 {
                 if (solution.isComplete()) {
                     return true;
                 }
-
                 if (nextGeneration && !hasX && slice.x != 0 && (y == -1 || hasY)) {
                     xChanged = true;
                     nextGeneration = false;
@@ -289,7 +279,6 @@ public interface Stage2 {
                         break;
                     }
                 }
-
                 if (xChanged) {
                     xChanged = false;
                     if (!hasY) {
@@ -337,7 +326,6 @@ public interface Stage2 {
                     nextGeneration = true;
                     continue;
                 }
-
                 int nX = x;
                 if (slice.x == 0) {
                     nX = 0;
@@ -346,7 +334,6 @@ public interface Stage2 {
                 if (slice.y == 0) {
                     nY = 0;
                 }
-
                 int sum = sum(nX, nY);
                 if (!hasZ) {
                     if (slice.z == slice.x) {
@@ -375,7 +362,6 @@ public interface Stage2 {
                     } else {
                         z = sum;
                     }
-
                     if (z == x && slice.z != slice.x && !carrier) {
                         if (slice.y == slice.x) {
                             y = -1;
@@ -408,8 +394,6 @@ public interface Stage2 {
                 } else {
                     needCarrier = sum >= 10;
                 }
-
-
                 if (sum % 10 == z) {
                     if (slice.x == 0) {
                         x = -1;

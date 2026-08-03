@@ -24,7 +24,6 @@ public interface Levenshtein extends Distance {
             if (s1.isEmpty()) {
                 return s2.length();
             }
-
             if (s2.isEmpty()) {
                 return s1.length();
             }
@@ -33,7 +32,6 @@ public interface Levenshtein extends Distance {
                 + cost(s1.charAt(0), s2.charAt(0));
             int insertion = distance(s1, s2.substring(1), counter) + 1;
             int deletion = distance(s1.substring(1), s2, counter) + 1;
-
             return min(substitution, insertion, deletion);
         }
     }
@@ -42,7 +40,6 @@ public interface Levenshtein extends Distance {
         @Override
         public int distance(String s1, String s2, Counter counter) {
             int[][] table = new int[s1.length() + 1][s2.length() + 1];
-
             for (int i = 0; i <= s1.length(); i++) {
                 counter.increment();
                 for (int j = 0; j <= s2.length(); j++) {
@@ -58,7 +55,6 @@ public interface Levenshtein extends Distance {
                     }
                 }
             }
-
             return table[s1.length()][s2.length()];
         }
     }

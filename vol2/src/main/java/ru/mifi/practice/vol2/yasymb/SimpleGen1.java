@@ -170,7 +170,6 @@ public final class SimpleGen1 implements YaSymbol {
                             return result;
                         }
                     }
-
                     if (zState.type() == StateType.GENERATED) {
                         context.reset(zSymbol);
                     } else {

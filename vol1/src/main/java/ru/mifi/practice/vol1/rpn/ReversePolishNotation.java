@@ -25,7 +25,6 @@ public interface ReversePolishNotation {
                         .orElseThrow(() -> new UnsupportedOperationException("Unsupported " + o));
                 }
             }
-
             if (stack.isEmpty()) {
                 throw new IllegalArgumentException("Stack is empty");
             }

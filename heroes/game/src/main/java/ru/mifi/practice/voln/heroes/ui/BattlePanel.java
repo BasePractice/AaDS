@@ -201,7 +201,6 @@ final class BattlePanel extends JPanel {
             if (stack != null) {
                 g2.setColor(ACTIVE_HIGHLIGHT_COLOR);
                 g2.fillRect(ac * CELL_SIZE, ar * CELL_SIZE, CELL_SIZE, CELL_SIZE);
-
                 int[][] dists = map.getDistances(ar, ac, stack.getType() == Unit.Type.FLYER);
                 g2.setColor(MOVE_HIGHLIGHT_COLOR);
                 for (int r = 0; r < ROWS; r++) {

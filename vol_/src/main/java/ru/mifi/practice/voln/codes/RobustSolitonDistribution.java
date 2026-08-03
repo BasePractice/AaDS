@@ -41,7 +41,6 @@ public final class RobustSolitonDistribution {
         }
 
         double[] rho = new double[k + 1];
-        // Идеальное солитонное распределение
         rho[1] = 1.0d / k;
         for (int d = 2; d <= k; d++) {
             rho[d] = 1.0d / (d * (d - 1.0d));
@@ -54,7 +53,6 @@ public final class RobustSolitonDistribution {
         if (threshold <= k) {
             tau[threshold] = r * Math.log(r / delta) / k;
         }
-        // Нормировка
         double z = 0.0d;
         for (int d = 1; d <= k; d++) {
             z += rho[d] + tau[d];
@@ -65,7 +63,7 @@ public final class RobustSolitonDistribution {
             acc += (rho[d] + tau[d]) / z;
             cdfLocal[d] = acc;
         }
-        cdfLocal[k] = 1.0d; // защита от накопленной ошибки
+        cdfLocal[k] = 1.0d;
         return cdfLocal;
     }
 

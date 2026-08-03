@@ -52,7 +52,6 @@ public final class GameAuto {
         Item current = player.getSelectedItem();
         int maxDamage = current.damage();
         int bestIndex = -1;
-
         for (int i = 0; i < items.size(); i++) {
             Item item = items.get(i);
             if (!(item instanceof Item.Once) && item.damage() > maxDamage) {
@@ -60,7 +59,6 @@ public final class GameAuto {
                 bestIndex = i;
             }
         }
-
         if (bestIndex != -1) {
             game.selectItem(bestIndex);
         }
@@ -70,7 +68,6 @@ public final class GameAuto {
         Updatable.View view = game.playerView();
         int health = player.health();
         boolean hasPotion = hasHealthPotion();
-
         if (hasPotion && (health < 40 || (view.type() == Updatable.Type.ENEMY && health < 70))) {
             state = State.HEAL;
         } else if (view.type() == Updatable.Type.ENEMY) {

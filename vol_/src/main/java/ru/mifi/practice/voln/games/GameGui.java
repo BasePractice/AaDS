@@ -54,7 +54,6 @@ public class GameGui extends JFrame {
         this.game = new AdventureGame(output, player);
         this.autoPilot = new GameAuto(game, player);
         this.panel = new GamePanel();
-
         this.timer = new Timer(REFRESH_DELAY, e -> {
             game.idleTick();
             panel.repaint();
@@ -62,7 +61,6 @@ public class GameGui extends JFrame {
                 ((Timer) e.getSource()).stop();
             }
         });
-
         this.autoTimer = new Timer(500, e -> {
             autoPilot.tick();
             panel.repaint();
@@ -70,16 +68,13 @@ public class GameGui extends JFrame {
                 ((Timer) e.getSource()).stop();
             }
         });
-
         setTitle("Приключения");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
         add(panel, BorderLayout.CENTER);
-
         final JPanel controlPanel = new JPanel();
         JButton restartBtn = new JButton("Сброс");
         restartBtn.setFocusable(false);
-
         JToggleButton autoBtn = new JToggleButton("Авто");
         autoBtn.setFocusable(false);
         autoBtn.addActionListener(e -> {
@@ -89,7 +84,6 @@ public class GameGui extends JFrame {
                 autoTimer.stop();
             }
         });
-
         restartBtn.addActionListener(e -> {
             game.restart();
             messages.clear();
@@ -104,15 +98,12 @@ public class GameGui extends JFrame {
         });
         controlPanel.add(restartBtn);
         controlPanel.add(autoBtn);
-
         JSlider speedSlider = new JSlider(100, 2000, 500);
         speedSlider.setFocusable(false);
         speedSlider.addChangeListener(e -> autoTimer.setDelay(speedSlider.getValue()));
         controlPanel.add(new JLabel("Скорость (ms):"));
         controlPanel.add(speedSlider);
-
         add(controlPanel, BorderLayout.SOUTH);
-
         addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
@@ -120,7 +111,6 @@ public class GameGui extends JFrame {
                 panel.repaint();
             }
         });
-
         pack();
         setLocationRelativeTo(null);
         this.timer.start();
@@ -223,11 +213,9 @@ public class GameGui extends JFrame {
             bg.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
             bg.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
             bg.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-
             double scale = Math.min((double) getWidth() / WIDTH, (double) getHeight() / HEIGHT);
             bg.translate((getWidth() - WIDTH * scale) / 2, (getHeight() - HEIGHT * scale) / 2);
             bg.scale(scale, scale);
-
             drawGame(bg);
             bg.dispose();
             g.drawImage(buffer, 0, 0, null);
@@ -239,19 +227,15 @@ public class GameGui extends JFrame {
             int cellWidth = WIDTH / cells;
             int cellHeight = cellWidth;
             int yPos = (HEIGHT - cellHeight) / 2;
-
             g.setFont(new Font("Fira Code", Font.BOLD, 12));
             for (int i = 0; i < cells; i++) {
                 Updatable.View view = game.viewAt(i);
                 int xPos = i * cellWidth;
-
                 g.setColor(new Color(200, 200, 200));
                 g.drawRect(xPos, yPos, cellWidth - 2, cellHeight);
-
                 int size = Math.min(cellWidth - 6, cellHeight - 4);
                 int xOffset = (cellWidth - size) / 2;
                 int yOffset = (cellHeight - size) / 2;
-
                 if (view.type() == Updatable.Type.PLAYER) {
                     g.setColor(new Color(100, 200, 100));
                     g.fillRect(xPos + xOffset, yPos + yOffset, size, size);
@@ -270,26 +254,22 @@ public class GameGui extends JFrame {
                     drawCenteredString(g, view.element().toString(), xPos + xOffset, yPos + yOffset, size, size);
                 }
             }
-
             g.setColor(new Color(50, 50, 50));
             g.drawString("A: атака, C: захват, S: выбор, U: использовать, D: удалить, Space: пропустить", 10, 20);
             g.drawString("Уровень: " + game.getLevel() + " Жизнь: " + player.health()
                 + " Атака: +" + player.getBaseAttack()
                 + " Шаги: " + game.getSteps() + " Тики: " + game.getIdleTicks(), 10, 40);
             g.drawString("Инвентарь: " + player.items(), 10, HEIGHT - 20);
-
             g.setColor(new Color(180, 180, 180));
             g.drawRect(WIDTH - 160, HEIGHT - 100, 150, 60);
             g.setColor(new Color(50, 50, 50));
             g.drawString("Текущий:", WIDTH - 150, HEIGHT - 80);
             g.drawString(player.getSelectedItem().toString(), WIDTH - 150, HEIGHT - 60);
-
             int msgY = 60;
             for (String msg : messages) {
                 g.drawString(msg, WIDTH - 300, msgY);
                 msgY += 20;
             }
-
             if (!game.isRunning()) {
                 g.setColor(new Color(150, 0, 0));
                 g.drawString("Игра завершена", WIDTH / 2 - 30, HEIGHT / 2 + CELL_SIZE * 3);

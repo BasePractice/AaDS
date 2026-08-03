@@ -53,7 +53,6 @@ public final class RadixSort implements Sort<Integer> {
         for (int i = 1; i < BUCKETS; i++) {
             counts[i] += counts[i - 1];
         }
-        //Справа налево — иначе проход перестанет быть устойчивым
         for (int i = source.length - 1; i >= 0; i--) {
             counter.increment();
             int digit = digit(source[i], pass);

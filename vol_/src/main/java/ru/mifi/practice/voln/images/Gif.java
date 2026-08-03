@@ -91,17 +91,16 @@ public class Gif {
 
         try (FileOutputStream fos = new FileOutputStream(outputPath)) {
             fos.write(gifData);
-            // Добавляем Netscape Extension (бесконечное повторение)
-            fos.write(0x21); // Extension introducer
-            fos.write(0xFF); // Application extension label
-            fos.write(0x0B); // Block size
-            fos.write("NETSCAPE2.0".getBytes()); // Application identifier
-            fos.write(0x03); // Sub-block size
-            fos.write(0x01); // Sub-block ID
-            fos.write(0x00); // Loop count (0 = бесконечно)
-            fos.write(0x00); // Loop count продолжение
-            fos.write(0x00); // Block terminator
-            fos.write(0x3B); // GIF trailer
+            fos.write(0x21);
+            fos.write(0xFF);
+            fos.write(0x0B);
+            fos.write("NETSCAPE2.0".getBytes());
+            fos.write(0x03);
+            fos.write(0x01);
+            fos.write(0x00);
+            fos.write(0x00);
+            fos.write(0x00);
+            fos.write(0x3B);
         }
     }
 

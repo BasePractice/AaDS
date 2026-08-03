@@ -59,7 +59,6 @@ public record ImageRepresentation(int width,
                 int halfWidth = width / 2;
                 int xCenter = (col * width) + halfWidth;
                 int yCenter = (row * width) + halfWidth;
-
                 g.setColor(Color.RED);
                 drawCenteredCircle(g, xCenter, yCenter, thickness);
                 g.setColor(color);
@@ -104,10 +103,8 @@ public record ImageRepresentation(int width,
     BufferedImage createSnapshot(int index, Maze.Grid maze, Maze.Point[] points, Color color) {
         BufferedImage result = new BufferedImage(maze.cols() * width() + width(), maze.rows() * width() + width(), BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = result.createGraphics();
-//        g.setComposite(AlphaComposite.Clear);
         g.setColor(Color.WHITE);
         g.fillRect(0, 0, result.getWidth(), result.getHeight());
-//        g.setComposite(AlphaComposite.SrcOver);
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         g.setRenderingHint(RenderingHints.KEY_COLOR_RENDERING, RenderingHints.VALUE_COLOR_RENDER_QUALITY);
         g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);

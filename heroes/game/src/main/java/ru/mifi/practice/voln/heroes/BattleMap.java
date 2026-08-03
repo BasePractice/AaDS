@@ -59,7 +59,7 @@ public final class BattleMap {
 
     public void addLeft(int row, int col, Unit.Stack stack) {
         if (map[row][col] != null) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("клетка уже занята");
         }
         long id = idCount.getAndIncrement();
         left.put(id, new StackKey(id, stack));
@@ -70,7 +70,7 @@ public final class BattleMap {
 
     public void addRight(int row, int col, Unit.Stack stack) {
         if (map[row][col] != null) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("клетка уже занята");
         }
         long id = idCount.getAndIncrement();
         right.put(id, new StackKey(id, stack));
@@ -89,7 +89,6 @@ public final class BattleMap {
                 row = random.nextInt(ROWS);
             } while (map[row][0] != null);
             addLeft(row, 0, createRandomStack(random));
-
             do {
                 row = random.nextInt(ROWS);
             } while (map[row][MAX_COL_INDEX] != null);
@@ -232,12 +231,10 @@ public final class BattleMap {
             isLeft(sourceRow, sourceColumn) != leftTurn || isLeft(targetRow, targetColumn) == leftTurn) {
             return;
         }
-
         List<int[]> path = getPath(sourceRow, sourceColumn, targetRow, targetColumn, stack.getType() == Unit.Type.FLYER);
         if (path.isEmpty()) {
             return;
         }
-
         int[] moveTarget = path.get(path.size() - 2);
         if (isObstacle(moveTarget[0], moveTarget[1]) || (getStack(moveTarget[0], moveTarget[1]) != null &&
             (moveTarget[0] != sourceRow || moveTarget[1] != sourceColumn))) {
@@ -292,7 +289,6 @@ public final class BattleMap {
             pendingAttack = null;
             Long id = turnQueue.peekFirst();
             int[] pos = getStackCoord(id);
-            //Атакующий стек мог быть уничтожен контратакой и снят с карты — атаковать некому
             if (pos.length == 2) {
                 performAttack(pos[0], pos[1], tr, tc);
             }
@@ -395,7 +391,6 @@ public final class BattleMap {
                     break;
                 }
             }
-            //Матрица расстояний рассогласована с целью: раньше цикл крутился здесь вечно
             if (!stepped) {
                 return List.of();
             }

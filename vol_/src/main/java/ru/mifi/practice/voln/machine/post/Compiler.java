@@ -30,13 +30,13 @@ public interface Compiler {
                 char c = line.charAt(0);
                 Execute.Information information = this.executes.get(c);
                 if (information == null) {
-                    throw new IllegalStateException();
+                    throw new IllegalStateException("Unknown command symbol: " + c);
                 }
                 int[] args = new int[information.getArguments()];
                 line = line.substring(1).trim();
                 String[] parts = line.isEmpty() ? new String[0] : line.split(";");
                 if (parts.length != args.length) {
-                    throw new IllegalStateException();
+                    throw new IllegalStateException("Argument count does not match command");
                 }
                 for (int i = 0; i < parts.length; i++) {
                     args[i] = Integer.parseInt(parts[i]);

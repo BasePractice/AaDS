@@ -40,7 +40,6 @@ public final class AVL<T extends Comparable<T>> extends BinaryTree.AbstractBinar
         Node<T> next = node.left;
         node.left = next.right;
         next.right = node;
-
         up(node);
         up(next);
         return next;
@@ -60,20 +59,16 @@ public final class AVL<T extends Comparable<T>> extends BinaryTree.AbstractBinar
         }
         up(node);
         int balance = balance(node);
-        //LL
         if (balance > 1 && value.compareTo(node.left.value) < 0) {
             return rr(node);
         }
-        //RR
         if (balance < -1 && value.compareTo(node.right.value) > 0) {
             return lr(node);
         }
-        //LR
         if (balance > 1 && value.compareTo(node.left.value) > 0) {
             node.left = lr(node.left);
             return rr(node);
         }
-        //RL
         if (balance < -1 && value.compareTo(node.right.value) < 0) {
             node.right = rr(node.right);
             return lr(node);
@@ -98,7 +93,6 @@ public final class AVL<T extends Comparable<T>> extends BinaryTree.AbstractBinar
                 } else {
                     temporary = node.right;
                 }
-
                 node = temporary;
             } else {
                 Node<T> temporary = minimum(node.right);
@@ -111,25 +105,20 @@ public final class AVL<T extends Comparable<T>> extends BinaryTree.AbstractBinar
         }
         up(node);
         int balance = balance(node);
-        //LL
         if (balance > 1 && balance(node.left) >= 0) {
             return rr(node);
         }
-        //RR
         if (balance < -1 && balance(node.right) <= 0) {
             return lr(node);
         }
-        //LR
         if (balance > 1 && balance(node.left) < 0) {
             node.left = lr(node.left);
             return rr(node);
         }
-        //RL
         if (balance < -1 && balance(node.right) > 0) {
             node.right = rr(node.right);
             return lr(node);
         }
-
         return node;
     }
 }

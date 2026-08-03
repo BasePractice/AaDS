@@ -143,7 +143,7 @@ public interface Graph<T, W extends Number & Comparable<W>> {
 
         public int indexOf(String label) {
             Integer index = labelIndexes.get(label);
-            Objects.requireNonNull(index, "Index not found");
+            Objects.requireNonNull(index, "No vertex index for label " + label);
             return index;
         }
 

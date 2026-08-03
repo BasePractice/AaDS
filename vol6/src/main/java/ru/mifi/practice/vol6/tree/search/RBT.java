@@ -11,7 +11,6 @@ public final class RBT<T extends Comparable<T>> extends BinaryTree.AbstractBinar
         newNode.custom = RED;
         Node<T> parent = null;
         Node<T> current = root;
-
         while (current != null) {
             parent = current;
             int cmp = value.compareTo(current.value);
@@ -24,7 +23,6 @@ public final class RBT<T extends Comparable<T>> extends BinaryTree.AbstractBinar
                 return root;
             }
         }
-
         newNode.parent = parent;
         if (parent == null) {
             root = newNode;
@@ -33,7 +31,6 @@ public final class RBT<T extends Comparable<T>> extends BinaryTree.AbstractBinar
         } else {
             parent.right = newNode;
         }
-
         fixInsert(newNode);
         return root;
     }

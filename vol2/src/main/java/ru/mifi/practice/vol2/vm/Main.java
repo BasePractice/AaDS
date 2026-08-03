@@ -15,6 +15,5 @@ public abstract class Main {
         System.out.println("Compiled : " + compiled);
         VirtualMachine.Value interpret = machine.eval(input, VirtualMachine.Context.newContext());
         System.out.println("Interpret: " + interpret);
-
     }
 }

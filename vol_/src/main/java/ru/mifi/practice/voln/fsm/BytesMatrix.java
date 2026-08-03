@@ -72,7 +72,7 @@ public interface BytesMatrix {
 
         @Override
         public void readAt(int row, byte[] data) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet");
         }
 
         @Override
@@ -82,7 +82,7 @@ public interface BytesMatrix {
 
         @Override
         public void writeAt(int row, byte[] bytes) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            throw new UnsupportedOperationException("Not supported yet");
         }
     }
 
@@ -104,7 +104,7 @@ public interface BytesMatrix {
         @Override
         public void readAt(int row, byte[] bytes) {
             if (bytes.length < cols) {
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("Byte array is smaller than columns count");
             }
             row = row % rows;
             System.arraycopy(data, row * cols, bytes, 0, cols);
@@ -120,7 +120,7 @@ public interface BytesMatrix {
         @Override
         public void writeAt(int row, byte[] bytes) {
             if (bytes.length < cols) {
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException("Byte array is smaller than columns count");
             }
             row = row % rows;
             System.arraycopy(bytes, 0, data, row * cols, bytes.length);

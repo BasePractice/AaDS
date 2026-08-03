@@ -19,17 +19,14 @@ public final class NodeGenerator implements Maze.Generator {
                 nodes[r][c] = new Node();
             }
         }
-
         boolean[][] visited = new boolean[rows][cols];
         Deque<int[]> stack = new ArrayDeque<>();
         visited[0][0] = true;
         stack.push(new int[]{0, 0});
-
         while (!stack.isEmpty()) {
             int[] cur = stack.peek();
             int r = cur[0];
             int c = cur[1];
-
             List<int[]> neighbors = new ArrayList<>(4);
             if (r > 0 && !visited[r - 1][c]) {
                 neighbors.add(new int[]{r - 1, c});
@@ -43,18 +40,15 @@ public final class NodeGenerator implements Maze.Generator {
             if (c + 1 < cols && !visited[r][c + 1]) {
                 neighbors.add(new int[]{r, c + 1});
             }
-
             if (neighbors.isEmpty()) {
                 stack.pop();
                 continue;
             }
-
             int idx = ThreadLocalRandom.current().nextInt(neighbors.size());
             int[] nxt = neighbors.get(idx);
             int nr = nxt[0];
             int nc = nxt[1];
-
-            if (nr == r - 1) { // up
+            if (nr == r - 1) {
                 nodes[r][c].up = false;
                 nodes[nr][nc].down = false;
             } else if (nr == r + 1) {
@@ -67,11 +61,9 @@ public final class NodeGenerator implements Maze.Generator {
                 nodes[r][c].right = false;
                 nodes[nr][nc].left = false;
             }
-
             visited[nr][nc] = true;
             stack.push(new int[]{nr, nc});
         }
-
         Maze.Grid grid = new Maze.Grid(cols, rows);
         for (int r = 0; r < rows; r++) {
             for (int c = 0; c < cols; c++) {
