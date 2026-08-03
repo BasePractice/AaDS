@@ -4,20 +4,32 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 
-@DisplayName("State")
+@DisplayName("Состояние автомата")
 class StateTest {
-    @DisplayName("manager")
+    @DisplayName("Символьное состояние печатает свой символ")
     @Test
     @Timeout(5)
-    void manager() {
-        Manager manager = new Manager.Default();
-        var symbol = manager.newState(State.Symbol.class, 'p');
-        assertEquals("p", symbol.toString());
-        var sequence = manager.newState(State.Sequence.class);
-        assertEquals("", sequence.toString());
-        var parallel = manager.newState(State.Parallel.class);
-        assertEquals("[]", parallel.toString());
+    void printsItsSymbol() {
+        assertThat("symbol state dont print its own character",
+            new Manager.Default().newState(State.Symbol.class, 'p').toString(), is("p"));
+    }
+
+    @DisplayName("Пустая последовательность печатается пустой строкой")
+    @Test
+    @Timeout(5)
+    void printsEmptySequenceAsBlank() {
+        assertThat("empty sequence dont print as a blank string",
+            new Manager.Default().newState(State.Sequence.class).toString(), is(""));
+    }
+
+    @DisplayName("Пустая параллель печатается пустыми скобками")
+    @Test
+    @Timeout(5)
+    void printsEmptyParallelAsBrackets() {
+        assertThat("empty parallel dont print as empty brackets",
+            new Manager.Default().newState(State.Parallel.class).toString(), is("[]"));
     }
 }

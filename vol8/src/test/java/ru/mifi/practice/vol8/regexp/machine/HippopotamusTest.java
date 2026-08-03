@@ -1,7 +1,6 @@
 package ru.mifi.practice.vol8.regexp.machine;
 
 import lombok.NonNull;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -14,15 +13,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 
-//NOTICE: Специально для Сергея
 @DisplayName("Hippopotamus")
 public final class HippopotamusTest {
     private static final Hippopotamus A = new Hippopotamus(0);
     private static final Hippopotamus B = new Hippopotamus(1);
     private static final Hippopotamus C = new Hippopotamus(2);
-    private HippopotamusMapper mapper;
 
     private static Stream<Arguments> patternMatching() {
         return Stream.of(
@@ -34,20 +32,17 @@ public final class HippopotamusTest {
         );
     }
 
-    @BeforeEach
-    void setUp() {
-        mapper = new HippopotamusMapper(Map.of('a', A, 'b', B, 'c', C));
-    }
-
+    @DisplayName("Автомат сопоставляет последовательность бегемотов с шаблоном")
     @ParameterizedTest
     @Timeout(5)
     @MethodSource("patternMatching")
-    void match(boolean isMatch, List<Hippopotamus> hippopotamuses, String pattern) {
+    void matchesHippopotamusSequenceAgainstPattern(boolean isMatch, List<Hippopotamus> hippopotamuses, String pattern) {
+        HippopotamusMapper mapper = new HippopotamusMapper(Map.of('a', A, 'b', B, 'c', C));
         Tree tree = new Tree.Default(pattern);
         Matcher match = new Matcher.Default(tree, new Manager.Default(mapper));
         Input input = new HippopotamusInput(hippopotamuses);
-        boolean matched = match.match(input);
-        assertEquals(isMatch, matched);
+        assertThat("automaton dont match the hippopotamus sequence against the pattern",
+            match.match(input), is(isMatch));
     }
 
     private record HippopotamusMapper(Map<Character, Hippopotamus> map)

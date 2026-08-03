@@ -9,12 +9,12 @@ import ru.mifi.practice.vol8.regexp.tree.Tree;
 
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 
-@DisplayName("Match")
+@DisplayName("Сопоставление строки с шаблоном")
 class MatcherTest {
-
-    protected static Stream<Arguments> patternMatching() {
+    private static Stream<Arguments> patternMatching() {
         return Stream.of(
             Arguments.of(true, "a", "(a|b*(c?d)+|e)|(of|pt)"),
             Arguments.of(true, "e", "(a|b*(c?d)+|e)|(of|pt)"),
@@ -29,13 +29,14 @@ class MatcherTest {
         );
     }
 
+    @DisplayName("Автомат относит строку к языку шаблона правильно")
     @ParameterizedTest
     @Timeout(5)
     @MethodSource("patternMatching")
-    void match(boolean isMatch, String input, String pattern) {
+    void classifiesInputAgainstPattern(boolean isMatch, String input, String pattern) {
         Tree tree = new Tree.Default(pattern);
         Matcher match = new Matcher.Default(tree);
-        boolean matched = match.match(input);
-        assertEquals(isMatch, matched);
+        assertThat("automaton dont classify the input against the pattern correctly",
+            match.match(input), is(isMatch));
     }
 }
