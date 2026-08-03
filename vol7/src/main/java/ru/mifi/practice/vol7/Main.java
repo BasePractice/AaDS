@@ -30,7 +30,7 @@ public abstract class Main {
         distance("Lev.Dynam", new Levenshtein.VagnerFisherDynamited(), "boobs", "bomb");
         lcs("Sub.Commo", new LongestCommonSubsequence.Default(), "mouse", "house");
         match("Dyn.Regex", new Match.DefaultMatch(), "non? po?", "none pop");
-        match("Dyn.Abbrv", new Match.AbbreviationMatch(), "Algorithm and Data Structure", "ADS");
+        match("Dyn.Abbrv", new Match.AbbreviationMatch(), "ADS", "Algorithm and Data Structure");
     }
 
     private static void fibonacci(String name, Fibonacci fibonacci) {

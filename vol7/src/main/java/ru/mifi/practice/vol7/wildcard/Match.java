@@ -43,8 +43,12 @@ public interface Match {
     //FIXME: Можно ли реализовать проще?
     final class AbbreviationMatch implements Match {
 
+        /**
+         * Здесь шаблон — это аббревиатура, а второй аргумент — проверяемый текст,
+         * как и в контракте интерфейса: isMatch(pattern, text, counter).
+         */
         @Override
-        public boolean isMatch(String text, String abb, Counter counter) {
+        public boolean isMatch(String abb, String text, Counter counter) {
             int n = text.length();
             int m = abb.length();
 

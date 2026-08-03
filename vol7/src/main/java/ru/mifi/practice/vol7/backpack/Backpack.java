@@ -34,7 +34,7 @@ public interface Backpack {
                         states[i][j] = new State(List.of());
                     } else if (i == 1) {
                         /* NOTICE: Кладем в зависимости от веса */
-                        states[i][j] = items.get(0).weight() < j ? new State(List.of(items.get(0))) : new State(List.of());
+                        states[i][j] = items.get(0).weight() <= j ? new State(List.of(items.get(0))) : new State(List.of());
                     } else {
                         Item item = items.get(i - 1);
                         if (debug) {
