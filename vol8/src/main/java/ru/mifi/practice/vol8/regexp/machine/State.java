@@ -164,6 +164,91 @@ public abstract class State {
         }
     }
 
+    /**
+     * Точка регулярного выражения: принимает любой символ, лишь бы он был.
+     */
+    public static final class Any extends State {
+        private Any(Manager manager, int index) {
+            super(manager, index);
+        }
+
+        @Override
+        public boolean accept(Input input) {
+            return input.hasNext();
+        }
+
+        @Override
+        public Match match(Input input) {
+            return consume(this, next, input);
+        }
+
+        @Override
+        public void visit(Visitor visitor) {
+            visitor.visit(this, next);
+            if (next != null) {
+                next.visit(visitor);
+            }
+        }
+
+        @Override
+        public String toString() {
+            return "." + super.toString();
+        }
+    }
+
+    /**
+     * Отрицание множества: принимает символ, которого нет среди перечисленных.
+     */
+    public static final class Excluding extends State {
+        private final State excluded;
+
+        private Excluding(Manager manager, int index, State excluded) {
+            super(manager, index);
+            this.excluded = excluded;
+        }
+
+        @Override
+        public boolean accept(Input input) {
+            return input.hasNext() && !excluded.accept(input);
+        }
+
+        @Override
+        public Match match(Input input) {
+            return consume(this, next, input);
+        }
+
+        @Override
+        public void visit(Visitor visitor) {
+            visitor.visit(this, next);
+            if (next != null) {
+                next.visit(visitor);
+            }
+        }
+
+        @Override
+        public String toString() {
+            return "[^" + excluded + "]" + super.toString();
+        }
+    }
+
+    /**
+     * Съедает один символ и передаёт управление продолжению. Если продолжение есть, но входа
+     * ему не хватает, это отказ, а не успех: иначе шаблон совпадал бы со своим префиксом.
+     */
+    private static Match consume(State current, State next, Input input) {
+        if (!current.accept(input)) {
+            return Match.failure(input);
+        }
+        input.next();
+        if (next == null) {
+            return Match.ok(input);
+        }
+        if (next.accept(input)) {
+            return next.match(input);
+        }
+        return Match.failure(input);
+    }
+
     public static final class Epsilon extends Parallel {
         private Epsilon(Manager manager, int index) {
             super(manager, index);

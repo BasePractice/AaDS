@@ -46,6 +46,8 @@ public interface Tree {
     interface Visitor {
         void visit(Char ch);
 
+        void visit(Escape escape);
+
         void enter(And and);
 
         void enter(Or or);
@@ -105,11 +107,20 @@ public interface Tree {
         }
     }
 
+    /**
+     * Экранированный символ. Раньше узел не переопределял visit и потому молча не посещался:
+     * обходчик его просто не видел, и «\.» не порождало ни состояний, ни вывода.
+     */
     record Escape(char ch) implements Node {
         @NonNull
         @Override
         public String toString() {
             return "\\" + ch;
+        }
+
+        @Override
+        public void visit(Visitor visitor) {
+            visitor.visit(this);
         }
     }
 
@@ -314,7 +325,8 @@ public interface Tree {
 
         private Node parseElementary() {
             if (peekChar() == '.') {
-                next();
+                //Курсор двигает parseBasic, как и для обычного символа: лишний сдвиг здесь
+                //съедал символ, стоящий после точки
                 return new Any();
             } else if (peekChar() == '[') {
                 return parseSet();

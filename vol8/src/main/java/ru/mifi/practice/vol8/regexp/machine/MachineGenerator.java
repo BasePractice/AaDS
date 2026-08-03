@@ -6,10 +6,6 @@ import ru.mifi.practice.vol8.regexp.tree.Tree;
 import java.util.LinkedList;
 
 @SuppressWarnings("PMD.LooseCoupling")
-//TODO: генератор не обрабатывает узлы Any, Escape, Range и отрицание множества, поэтому «.» не
-// порождает состояний, [a-z] даёт автомат только по литералам a и z, а [^of] ведёт себя как [of].
-// Требует расширения обхода дерева и Manager.CharacterMapper, что выходит за рамки правки
-// сопоставления, поэтому вынесено в отдельную задачу
 public final class MachineGenerator extends AbstractVisitor {
     private final LinkedList<State> states = new LinkedList<>();
     private final Manager manager;
@@ -91,9 +87,18 @@ public final class MachineGenerator extends AbstractVisitor {
         exitParallel();
     }
 
+    /**
+     * Отрицание множества оборачивает собранные альтернативы в состояние «кроме»: оно принимает
+     * символ, которого нет среди перечисленных. Раньше признак positive не читался вовсе,
+     * поэтому «[^of]» вело себя как «[of]».
+     */
     @Override
     public void exit(Tree.Set set) {
         exitParallel();
+        if (!set.positive()) {
+            State excluded = last();
+            states.add(manager.newState(State.Excluding.class, excluded));
+        }
     }
 
     @Override
@@ -117,6 +122,28 @@ public final class MachineGenerator extends AbstractVisitor {
             case QUESTION -> states.add(manager.newState(State.NoneOrOne.class, state));
             default -> throw new IllegalStateException("Unexpected operator: " + unary.operator());
         }
+    }
+
+    /**
+     * Диапазон раскрывается в набор альтернатив по всем символам от начала до конца. Так он
+     * ложится на любой алфавит: каждый символ отображается по отдельности, тогда как сравнивать
+     * границы уже отображённых значений было бы бессмысленно. Границы читаются прямо из узла
+     * дерева, а состояния, порождённые обходом концов, отбрасываются.
+     */
+    @Override
+    public void exit(Tree.Range range) {
+        last();
+        last();
+        char start = bound(range.start(), range);
+        char end = bound(range.end(), range);
+        if (start > end) {
+            throw new IllegalArgumentException("Начало диапазона больше конца: " + range);
+        }
+        State.Parallel parallel = manager.newState(State.Parallel.class);
+        for (char ch = start; ch <= end; ch++) {
+            parallel.add(manager.newState(State.Symbol.class, ch));
+        }
+        states.add(parallel);
     }
 
     @Override
@@ -166,6 +193,26 @@ public final class MachineGenerator extends AbstractVisitor {
     @Override
     public void visit(Tree.Char ch) {
         states.add(manager.newState(State.Symbol.class, ch.ch()));
+    }
+
+    @Override
+    public void visit(Tree.Escape escape) {
+        states.add(manager.newState(State.Symbol.class, escape.ch()));
+    }
+
+    @Override
+    public void any() {
+        states.add(manager.newState(State.Any.class));
+    }
+
+    private char bound(Tree.Node node, Tree.Range range) {
+        if (node instanceof Tree.Char ch) {
+            return ch.ch();
+        }
+        if (node instanceof Tree.Escape escape) {
+            return escape.ch();
+        }
+        throw new IllegalArgumentException("Границей диапазона может быть только символ: " + range);
     }
 
     public State getState() {

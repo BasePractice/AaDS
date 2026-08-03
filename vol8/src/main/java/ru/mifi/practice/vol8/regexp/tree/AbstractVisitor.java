@@ -7,6 +7,11 @@ public abstract class AbstractVisitor implements Tree.Visitor {
     }
 
     @Override
+    public void visit(Tree.Escape escape) {
+        //Nothing
+    }
+
+    @Override
     public void start() {
         //Nothing
     }
