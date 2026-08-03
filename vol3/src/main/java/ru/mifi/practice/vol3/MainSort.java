@@ -19,9 +19,18 @@ public abstract class MainSort {
         System.out.println("===========");
         for (Algorithms algorithm : Algorithms.values()) {
             Counter counter = new Counter.Default();
-            algorithm.sort(slice, counter, debug);
-            System.out.printf("%7s: %s%n", algorithm, counter);
+            List<Integer> sorted = algorithm.sort(slice, counter, debug);
+            System.out.printf("%7s: %s%s%n", algorithm, counter, ordered(sorted) ? "" : " — НЕ ОТСОРТИРОВАНО");
         }
+    }
+
+    private static boolean ordered(List<Integer> array) {
+        for (int i = 1; i < array.size(); i++) {
+            if (array.get(i - 1) > array.get(i)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     enum Algorithms implements Sort<Integer> {

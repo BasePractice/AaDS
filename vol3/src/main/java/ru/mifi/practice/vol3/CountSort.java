@@ -12,7 +12,7 @@ public final class CountSort implements Sort<Integer> {
 
     @Override
     public List<Integer> sort(List<Integer> array, Counter counter, boolean debug) {
-        List<Integer> result = new ArrayList<>(array);
+        List<Integer> result = new ArrayList<>(array.size());
         int[] filter = new int[maxElement + 1];
         for (Integer it : array) {
             ++filter[it];

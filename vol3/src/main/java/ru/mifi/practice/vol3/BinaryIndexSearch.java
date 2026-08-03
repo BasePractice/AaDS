@@ -22,6 +22,9 @@ public final class BinaryIndexSearch implements Search<Integer, Number> {
     public Optional<Number> search(Integer element, Range<Integer> range, Function<Integer> function, Counter counter) {
         var left = range.left;
         var right = range.right;
+        if (left >= right) {
+            return Optional.empty();
+        }
         while (!Objects.equals(left, right - 1)) {
             var mid = (right + left) >>> 1;
             if (debug) {

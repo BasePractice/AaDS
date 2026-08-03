@@ -10,7 +10,7 @@ public final class MergeSort<E extends Comparable<E>> implements Sort<E> {
         int l = 0;
         int r = 0;
         while (l < left.size() || r < right.size()) {
-            if (l < left.size() && (r == right.size() || left.get(l).compareTo(right.get(r)) < 0)) {
+            if (l < left.size() && (r == right.size() || left.get(l).compareTo(right.get(r)) <= 0)) {
                 result.add(left.get(l));
                 ++l;
             } else {
@@ -28,7 +28,7 @@ public final class MergeSort<E extends Comparable<E>> implements Sort<E> {
     @Override
     public List<E> sort(List<E> array, Counter counter, boolean debug) {
         if (array.size() <= 1) {
-            return array;
+            return new ArrayList<>(array);
         }
         List<E> left = new ArrayList<>(array.size() / 2);
         List<E> right = new ArrayList<>(array.size() / 2);
