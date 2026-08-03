@@ -1,6 +1,6 @@
 package ru.mifi.practice.vol7.subsequence;
 
-import ru.mifi.practice.vol7.Counter;
+import ru.mifi.practice.commons.Counter;
 
 //Наибольшая общая подпоследовательность
 public interface LongestCommonSubsequence {

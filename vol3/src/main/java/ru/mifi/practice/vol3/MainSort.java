@@ -1,5 +1,6 @@
 package ru.mifi.practice.vol3;
 
+import ru.mifi.practice.commons.Counter;
 import java.util.List;
 
 import static ru.mifi.practice.vol3.NumberGenerator.MAX_GENERATED_ELEMENT_VALUE;

@@ -1,6 +1,6 @@
 package ru.mifi.practice.vol7.wildcard;
 
-import ru.mifi.practice.vol7.Counter;
+import ru.mifi.practice.commons.Counter;
 
 public interface Match {
     boolean isMatch(String pattern, String text, Counter counter);

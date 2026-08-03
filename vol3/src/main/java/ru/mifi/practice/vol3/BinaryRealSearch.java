@@ -1,5 +1,6 @@
 package ru.mifi.practice.vol3;
 
+import ru.mifi.practice.commons.Counter;
 import java.util.Optional;
 
 public final class BinaryRealSearch implements Search<Double, Number> {

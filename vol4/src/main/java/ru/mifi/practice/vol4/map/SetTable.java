@@ -1,6 +1,6 @@
 package ru.mifi.practice.vol4.map;
 
-import ru.mifi.practice.vol4.Counter;
+import ru.mifi.practice.commons.Counter;
 
 import java.util.Comparator;
 import java.util.Optional;

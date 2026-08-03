@@ -1,6 +1,6 @@
 package ru.mifi.practice.vol4.hash;
 
-import ru.mifi.practice.vol4.Counter;
+import ru.mifi.practice.commons.Counter;
 
 import static ru.mifi.practice.vol4.hash.Hash.POLY_MOD;
 import static ru.mifi.practice.vol4.hash.Hash.POLY_PRIME;

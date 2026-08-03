@@ -2,7 +2,7 @@ package ru.mifi.practice.vol6.tree.search;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import ru.mifi.practice.vol6.Counter;
+import ru.mifi.practice.commons.Counter;
 
 import java.util.ArrayList;
 import java.util.Collections;

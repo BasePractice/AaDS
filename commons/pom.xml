@@ -8,16 +8,7 @@
         <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <artifactId>vol6</artifactId>
-    <name>vol6</name>
-    <description>Модуль №6. Деревья</description>
-
-
-    <dependencies>
-        <dependency>
-            <groupId>ru.mifi.practice</groupId>
-            <artifactId>commons</artifactId>
-            <version>${revision}</version>
-        </dependency>
-    </dependencies>
+    <artifactId>commons</artifactId>
+    <name>commons</name>
+    <description>Общее для всех разделов курса: счётчик операций</description>
 </project>

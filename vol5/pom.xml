@@ -12,4 +12,12 @@
     <name>vol5</name>
     <description>Модуль №5. Графы</description>
 
+
+    <dependencies>
+        <dependency>
+            <groupId>ru.mifi.practice</groupId>
+            <artifactId>commons</artifactId>
+            <version>${revision}</version>
+        </dependency>
+    </dependencies>
 </project>

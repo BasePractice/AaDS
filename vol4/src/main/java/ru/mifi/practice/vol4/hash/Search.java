@@ -1,6 +1,6 @@
 package ru.mifi.practice.vol4.hash;
 
-import ru.mifi.practice.vol4.Counter;
+import ru.mifi.practice.commons.Counter;
 
 import java.util.Optional;
 

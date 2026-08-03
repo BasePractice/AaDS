@@ -1,5 +1,6 @@
 package ru.mifi.practice.vol7;
 
+import ru.mifi.practice.commons.Counter;
 import ru.mifi.practice.vol7.backpack.Backpack;
 import ru.mifi.practice.vol7.distance.Distance;
 import ru.mifi.practice.vol7.distance.Levenshtein;

@@ -1,6 +1,6 @@
 package ru.mifi.practice.vol7.distance;
 
-import ru.mifi.practice.vol7.Counter;
+import ru.mifi.practice.commons.Counter;
 
 import java.util.Arrays;
 

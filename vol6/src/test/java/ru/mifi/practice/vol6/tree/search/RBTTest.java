@@ -1,7 +1,7 @@
 package ru.mifi.practice.vol6.tree.search;
 
 import org.junit.jupiter.api.Test;
-import ru.mifi.practice.vol6.Counter;
+import ru.mifi.practice.commons.Counter;
 import org.junit.jupiter.api.Assertions;
 
 public class RBTTest {
