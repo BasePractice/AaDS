@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+/** Модель пользователя с профилем и ролями. */
 @Builder
 @Getter
 @Setter

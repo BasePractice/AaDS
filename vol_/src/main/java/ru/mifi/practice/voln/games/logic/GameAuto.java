@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+/** Автоматический игрок, ведущий приключенческую игру простым конечным автоматом. */
 public final class GameAuto {
     private enum State {
         EXPLORE, FIGHT, HEAL
@@ -36,12 +37,12 @@ public final class GameAuto {
         for (int i = 0; i < items.size(); i++) {
             Item item = items.get(i);
             if (!(item instanceof Item.Once)) {
-                int d = item.damage();
-                if (damages.contains(d)) {
+                int damage = item.damage();
+                if (damages.contains(damage)) {
                     game.removeItem(i);
                     i--;
                 } else {
-                    damages.add(d);
+                    damages.add(damage);
                 }
             }
         }

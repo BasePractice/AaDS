@@ -3,6 +3,7 @@ package ru.mifi.practice.vol8.regexp.machine;
 import java.util.HashSet;
 import java.util.Set;
 
+/** Генерация PlantUML-диаграммы состояний конечного автомата. */
 public final class PlantUmlTextGenerator extends Visitor.AbstractStringVisitor {
     private final Set<State> visited = new HashSet<>();
     private final Set<String> printed = new HashSet<>();

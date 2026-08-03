@@ -12,6 +12,7 @@ import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
 
+/** Dijkstra computation of shortest distances from a source vertex. */
 public final class DijkstraShortestPath<T, W extends Number & Comparable<W>> implements Algorithms.ShortestDistance<T, W> {
     private final W maxDistance;
     private final W minDistance;
@@ -39,25 +40,25 @@ public final class DijkstraShortestPath<T, W extends Number & Comparable<W>> imp
             }
         }
 
-        Queue<Tuple> pq = new PriorityQueue<>(Comparator.comparing(o -> o.distance));
-        pq.add(new Tuple(source, minDistance));
+        Queue<Tuple> queue = new PriorityQueue<>(Comparator.comparing(tuple -> tuple.distance));
+        queue.add(new Tuple(source, minDistance));
         Set<Graph.Vertex<T, W>> visited = new HashSet<>();
-        while (!pq.isEmpty()) {
-            final Tuple d = pq.poll();
-            if (visited.contains(d.source)) {
+        while (!queue.isEmpty()) {
+            final Tuple tuple = queue.poll();
+            if (visited.contains(tuple.source)) {
                 continue;
             }
-            visited.add(d.source);
-            for (var edge : d.source.edges()) {
+            visited.add(tuple.source);
+            for (var edge : tuple.source.edges()) {
                 Graph.Vertex<T, W> target = edge.target();
                 if (visited.contains(target)) {
                     continue;
                 }
-                W w = distances.get(target);
-                W distance = weight.sum(d.distance, edge.weight());
-                if (distance.compareTo(w) < 0) {
+                W known = distances.get(target);
+                W distance = weight.sum(tuple.distance, edge.weight());
+                if (distance.compareTo(known) < 0) {
                     distances.put(target, distance);
-                    pq.offer(new Tuple(target, distance));
+                    queue.offer(new Tuple(target, distance));
                 }
             }
         }

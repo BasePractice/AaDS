@@ -9,6 +9,7 @@ import ru.mifi.practice.voln.cache.CacheableMap;
 import java.nio.ByteBuffer;
 import java.util.Map;
 
+/** Кэш хешей поверх Redis. */
 public final class CacheableMapRedis implements CacheableMap {
     private final RedisClient client;
     private final StatefulRedisConnection<String, Long> connection;

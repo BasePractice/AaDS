@@ -1,5 +1,6 @@
 package ru.mifi.practice.vol6.tree.search;
 
+/** Self-balancing red-black binary search tree. */
 @SuppressWarnings("PMD.CompareObjectsWithEquals")
 public final class RBT<T extends Comparable<T>> extends BinaryTree.AbstractBinaryTree<T> {
     private static final int RED = 0;
@@ -35,14 +36,14 @@ public final class RBT<T extends Comparable<T>> extends BinaryTree.AbstractBinar
         return root;
     }
 
-    private void fixInsert(Node<T> z) {
-        Node<T> current = z;
+    private void fixInsert(Node<T> inserted) {
+        Node<T> current = inserted;
         while (current != root && colorOf(current.parent) == RED) {
             if (current.parent == leftOf(parentOf(current.parent))) {
-                Node<T> y = rightOf(parentOf(current.parent));
-                if (colorOf(y) == RED) {
+                Node<T> uncle = rightOf(parentOf(current.parent));
+                if (colorOf(uncle) == RED) {
                     setColor(current.parent, BLACK);
-                    setColor(y, BLACK);
+                    setColor(uncle, BLACK);
                     setColor(parentOf(current.parent), RED);
                     current = parentOf(current.parent);
                 } else {
@@ -55,10 +56,10 @@ public final class RBT<T extends Comparable<T>> extends BinaryTree.AbstractBinar
                     rotateRight(parentOf(current.parent));
                 }
             } else {
-                Node<T> y = leftOf(parentOf(current.parent));
-                if (colorOf(y) == RED) {
+                Node<T> uncle = leftOf(parentOf(current.parent));
+                if (colorOf(uncle) == RED) {
                     setColor(current.parent, BLACK);
-                    setColor(y, BLACK);
+                    setColor(uncle, BLACK);
                     setColor(parentOf(current.parent), RED);
                     current = parentOf(current.parent);
                 } else {
@@ -75,22 +76,22 @@ public final class RBT<T extends Comparable<T>> extends BinaryTree.AbstractBinar
         setColor(root, BLACK);
     }
 
-    private void rotateLeft(Node<T> x) {
-        Node<T> right = x.right;
-        x.right = right.left;
+    private void rotateLeft(Node<T> node) {
+        Node<T> right = node.right;
+        node.right = right.left;
         if (right.left != null) {
-            right.left.parent = x;
+            right.left.parent = node;
         }
-        right.parent = x.parent;
-        if (x.parent == null) {
+        right.parent = node.parent;
+        if (node.parent == null) {
             root = right;
-        } else if (x == x.parent.left) {
-            x.parent.left = right;
+        } else if (node == node.parent.left) {
+            node.parent.left = right;
         } else {
-            x.parent.right = right;
+            node.parent.right = right;
         }
-        right.left = x;
-        x.parent = right;
+        right.left = node;
+        node.parent = right;
     }
 
     private void rotateRight(Node<T> node) {
@@ -113,117 +114,117 @@ public final class RBT<T extends Comparable<T>> extends BinaryTree.AbstractBinar
 
     @Override
     protected Node<T> delete(Node<T> node, T value) {
-        Node<T> z = findNode(node, value);
-        if (z != null) {
-            deleteNode(z);
+        Node<T> target = findNode(node, value);
+        if (target != null) {
+            deleteNode(target);
         }
         return root;
     }
 
-    private void deleteNode(Node<T> z) {
-        Node<T> x;
-        Node<T> px;
-        Node<T> y = z;
-        int yOriginalColor = colorOf(y);
-        if (z.left == null) {
-            x = z.right;
-            px = z.parent;
-            transplant(z, z.right);
-        } else if (z.right == null) {
-            x = z.left;
-            px = z.parent;
-            transplant(z, z.left);
+    private void deleteNode(Node<T> target) {
+        Node<T> child;
+        Node<T> parent;
+        Node<T> successor = target;
+        int successorColor = colorOf(successor);
+        if (target.left == null) {
+            child = target.right;
+            parent = target.parent;
+            transplant(target, target.right);
+        } else if (target.right == null) {
+            child = target.left;
+            parent = target.parent;
+            transplant(target, target.left);
         } else {
-            y = minimum(z.right);
-            yOriginalColor = colorOf(y);
-            x = y.right;
-            if (y.parent == z) {
-                px = y;
+            successor = minimum(target.right);
+            successorColor = colorOf(successor);
+            child = successor.right;
+            if (successor.parent == target) {
+                parent = successor;
             } else {
-                px = y.parent;
-                transplant(y, y.right);
-                y.right = z.right;
-                y.right.parent = y;
+                parent = successor.parent;
+                transplant(successor, successor.right);
+                successor.right = target.right;
+                successor.right.parent = successor;
             }
-            transplant(z, y);
-            y.left = z.left;
-            y.left.parent = y;
-            setColor(y, colorOf(z));
+            transplant(target, successor);
+            successor.left = target.left;
+            successor.left.parent = successor;
+            setColor(successor, colorOf(target));
         }
-        if (yOriginalColor == BLACK) {
-            fixDelete(x, px);
+        if (successorColor == BLACK) {
+            fixDelete(child, parent);
         }
     }
 
-    private void fixDelete(Node<T> x, Node<T> px) {
-        Node<T> currentX = x;
-        Node<T> currentPx = px;
-        while (currentX != root && colorOf(currentX) == BLACK) {
-            if (currentX == leftOf(currentPx)) {
-                Node<T> w = rightOf(currentPx);
-                if (colorOf(w) == RED) {
-                    setColor(w, BLACK);
-                    setColor(currentPx, RED);
-                    rotateLeft(currentPx);
-                    w = rightOf(currentPx);
+    private void fixDelete(Node<T> child, Node<T> parent) {
+        Node<T> cursor = child;
+        Node<T> cursorParent = parent;
+        while (cursor != root && colorOf(cursor) == BLACK) {
+            if (cursor == leftOf(cursorParent)) {
+                Node<T> sibling = rightOf(cursorParent);
+                if (colorOf(sibling) == RED) {
+                    setColor(sibling, BLACK);
+                    setColor(cursorParent, RED);
+                    rotateLeft(cursorParent);
+                    sibling = rightOf(cursorParent);
                 }
-                if (colorOf(leftOf(w)) == BLACK && colorOf(rightOf(w)) == BLACK) {
-                    setColor(w, RED);
-                    currentX = currentPx;
-                    currentPx = parentOf(currentX);
+                if (colorOf(leftOf(sibling)) == BLACK && colorOf(rightOf(sibling)) == BLACK) {
+                    setColor(sibling, RED);
+                    cursor = cursorParent;
+                    cursorParent = parentOf(cursor);
                 } else {
-                    if (colorOf(rightOf(w)) == BLACK) {
-                        setColor(leftOf(w), BLACK);
-                        setColor(w, RED);
-                        rotateRight(w);
-                        w = rightOf(currentPx);
+                    if (colorOf(rightOf(sibling)) == BLACK) {
+                        setColor(leftOf(sibling), BLACK);
+                        setColor(sibling, RED);
+                        rotateRight(sibling);
+                        sibling = rightOf(cursorParent);
                     }
-                    setColor(w, colorOf(currentPx));
-                    setColor(currentPx, BLACK);
-                    setColor(rightOf(w), BLACK);
-                    rotateLeft(currentPx);
-                    currentX = root;
+                    setColor(sibling, colorOf(cursorParent));
+                    setColor(cursorParent, BLACK);
+                    setColor(rightOf(sibling), BLACK);
+                    rotateLeft(cursorParent);
+                    cursor = root;
                 }
             } else {
-                Node<T> w = leftOf(currentPx);
-                if (colorOf(w) == RED) {
-                    setColor(w, BLACK);
-                    setColor(currentPx, RED);
-                    rotateRight(currentPx);
-                    w = leftOf(currentPx);
+                Node<T> sibling = leftOf(cursorParent);
+                if (colorOf(sibling) == RED) {
+                    setColor(sibling, BLACK);
+                    setColor(cursorParent, RED);
+                    rotateRight(cursorParent);
+                    sibling = leftOf(cursorParent);
                 }
-                if (colorOf(rightOf(w)) == BLACK && colorOf(leftOf(w)) == BLACK) {
-                    setColor(w, RED);
-                    currentX = currentPx;
-                    currentPx = parentOf(currentX);
+                if (colorOf(rightOf(sibling)) == BLACK && colorOf(leftOf(sibling)) == BLACK) {
+                    setColor(sibling, RED);
+                    cursor = cursorParent;
+                    cursorParent = parentOf(cursor);
                 } else {
-                    if (colorOf(leftOf(w)) == BLACK) {
-                        setColor(rightOf(w), BLACK);
-                        setColor(w, RED);
-                        rotateLeft(w);
-                        w = leftOf(currentPx);
+                    if (colorOf(leftOf(sibling)) == BLACK) {
+                        setColor(rightOf(sibling), BLACK);
+                        setColor(sibling, RED);
+                        rotateLeft(sibling);
+                        sibling = leftOf(cursorParent);
                     }
-                    setColor(w, colorOf(currentPx));
-                    setColor(currentPx, BLACK);
-                    setColor(leftOf(w), BLACK);
-                    rotateRight(currentPx);
-                    currentX = root;
+                    setColor(sibling, colorOf(cursorParent));
+                    setColor(cursorParent, BLACK);
+                    setColor(leftOf(sibling), BLACK);
+                    rotateRight(cursorParent);
+                    cursor = root;
                 }
             }
         }
-        setColor(currentX, BLACK);
+        setColor(cursor, BLACK);
     }
 
-    private void transplant(Node<T> u, Node<T> v) {
-        if (u.parent == null) {
-            root = v;
-        } else if (u == u.parent.left) {
-            u.parent.left = v;
+    private void transplant(Node<T> target, Node<T> replacement) {
+        if (target.parent == null) {
+            root = replacement;
+        } else if (target == target.parent.left) {
+            target.parent.left = replacement;
         } else {
-            u.parent.right = v;
+            target.parent.right = replacement;
         }
-        if (v != null) {
-            v.parent = u.parent;
+        if (replacement != null) {
+            replacement.parent = target.parent;
         }
     }
 

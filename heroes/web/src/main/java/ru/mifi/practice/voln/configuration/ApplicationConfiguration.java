@@ -6,6 +6,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
+/** Конфигурация веб-слоя и сканирования сервисов приложения. */
 @Configuration
 @EnableWebMvc
 @ComponentScan(basePackages = "ru.mifi.practice.voln.service")

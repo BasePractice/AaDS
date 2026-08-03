@@ -2,6 +2,7 @@ package ru.mifi.practice.vol6.tree;
 
 import ru.mifi.practice.vol6.tree.visitors.Count;
 
+/** Finds the centroid of a tree, whose removal keeps every part at most half the size. */
 @SuppressWarnings({"PMD.SingularField", "PMD.UnusedPrivateMethod"})
 public final class Centroid<T> implements Visitor<T> {
     private Node<T> centroid = null;

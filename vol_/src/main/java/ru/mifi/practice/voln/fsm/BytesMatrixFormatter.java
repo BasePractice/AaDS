@@ -6,6 +6,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.util.Optional;
 
+/** Текстовая шестнадцатеричная сериализация матрицы байтов. */
 public final class BytesMatrixFormatter implements BytesMatrix.Formatter {
     static String byteToHex(byte num) {
         char[] hexDigits = new char[2];
@@ -16,8 +17,8 @@ public final class BytesMatrixFormatter implements BytesMatrix.Formatter {
 
     static String hexString(byte[] byteArray) {
         StringBuilder buffer = new StringBuilder();
-        for (byte b : byteArray) {
-            buffer.append(byteToHex(b));
+        for (byte value : byteArray) {
+            buffer.append(byteToHex(value));
         }
         return buffer.toString();
     }

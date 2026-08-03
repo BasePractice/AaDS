@@ -2,6 +2,7 @@ package ru.mifi.practice.vol7.wildcard;
 
 import ru.mifi.practice.commons.Counter;
 
+/** Tests whether a wildcard pattern matches a text. */
 public interface Match {
     boolean isMatch(String pattern, String text, Counter counter);
 
@@ -9,18 +10,18 @@ public interface Match {
 
         @Override
         public boolean isMatch(String pattern, String text, Counter counter) {
-            int m = text.length();
-            int n = pattern.length();
-            boolean[][] table = new boolean[m + 1][n + 1];
+            int rows = text.length();
+            int columns = pattern.length();
+            boolean[][] table = new boolean[rows + 1][columns + 1];
             table[0][0] = true;
-            for (int j = 1; j <= n; j++) {
+            for (int j = 1; j <= columns; j++) {
                 if (pattern.charAt(j - 1) == '*') {
                     table[0][j] = table[0][j - 1];
                 }
             }
-            for (int i = 1; i <= m; i++) {
+            for (int i = 1; i <= rows; i++) {
                 counter.increment();
-                for (int j = 1; j <= n; j++) {
+                for (int j = 1; j <= columns; j++) {
                     counter.increment();
                     char textChar = text.charAt(i - 1);
                     char patternChar = pattern.charAt(j - 1);
@@ -33,11 +34,11 @@ public interface Match {
                     }
                 }
             }
-            return table[m][n];
+            return table[rows][columns];
         }
     }
 
-    //FIXME: Можно ли реализовать проще?
+    //FIXME Свести таблицу аббревиатуры к одномерной по столбцам, отложено чтобы не трогать зелёный алгоритм
     final class AbbreviationMatch implements Match {
 
         /**
@@ -46,16 +47,16 @@ public interface Match {
          */
         @Override
         public boolean isMatch(String abb, String text, Counter counter) {
-            int n = text.length();
-            int m = abb.length();
-            boolean[][] table = new boolean[n + 1][m + 1];
+            int rows = text.length();
+            int columns = abb.length();
+            boolean[][] table = new boolean[rows + 1][columns + 1];
             table[0][0] = true;
-            for (int i = 0; i < n; i++) {
+            for (int i = 0; i < rows; i++) {
                 counter.increment();
-                for (int j = 0; j <= m; j++) {
+                for (int j = 0; j <= columns; j++) {
                     counter.increment();
                     if (table[i][j]) {
-                        if (j < m && Character.toUpperCase(text.charAt(i)) == abb.charAt(j)) {
+                        if (j < columns && Character.toUpperCase(text.charAt(i)) == abb.charAt(j)) {
                             table[i + 1][j + 1] = true;
                         }
                         if (Character.isLowerCase(text.charAt(i)) || Character.isWhitespace(text.charAt(i))) {
@@ -64,7 +65,7 @@ public interface Match {
                     }
                 }
             }
-            return table[n][m];
+            return table[rows][columns];
         }
     }
 }

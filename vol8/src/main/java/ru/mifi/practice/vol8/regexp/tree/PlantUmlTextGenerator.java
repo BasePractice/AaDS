@@ -3,6 +3,7 @@ package ru.mifi.practice.vol8.regexp.tree;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
+/** Генерация PlantUML-диаграммы EBNF по дереву регулярного выражения. */
 public final class PlantUmlTextGenerator extends AbstractStringVisitor {
     private final Deque<Boolean> nextOr = new ArrayDeque<>();
     private final Deque<Boolean> nextSet = new ArrayDeque<>();

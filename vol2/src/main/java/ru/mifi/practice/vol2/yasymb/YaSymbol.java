@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+/** Решение буквенно-цифрового ребуса сложения x + y = z. */
 public interface YaSymbol {
     Optional<Equation> process(String x, String y, String z);
 
@@ -84,11 +85,11 @@ public interface YaSymbol {
         String transform(String text) {
             StringBuilder result = new StringBuilder();
             for (int i = 0; i < text.length(); i++) {
-                char c = text.charAt(i);
-                if (symbols.containsKey(c)) {
-                    c = (char) (symbols.get(c) + '0');
+                char character = text.charAt(i);
+                if (symbols.containsKey(character)) {
+                    character = (char) (symbols.get(character) + '0');
                 }
-                result.append(c);
+                result.append(character);
             }
             return result.toString();
         }

@@ -9,6 +9,7 @@ import java.util.Deque;
 import java.util.List;
 
 //BFS
+/** Поиск кратчайшего пути в лабиринте обходом в ширину. */
 public record NodeFinder(Maze.Representation repr, Color pathColor) implements Maze.Finder {
     private static final Color PATH_COLOR = Color.BLUE;
 

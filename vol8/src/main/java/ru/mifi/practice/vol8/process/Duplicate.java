@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+/** Поиск дублирующихся фрагментов кода студентов по отчёту CPD. */
 public interface Duplicate {
     int MINIMUM_LINES = 50;
     int MINIMUM_RELATIONS = 2;
@@ -37,16 +38,16 @@ public interface Duplicate {
         Default duplicate = new Default();
         List<CodeSegment> parsed = duplicate.parse(DIRECTORY + "/target/cpd.xml");
         Map<String, Student> studentMap = new HashMap<>();
-        parsed.forEach(cs -> cs.process(studentMap));
+        parsed.forEach(segment -> segment.process(studentMap));
         var students = studentMap.values().stream().sorted().toList();
         try (Writer writer = new FileWriter("duplicate.csv")) {
             writer.append("Source,Target,Value").append("\n");
             for (Student student : students) {
                 for (Map.Entry<Student, Student.Relation> entry : student.relations.entrySet()) {
-                    Student k = entry.getKey();
-                    Student.Relation v = entry.getValue();
-                    writer.append(student.code).append(",").append(k.code).append(",")
-                        .append(String.valueOf(v.codeFiles.size())).append("\n");
+                    Student target = entry.getKey();
+                    Student.Relation relation = entry.getValue();
+                    writer.append(student.code).append(",").append(target.code).append(",")
+                        .append(String.valueOf(relation.codeFiles.size())).append("\n");
                 }
             }
         }

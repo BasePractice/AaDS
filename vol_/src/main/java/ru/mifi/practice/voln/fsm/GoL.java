@@ -2,6 +2,7 @@ package ru.mifi.practice.voln.fsm;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+/** Игра «Жизнь» Конвея на тороидальной матрице байтов. */
 public final class GoL {
     private final AtomicInteger ticks = new AtomicInteger(0);
     private BytesMatrix matrix;
@@ -11,27 +12,27 @@ public final class GoL {
     }
 
     private static byte mutate(BytesMatrix matrix, int row, int col) {
-        byte v = matrix.get(row, col);
+        byte cell = matrix.get(row, col);
         int total = count(matrix.get(row, col - 1)) + count(matrix.get(row, col + 1)) +
             count(matrix.get(row - 1, col)) + count(matrix.get(row + 1, col)) +
             count(matrix.get(row - 1, col - 1)) + count(matrix.get(row - 1, col + 1)) +
             count(matrix.get(row + 1, col - 1)) + count(matrix.get(row + 1, col + 1));
-        if (is(v)) {
+        if (is(cell)) {
             if (total < 2 || total > 3) {
                 return 0;
             }
         } else if (total == 3) {
             return 1;
         }
-        return v;
+        return cell;
     }
 
-    private static boolean is(byte v) {
-        return v == 1;
+    private static boolean is(byte cell) {
+        return cell == 1;
     }
 
-    private static int count(byte v) {
-        return v;
+    private static int count(byte cell) {
+        return cell;
     }
 
     public void tick(Executor executor) {

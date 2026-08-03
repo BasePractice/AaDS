@@ -17,6 +17,7 @@ import ru.mifi.practice.voln.domain.model.PingResult;
 import java.util.UUID;
 import java.util.stream.Stream;
 
+/** REST-контроллер игровых комнат. */
 @RestController
 @RequestMapping("/api/rooms")
 @Tag(name = "Комнаты", description = "Комнаты комнаты")

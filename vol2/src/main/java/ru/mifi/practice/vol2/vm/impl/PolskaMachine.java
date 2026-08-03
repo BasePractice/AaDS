@@ -12,6 +12,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Optional;
 
+/** Виртуальная машина обратной польской записи на стеке значений. */
 public final class PolskaMachine implements VirtualMachine {
 
     @Override
@@ -87,9 +88,9 @@ public final class PolskaMachine implements VirtualMachine {
             if (Character.isDigit(part.charAt(0))) {
                 stack.push(new DefaultValue(Type.NUMBER, Double.valueOf(part)));
             } else {
-                var o = part;
-                Op.fromString(o).map(op -> operation.operation(op, stack))
-                    .orElseThrow(() -> new UnsupportedOperationException("Unsupported " + o));
+                var token = part;
+                Op.fromString(token).map(op -> operation.operation(op, stack))
+                    .orElseThrow(() -> new UnsupportedOperationException("Unsupported " + token));
             }
         }
     }

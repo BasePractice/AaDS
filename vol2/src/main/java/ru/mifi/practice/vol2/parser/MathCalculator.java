@@ -193,21 +193,21 @@ public interface MathCalculator {
                 skipWhitespace();
                 previous = index;
                 if (index < chars.length) {
-                    char c = chars[index];
-                    if (Character.isDigit(c)) {
+                    char character = chars[index];
+                    if (Character.isDigit(character)) {
                         return Optional.of(new Token(TokenType.NUMBER, parseNumber()));
-                    } else if (c == '(') {
+                    } else if (character == '(') {
                         ++index;
-                        return Optional.of(new Token(TokenType.LBR, c));
-                    } else if (c == ')') {
+                        return Optional.of(new Token(TokenType.LBR, character));
+                    } else if (character == ')') {
                         ++index;
-                        return Optional.of(new Token(TokenType.RBR, c));
-                    } else if (c == '+') {
+                        return Optional.of(new Token(TokenType.RBR, character));
+                    } else if (character == '+') {
                         ++index;
-                        return Optional.of(new Token(TokenType.PLUS, c));
-                    } else if (c == '*') {
+                        return Optional.of(new Token(TokenType.PLUS, character));
+                    } else if (character == '*') {
                         ++index;
-                        return Optional.of(new Token(TokenType.MUL, c));
+                        return Optional.of(new Token(TokenType.MUL, character));
                     } else {
                         return Optional.empty();
                     }
@@ -218,9 +218,9 @@ public interface MathCalculator {
             private Number parseNumber() {
                 StringBuilder sb = new StringBuilder();
                 while (index < chars.length) {
-                    char c = chars[index];
-                    if (Character.isDigit(c)) {
-                        sb.append(c);
+                    char character = chars[index];
+                    if (Character.isDigit(character)) {
+                        sb.append(character);
                     } else {
                         break;
                     }
@@ -231,8 +231,8 @@ public interface MathCalculator {
 
             private void skipWhitespace() {
                 while (index < chars.length) {
-                    char c = chars[index];
-                    if (!Character.isWhitespace(c)) {
+                    char character = chars[index];
+                    if (!Character.isWhitespace(character)) {
                         break;
                     }
                     ++index;

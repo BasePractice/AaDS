@@ -17,6 +17,7 @@ import java.util.Random;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+/** Поле боя: расстановка отрядов, очередь ходов, перемещение и бой. */
 public final class BattleMap {
     private static final int ROWS = 11;
     private static final int COLS = 15;
@@ -130,9 +131,9 @@ public final class BattleMap {
         Unit.Stack stack = getStackById(id);
         if (stack != null) {
             stack.setActed(true);
-            String msg = String.format("%s %s пропустил ход",
+            String message = String.format("%s %s пропустил ход",
                 leftTurn ? "Левый" : "Правый", stack.getType().getName());
-            support.firePropertyChange("log", null, msg);
+            support.firePropertyChange("log", null, message);
         }
         checkTurnEnd();
         support.firePropertyChange("map", null, null);
@@ -213,9 +214,9 @@ public final class BattleMap {
         if (!path.isEmpty() && path.size() - 1 <= stack.speed()) {
             map[targetRow][targetColumn] = map[sourceRow][sourceColumn];
             map[sourceRow][sourceColumn] = null;
-            String msg = String.format("%s(%s) ходит (%d, %d)",
+            String message = String.format("%s(%s) ходит (%d, %d)",
                 stack.getType().getName(), leftTurn ? "L" : "R", targetRow, targetColumn);
-            support.firePropertyChange("log", null, msg);
+            support.firePropertyChange("log", null, message);
             animating = true;
             support.firePropertyChange("move", null, path);
         }
@@ -265,10 +266,10 @@ public final class BattleMap {
             return;
         }
 
-        int mtr = moveTarget[0];
-        int mtc = moveTarget[1];
-        if (mtr != sourceRow || mtc != sourceColumn) {
-            map[mtr][mtc] = map[sourceRow][sourceColumn];
+        int moveRow = moveTarget[0];
+        int moveColumn = moveTarget[1];
+        if (moveRow != sourceRow || moveColumn != sourceColumn) {
+            map[moveRow][moveColumn] = map[sourceRow][sourceColumn];
             map[sourceRow][sourceColumn] = null;
             animating = true;
             pendingAttack = new int[]{targetRow, targetColumn};
@@ -284,13 +285,13 @@ public final class BattleMap {
             return;
         }
         if (pendingAttack != null) {
-            int tr = pendingAttack[0];
-            int tc = pendingAttack[1];
+            int targetRow = pendingAttack[0];
+            int targetColumn = pendingAttack[1];
             pendingAttack = null;
             Long id = turnQueue.peekFirst();
             int[] pos = getStackCoord(id);
             if (pos.length == 2) {
-                performAttack(pos[0], pos[1], tr, tc);
+                performAttack(pos[0], pos[1], targetRow, targetColumn);
             }
         }
         finishTurn();
@@ -316,21 +317,21 @@ public final class BattleMap {
         int startSize = target.size();
         target.damage(stack.attack());
         int killed = startSize - target.size();
-        String msg = String.format("%s(%s) бьет %s (-%d)", stack.getType().getName(), leftTurn ? "R" : "L",
+        String message = String.format("%s(%s) бьет %s (-%d)", stack.getType().getName(), leftTurn ? "R" : "L",
             target.getType().getName(), killed);
-        support.firePropertyChange("log", null, msg);
+        support.firePropertyChange("log", null, message);
         if (target.isEmpty()) {
             removeStack(targetRow, targetColumn);
         } else if (!target.hasCounterAttacked()) {
-            int sStart = stack.size();
+            int stackSize = stack.size();
             stack.damage(target.counterAttack());
-            int sKilled = sStart - stack.size();
-            String cmsg = String.format("%s(%s) отвечает",
+            int stackKilled = stackSize - stack.size();
+            String counterMessage = String.format("%s(%s) отвечает",
                 target.getType().getName(), leftTurn ? "R" : "L");
-            if (sKilled > 0) {
-                cmsg += "(-" + sKilled + ")";
+            if (stackKilled > 0) {
+                counterMessage += "(-" + stackKilled + ")";
             }
-            support.firePropertyChange("log", null, cmsg);
+            support.firePropertyChange("log", null, counterMessage);
             target.setCounterAttacked(true);
             if (stack.isEmpty()) {
                 removeStack(sourceRow, sourceColumn);
@@ -349,15 +350,15 @@ public final class BattleMap {
     private void checkTurnEnd() {
         while (turnQueue.isEmpty()) {
             leftTurn = !leftTurn;
-            String msg = String.format("--- Ход %s ---", leftTurn ? "ЛЕВЫХ" : "ПРАВЫХ");
-            support.firePropertyChange("log", null, msg);
-            left.values().forEach(sk -> {
-                sk.stack.setActed(false);
-                sk.stack.setCounterAttacked(false);
+            String message = String.format("--- Ход %s ---", leftTurn ? "ЛЕВЫХ" : "ПРАВЫХ");
+            support.firePropertyChange("log", null, message);
+            left.values().forEach(key -> {
+                key.stack.setActed(false);
+                key.stack.setCounterAttacked(false);
             });
-            right.values().forEach(sk -> {
-                sk.stack.setActed(false);
-                sk.stack.setCounterAttacked(false);
+            right.values().forEach(key -> {
+                key.stack.setActed(false);
+                key.stack.setCounterAttacked(false);
             });
             fillTurnQueue();
             if (left.isEmpty() && right.isEmpty()) {
@@ -408,12 +409,12 @@ public final class BattleMap {
             Arrays.fill(r, Integer.MAX_VALUE);
         }
         dist[row][col] = 0;
-        Queue<int[]> pq = new PriorityQueue<>(Comparator.comparingInt(a -> a[2]));
-        pq.add(new int[]{row, col, 0});
+        Queue<int[]> queue = new PriorityQueue<>(Comparator.comparingInt(cell -> cell[2]));
+        queue.add(new int[]{row, col, 0});
         int[] drs = {0, 0, 1, -1};
         int[] dcs = {1, -1, 0, 0};
-        while (!pq.isEmpty()) {
-            int[] curr = pq.poll();
+        while (!queue.isEmpty()) {
+            int[] curr = queue.poll();
             int r = curr[0];
             int c = curr[1];
             int d = curr[2];
@@ -433,7 +434,7 @@ public final class BattleMap {
                     int nd = d + 1;
                     if (nd < dist[nextRow][nextColumn]) {
                         dist[nextRow][nextColumn] = nd;
-                        pq.add(new int[]{nextRow, nextColumn, nd});
+                        queue.add(new int[]{nextRow, nextColumn, nd});
                     }
                 }
             }

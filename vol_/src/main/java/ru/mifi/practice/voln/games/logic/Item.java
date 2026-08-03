@@ -2,6 +2,7 @@ package ru.mifi.practice.voln.games.logic;
 
 import ru.mifi.practice.voln.games.logic.Updatable.Context;
 
+/** Предмет с уроном и опциональным одноразовым эффектом. */
 public interface Item {
 
     int damage();

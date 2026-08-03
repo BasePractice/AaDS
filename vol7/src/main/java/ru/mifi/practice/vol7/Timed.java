@@ -2,6 +2,7 @@ package ru.mifi.practice.vol7;
 
 import java.util.function.Function;
 
+/** Runs a titled computation while measuring its elapsed time. */
 @FunctionalInterface
 public interface Timed<T, I> {
     T timed(String title, I args, Function<I, T> execution);

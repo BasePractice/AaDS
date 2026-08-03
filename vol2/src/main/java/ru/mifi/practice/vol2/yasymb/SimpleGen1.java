@@ -3,6 +3,7 @@ package ru.mifi.practice.vol2.yasymb;
 import java.util.HashSet;
 import java.util.Optional;
 
+/** Переборный по разрядам решатель ребуса сложения x + y = z. */
 public final class SimpleGen1 implements YaSymbol {
 
     @SuppressWarnings("PMD.EmptyControlStatement")

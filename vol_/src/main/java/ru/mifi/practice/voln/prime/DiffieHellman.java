@@ -11,6 +11,7 @@ import java.security.SecureRandom;
 import java.util.Objects;
 import java.util.Random;
 
+/** Обмен общим секретом по протоколу Диффи—Хеллмана. */
 @Getter
 public final class DiffieHellman {
     private final BigInteger prime; // большое простое число p

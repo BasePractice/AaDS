@@ -9,6 +9,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
 import java.util.function.Function;
 
+/** Loader that reads a colon-separated owner and children description into a tree. */
 @SuppressWarnings({"PMD.EmptyControlStatement", "PMD.CompareObjectsWithEquals"})
 public final class ParserText<T> implements Tree.Loader<T> {
 

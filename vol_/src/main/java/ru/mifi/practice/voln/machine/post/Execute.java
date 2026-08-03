@@ -2,6 +2,7 @@ package ru.mifi.practice.voln.machine.post;
 
 import lombok.NonNull;
 
+/** Исполняемая команда машины Поста. */
 public interface Execute {
     int execute(int index, MechanicalHead mechanicalHead, int... args);
 

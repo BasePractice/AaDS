@@ -19,6 +19,7 @@ import org.springframework.util.StringUtils;
 import java.util.List;
 import java.util.UUID;
 
+/** JPA-сущность пользователя с данными Telegram и правами доступа. */
 @ToString(exclude = "authorities")
 @Builder(toBuilder = true)
 @Getter

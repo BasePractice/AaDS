@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+/** Перебор всех перестановок алгоритмом Джонсона—Троттера. */
 public final class JohnsonTrotter {
     private static final int LEFT = -1;
 
@@ -77,17 +78,17 @@ public final class JohnsonTrotter {
             }
 
             private int[] initValues(int len) {
-                int[] a = new int[len];
+                int[] result = new int[len];
                 for (int i = 0; i < len; i++) {
-                    a[i] = i + 1;
+                    result[i] = i + 1;
                 }
-                return a;
+                return result;
             }
 
             private int[] initDirs(int len) {
-                int[] d = new int[len];
-                Arrays.fill(d, LEFT);
-                return d;
+                int[] directions = new int[len];
+                Arrays.fill(directions, LEFT);
+                return directions;
             }
 
             private int[] copy(int[] src) {
@@ -96,10 +97,10 @@ public final class JohnsonTrotter {
                 return dst;
             }
 
-            private void swap(int[] a, int i, int j) {
-                int t = a[i];
-                a[i] = a[j];
-                a[j] = t;
+            private void swap(int[] array, int i, int j) {
+                int temp = array[i];
+                array[i] = array[j];
+                array[j] = temp;
             }
         };
     }

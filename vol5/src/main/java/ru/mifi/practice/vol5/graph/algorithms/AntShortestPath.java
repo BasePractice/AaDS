@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
+/** Ant-colony optimization search for the shortest path between two vertices. */
 public final class AntShortestPath<T, W extends Number & Comparable<W>> implements Algorithms.ShortestPath<T, W> {
     private final Parameters parameters = Parameters.started();
 
@@ -21,7 +22,7 @@ public final class AntShortestPath<T, W extends Number & Comparable<W>> implemen
         double distance = Double.MAX_VALUE;
         List<Graph.Vertex<T, W>> path = List.of();
         while (counter++ < 100) {
-            var summaryPheromones = new Matrix(graph.size(), 0.);
+            var deposit = new Matrix(graph.size(), 0.);
             colony.createAnts(source, target);
             for (var ant : colony.ants) {
                 while (ant.canContinue) {
@@ -36,12 +37,12 @@ public final class AntShortestPath<T, W extends Number & Comparable<W>> implemen
                     counter = 0;
                 }
                 for (int i = 1; i < ant.path.size(); i++) {
-                    Graph.Vertex<T, W> v1 = ant.path.get(i - 1);
-                    Graph.Vertex<T, W> v2 = ant.path.get(i);
-                    summaryPheromones.values[v1.index()][v2.index()] += parameters.kQ.doubleValue() / ant.distance;
+                    Graph.Vertex<T, W> previous = ant.path.get(i - 1);
+                    Graph.Vertex<T, W> current = ant.path.get(i);
+                    deposit.values[previous.index()][current.index()] += parameters.kQ.doubleValue() / ant.distance;
                 }
             }
-            colony.pheromoneStage(summaryPheromones);
+            colony.pheromoneStage(deposit);
         }
         return path;
     }
@@ -121,7 +122,7 @@ public final class AntShortestPath<T, W extends Number & Comparable<W>> implemen
             });
             if (neighbours.isEmpty()) {
                 canContinue = false;
-                edges.stream().filter(e -> e.target().equals(source)).forEach(edge -> {
+                edges.stream().filter(edge -> edge.target().equals(source)).forEach(edge -> {
                     path.add(source);
                     distance += edge.weight().doubleValue();
                 });
@@ -131,43 +132,44 @@ public final class AntShortestPath<T, W extends Number & Comparable<W>> implemen
             {
                 List<Double> wish = new LinkedList<>();
                 double summary = 0;
-                for (Graph.Vertex<T, W> v : neighbours) {
-                    var tau = pheromones.values[current.index()][v.index()];
-                    var weight = edges.stream().filter(e -> e.target().equals(v)).findAny()
-                        .map(e -> e.weight().doubleValue()).orElse(0.);
-                    var n = 1. / weight;
-                    double w = Math.pow(tau, parameters.kAlpha.doubleValue()) * Math.pow(n, parameters.kBeta.doubleValue());
-                    wish.add(w);
-                    summary += w;
+                for (Graph.Vertex<T, W> neighbour : neighbours) {
+                    var tau = pheromones.values[current.index()][neighbour.index()];
+                    var weight = edges.stream().filter(edge -> edge.target().equals(neighbour)).findAny()
+                        .map(edge -> edge.weight().doubleValue()).orElse(0.);
+                    var visibility = 1. / weight;
+                    double desire = Math.pow(tau, parameters.kAlpha.doubleValue())
+                        * Math.pow(visibility, parameters.kBeta.doubleValue());
+                    wish.add(desire);
+                    summary += desire;
                 }
-                Graph.Vertex<T, W> prev = null;
+                Graph.Vertex<T, W> previous = null;
                 for (int i = 0; i < neighbours.size(); i++) {
                     var vertex = neighbours.get(i);
-                    var v = wish.get(i);
-                    double p = v / summary;
+                    var desire = wish.get(i);
+                    double probability = desire / summary;
                     if (i == 0) {
-                        choosing.put(vertex, p);
+                        choosing.put(vertex, probability);
                     } else {
-                        choosing.put(vertex, choosing.get(prev) + p);
+                        choosing.put(vertex, choosing.get(previous) + probability);
                     }
-                    prev = vertex;
+                    previous = vertex;
                 }
             }
-            double v = random();
+            double roll = random();
             Graph.Vertex<T, W> next = null;
             for (Graph.Vertex<T, W> vertex : neighbours) {
-                Double d = choosing.get(vertex);
-                if (v <= d) {
+                Double bound = choosing.get(vertex);
+                if (roll <= bound) {
                     next = vertex;
                     break;
                 }
             }
             path.add(next);
             visited.add(next);
-            Graph.Vertex<T, W> finalNext = next;
-            distance += current.edges().stream().filter(e -> e.target().equals(finalNext))
-                .findAny().map(e -> e.weight().doubleValue()).orElse(0.);
-            current = finalNext;
+            Graph.Vertex<T, W> choice = next;
+            distance += current.edges().stream().filter(edge -> edge.target().equals(choice))
+                .findAny().map(edge -> edge.weight().doubleValue()).orElse(0.);
+            current = choice;
         }
     }
 

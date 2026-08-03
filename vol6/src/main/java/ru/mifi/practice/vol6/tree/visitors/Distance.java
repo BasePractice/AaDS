@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/** Visitor recording the depth of each visited node. */
 public final class Distance<T> implements Visitor<T> {
     private final AtomicInteger level = new AtomicInteger(0);
     private final Map<Node<T>, Integer> distances = new HashMap<>();

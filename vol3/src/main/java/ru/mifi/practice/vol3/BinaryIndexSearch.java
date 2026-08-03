@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+/** Двоичный поиск элемента по индексу в отсортированном списке. */
 public final class BinaryIndexSearch implements Search<Integer, Number> {
     private final List<Integer> array;
     private final boolean debug;

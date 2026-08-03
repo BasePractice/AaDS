@@ -12,6 +12,7 @@ import java.awt.Stroke;
 import java.awt.image.BufferedImage;
 import java.util.function.Function;
 
+/** Отрисовка матрицы байтов в изображение с сеткой и номером кадра. */
 @UtilityClass
 public final class BytesMatrixImage {
 

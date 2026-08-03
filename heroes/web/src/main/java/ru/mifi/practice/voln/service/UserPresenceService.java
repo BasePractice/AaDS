@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+/** Сервис учёта присутствия пользователей в чате по сессиям. */
 @Service
 public class UserPresenceService {
     private static final long INACTIVITY_TIMEOUT = 5 * 60 * 1000;

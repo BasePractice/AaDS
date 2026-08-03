@@ -3,6 +3,7 @@ package ru.mifi.practice.voln.buffer;
 import java.util.Arrays;
 import java.util.Optional;
 
+/** Кольцевой буфер фиксированной ёмкости, затирающий старейший элемент при переполнении. */
 public interface CircularBuffer<T> {
     void add(T item);
 

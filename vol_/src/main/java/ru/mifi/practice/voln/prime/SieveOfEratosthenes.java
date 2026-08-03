@@ -3,6 +3,7 @@ package ru.mifi.practice.voln.prime;
 import java.util.ArrayList;
 import java.util.List;
 
+/** Решето Эратосфена для перечисления простых чисел. */
 public final class SieveOfEratosthenes {
     private SieveOfEratosthenes() {
     }

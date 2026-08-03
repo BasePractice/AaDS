@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+/** Обходчик состояний конечного автомата. */
 public interface Visitor {
 
     void start();

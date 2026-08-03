@@ -15,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
+/** Оповещатель поверх publish/subscribe Redis с дедупликацией ключей. */
 public final class NotifiableRedis implements Notifiable {
     private final AtomicInteger inOrderSize = new AtomicInteger(0);
     private final StatefulRedisPubSubConnection<String, String> pubSub;
@@ -71,7 +72,7 @@ public final class NotifiableRedis implements Notifiable {
         }
         String present = notified.getIfPresent(key);
         if (present != null) {
-            //FIXME: Повторное оповещение
+            //FIXME: Повторное оповещение по ключу глушится окном дедупликации в секунду — нужно подтверждать доставку, а не молча пропускать
             return;
         }
         pubSub.async().publish(channel, String.valueOf(key)).await(10, TimeUnit.SECONDS);

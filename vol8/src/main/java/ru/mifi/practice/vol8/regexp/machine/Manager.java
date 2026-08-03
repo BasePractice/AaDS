@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/** Фабрика и реестр состояний конечного автомата. */
 public interface Manager {
     <S extends State> S newState(Class<S> stateClass, Object... args);
 

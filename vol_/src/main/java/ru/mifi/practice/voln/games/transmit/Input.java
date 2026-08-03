@@ -2,6 +2,7 @@ package ru.mifi.practice.voln.games.transmit;
 
 import java.util.Optional;
 
+/** Источник пользовательского ввода в виде строк и чисел. */
 public interface Input {
 
     String readText();

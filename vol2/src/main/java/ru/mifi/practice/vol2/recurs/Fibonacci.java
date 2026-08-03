@@ -1,5 +1,6 @@
 package ru.mifi.practice.vol2.recurs;
 
+/** Рекурсивное вычисление чисел Фибоначчи. */
 public final class Fibonacci {
 
     public static void main(String[] args) {

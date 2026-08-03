@@ -21,6 +21,7 @@ import static ru.mifi.practice.vol8.otp.OTPKey.WAITING_REASON;
 import static ru.mifi.practice.vol8.otp.OTPKey.WAITING_TIME_EXPIRED;
 import static ru.mifi.practice.vol8.otp.OTPKey.WAITING_TIME_EXPIRED_SECOND;
 
+/** Состояния конечного автомата проверки одноразового пароля. */
 public enum OTP implements State {
     INITIATE("Инициализация", true),
     CHECK_SEND("Проверка", false),

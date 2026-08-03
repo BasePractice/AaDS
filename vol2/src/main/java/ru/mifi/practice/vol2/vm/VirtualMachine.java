@@ -11,6 +11,7 @@ import java.util.HexFormat;
 import java.util.Locale;
 
 
+/** Стековая виртуальная машина вычисления и компиляции выражений в байт-код. */
 public interface VirtualMachine {
 
     Value eval(String input, Context context);

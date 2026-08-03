@@ -4,6 +4,7 @@ import ru.mifi.practice.vol8.Machine;
 
 import java.util.Random;
 
+/** Конечный автомат одноразового пароля с генерацией и проверкой кода. */
 public final class OTPMachine extends Machine {
     public static final Key PERSISTENCE_CODE = () -> "persist_code";
 

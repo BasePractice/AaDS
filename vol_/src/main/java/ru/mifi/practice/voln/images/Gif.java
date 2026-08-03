@@ -21,18 +21,19 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.concurrent.TimeUnit;
 
+/** Сборка последовательности кадров в анимированный GIF. */
 @SuppressWarnings("PMD.EmptyCatchBlock")
 @UtilityClass
 public final class Gif {
 
     public void create2(Iterable<BufferedImage> frames, String outputPath, int delayMs, boolean loop) throws IOException {
-        try (FileOutputStream fos = new FileOutputStream(outputPath)) {
+        try (FileOutputStream stream = new FileOutputStream(outputPath)) {
             GifEncoder encoder = null;
             ImageOptions options = new ImageOptions();
             options.setDelay(delayMs, TimeUnit.MILLISECONDS);
             for (BufferedImage frame : frames) {
                 if (encoder == null) {
-                    encoder = new GifEncoder(fos, frame.getWidth(), frame.getHeight(), loop ? 0 : 1);
+                    encoder = new GifEncoder(stream, frame.getWidth(), frame.getHeight(), loop ? 0 : 1);
                 }
                 int[] data = new int[frame.getWidth() * frame.getHeight()];
                 frame.getRGB(0, 0, frame.getWidth(), frame.getHeight(), data, 0, frame.getWidth());
@@ -89,18 +90,18 @@ public final class Gif {
     static void addLoopExtension(String outputPath) throws IOException {
         byte[] gifData = Files.readAllBytes(Paths.get(outputPath));
 
-        try (FileOutputStream fos = new FileOutputStream(outputPath)) {
-            fos.write(gifData);
-            fos.write(0x21);
-            fos.write(0xFF);
-            fos.write(0x0B);
-            fos.write("NETSCAPE2.0".getBytes());
-            fos.write(0x03);
-            fos.write(0x01);
-            fos.write(0x00);
-            fos.write(0x00);
-            fos.write(0x00);
-            fos.write(0x3B);
+        try (FileOutputStream stream = new FileOutputStream(outputPath)) {
+            stream.write(gifData);
+            stream.write(0x21);
+            stream.write(0xFF);
+            stream.write(0x0B);
+            stream.write("NETSCAPE2.0".getBytes());
+            stream.write(0x03);
+            stream.write(0x01);
+            stream.write(0x00);
+            stream.write(0x00);
+            stream.write(0x00);
+            stream.write(0x3B);
         }
     }
 

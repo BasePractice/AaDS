@@ -2,6 +2,7 @@ package ru.mifi.practice.vol2.yasymb.stage2;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+/** Решение ребуса сложения перебором поколений подстановок с откатом. */
 @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.AvoidBranchingStatementAsLastInLoop"})
 public interface Stage {
 

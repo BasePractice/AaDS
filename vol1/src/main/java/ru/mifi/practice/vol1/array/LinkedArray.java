@@ -2,6 +2,7 @@ package ru.mifi.practice.vol1.array;
 
 import java.util.Objects;
 
+/** Массив на основе двусвязного списка узлов. */
 public final class LinkedArray<T> implements Array<T> {
     private Node<T> head;
     private Node<T> tail;

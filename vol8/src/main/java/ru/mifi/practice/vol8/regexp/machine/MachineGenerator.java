@@ -5,6 +5,7 @@ import ru.mifi.practice.vol8.regexp.tree.Tree;
 
 import java.util.LinkedList;
 
+/** Построение конечного автомата обходом синтаксического дерева регулярного выражения. */
 @SuppressWarnings("PMD.LooseCoupling")
 public final class MachineGenerator extends AbstractVisitor {
     private final LinkedList<State> states = new LinkedList<>();

@@ -7,6 +7,7 @@ import ru.mifi.practice.voln.domain.entity.UserEntity;
 import java.util.Optional;
 import java.util.UUID;
 
+/** JPA-репозиторий пользователей. */
 @Repository
 public interface UserRepository extends JpaRepository<UserEntity, UUID> {
     Optional<UserEntity> findByTelegramId(Long telegramId);

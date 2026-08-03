@@ -4,12 +4,12 @@ import ru.mifi.practice.commons.Counter;
 
 import java.util.Arrays;
 
-//Расстояние Левенштайна
+/** Levenshtein edit distance between two strings. */
 public interface Levenshtein extends Distance {
 
     abstract class AbstractLevenshtein implements Levenshtein {
-        protected static int cost(char a, char b) {
-            return a == b ? 0 : 1;
+        protected static int cost(char first, char second) {
+            return first == second ? 0 : 1;
         }
 
         protected static int min(int... numbers) {

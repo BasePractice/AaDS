@@ -12,6 +12,7 @@ import java.util.List;
 import static java.awt.Color.BLUE;
 import static java.awt.Color.DARK_GRAY;
 
+/** Накопление кадров обхода лабиринта в анимированный GIF. */
 public final class GifRepresentation implements Maze.Representation, Iterable<BufferedImage> {
     private final List<BufferedImage> images = new ArrayList<>();
     private final ImageRepresentation image = new ImageRepresentation(40, 4, 8, DARK_GRAY, BLUE);

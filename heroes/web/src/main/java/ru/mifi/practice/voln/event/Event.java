@@ -4,6 +4,7 @@ import lombok.Builder;
 
 import java.time.LocalDateTime;
 
+/** Событие потока с порядковым смещением, типом и данными. */
 @Builder(toBuilder = true)
 public record Event(long streamId, long offset, LocalDateTime createdAt, Data data, Type type, Object source,
                     Object target) {

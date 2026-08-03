@@ -3,6 +3,7 @@ package ru.mifi.practice.vol6.tree;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
 
+/** Binary heap keeping its minimum element at the root. */
 public interface Heap<T extends Comparable<T>> {
 
     T deleteRoot();
@@ -49,9 +50,9 @@ public interface Heap<T extends Comparable<T>> {
         }
 
         private void swap(int position1, int position2) {
-            Object tmp = heap[position1];
+            Object carry = heap[position1];
             heap[position1] = heap[position2];
-            heap[position2] = tmp;
+            heap[position2] = carry;
         }
 
         private void heapify(int position) {

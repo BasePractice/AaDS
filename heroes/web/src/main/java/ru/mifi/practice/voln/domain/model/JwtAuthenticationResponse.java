@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/** Ответ аутентификации с JWT-токеном доступа. */
 @Data
 @Builder
 @NoArgsConstructor

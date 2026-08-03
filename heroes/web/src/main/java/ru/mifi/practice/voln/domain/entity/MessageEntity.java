@@ -14,6 +14,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+/** JPA-сущность сообщения пользователя. */
 @Builder(toBuilder = true)
 @Getter
 @Entity

@@ -3,6 +3,7 @@ package ru.mifi.practice.voln.games.logic;
 import java.util.ArrayList;
 import java.util.List;
 
+/** Персонаж игры с очками здоровья, наносящий и получающий урон. */
 public interface Person extends Updatable {
     void hit(Item item, Context context);
 
@@ -60,7 +61,7 @@ public interface Person extends Updatable {
         private final int index;
         private final Item.DamageItem damage;
         private boolean aggressive;
-        private boolean toArge;
+        private boolean rage;
 
         public int getIndex() {
             return index;
@@ -71,15 +72,15 @@ public interface Person extends Updatable {
             this.index = index;
             this.damage = damage;
             this.aggressive = aggressive;
-            this.toArge = false;
+            this.rage = false;
         }
 
         @Override
         public void update(Context context) {
             super.update(context);
             View view = context.view(this);
-            if (view != null && view.type() == Type.PLAYER && (toArge || aggressive)) {
-                toArge = true;
+            if (view != null && view.type() == Type.PLAYER && (rage || aggressive)) {
+                rage = true;
                 Player player = (Player) view.element();
                 player.hit(damage, context);
             }
@@ -88,7 +89,7 @@ public interface Person extends Updatable {
         @Override
         public void hit(Item item, Context context) {
             super.hit(item, context);
-            toArge = true;
+            rage = true;
         }
     }
 
@@ -174,19 +175,19 @@ public interface Person extends Updatable {
         public void addInventory(Item item, Context context) {
             inventory.add(item);
             while (inventory.size() > 10) {
-                int minIdx = 0;
+                int minIndex = 0;
                 int minDamage = inventory.get(0).damage();
                 for (int i = 1; i < inventory.size(); i++) {
                     if (inventory.get(i).damage() < minDamage) {
                         minDamage = inventory.get(i).damage();
-                        minIdx = i;
+                        minIndex = i;
                     }
                 }
-                Item removed = inventory.get(minIdx);
+                Item removed = inventory.get(minIndex);
                 if (context != null) {
                     context.log("Removed (limit): " + removed);
                 }
-                removeItem(minIdx);
+                removeItem(minIndex);
             }
         }
 

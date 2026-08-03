@@ -10,6 +10,7 @@ import org.springframework.security.provisioning.JdbcUserDetailsManager;
 
 import javax.sql.DataSource;
 
+/** Настройка JDBC-аутентификации и SQL-запросов управления пользователями. */
 @Configuration
 public class GlobalConfiguration {
     /**

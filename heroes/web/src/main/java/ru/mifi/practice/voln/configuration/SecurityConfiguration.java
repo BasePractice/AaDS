@@ -45,6 +45,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+/** Конфигурация веб-безопасности, CORS и JWT-фильтра. */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity

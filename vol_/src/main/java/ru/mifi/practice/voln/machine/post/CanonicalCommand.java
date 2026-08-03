@@ -2,6 +2,7 @@ package ru.mifi.practice.voln.machine.post;
 
 import lombok.Getter;
 
+/** Канонический набор команд машины Поста. */
 @Getter
 public enum CanonicalCommand implements Execute, Execute.Information {
     LABEL_PUT('V', 1),

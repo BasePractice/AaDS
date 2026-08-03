@@ -2,6 +2,7 @@ package ru.mifi.practice.vol2.sudoku;
 
 import java.util.Objects;
 
+/** Содержимое клетки судоку: пустая клетка или цифра. */
 @SuppressWarnings("PMD.ConstantsInInterface")
 public sealed interface Value {
     Value EMPTY = new Empty();

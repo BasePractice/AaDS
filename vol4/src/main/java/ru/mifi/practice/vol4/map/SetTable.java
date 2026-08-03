@@ -6,6 +6,7 @@ import java.util.Comparator;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+/** Множество ключей поверх хеш-таблицы. */
 public interface SetTable<K> extends HashTable<K, Boolean> {
 
     default void add(K key, Counter counter) {

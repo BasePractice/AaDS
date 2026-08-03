@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/** Сортировка слиянием списка сравнимых элементов. */
 public final class MergeSort<E extends Comparable<E>> implements Sort<E> {
     public static <E extends Comparable<E>> List<E> merge(List<E> left, List<E> right, Counter counter, boolean debug) {
         List<E> result = new ArrayList<>(right.size() + left.size());

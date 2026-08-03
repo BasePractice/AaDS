@@ -4,6 +4,7 @@ import ru.mifi.practice.commons.Counter;
 
 import java.util.Optional;
 
+/** Поиск подстроки в тексте по полиномиальному хешу. */
 public interface Search {
     Optional<Index> search(String text, String substring, Counter counter);
 
@@ -31,16 +32,16 @@ public interface Search {
         @Override
         public Optional<Index> search(String text, String subtext, Counter counter) {
             for (int i = 0; i + subtext.length() <= text.length(); i++) {
-                int k = i;
+                int cursor = i;
                 counter.increment();
                 for (int j = 0; j < subtext.length(); j++) {
                     counter.increment();
-                    if (text.charAt(k) != subtext.charAt(j)) {
+                    if (text.charAt(cursor) != subtext.charAt(j)) {
                         break;
                     }
-                    ++k;
+                    ++cursor;
                 }
-                if (k - i == subtext.length()) {
+                if (cursor - i == subtext.length()) {
                     return Optional.of(new Index(text, subtext, i));
                 }
             }

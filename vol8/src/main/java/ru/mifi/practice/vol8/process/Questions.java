@@ -9,6 +9,7 @@ import java.util.Map;
 
 import static ru.mifi.practice.vol8.process.Information.parseStudents;
 
+/** Генерация экзаменационных ведомостей с перечнем вопросов по группам. */
 public abstract class Questions {
     @SuppressWarnings("checkstyle:OperatorWrap")
     static final String PREAMBLE = "" +
@@ -52,23 +53,23 @@ public abstract class Questions {
         var output = new File(".output/questions");
         output.mkdirs();
         for (Map.Entry<String, List<Information.Student>> entry : students.entrySet()) {
-            try (BufferedWriter w = new BufferedWriter(new FileWriter(new File(output, entry.getKey() + ".adoc")))) {
-                w.append("= `").append(entry.getKey()).append("`").append("\n").append(":hardbreaks-option:").append("\n").append("\n");
-                w.append(PREAMBLE).append("\n").append("\n");
-                w.append("[cols=\"^5%m,25%m,^40%m,^25%m,^5%m\"]").append("\n");
-                w.append("|===").append("\n");
-                w.append("|№|Алгоритм/Структура|Ф.И.О.|Примечание|Оц.").append("\n");
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File(output, entry.getKey() + ".adoc")))) {
+                writer.append("= `").append(entry.getKey()).append("`").append("\n").append(":hardbreaks-option:").append("\n").append("\n");
+                writer.append(PREAMBLE).append("\n").append("\n");
+                writer.append("[cols=\"^5%m,25%m,^40%m,^25%m,^5%m\"]").append("\n");
+                writer.append("|===").append("\n");
+                writer.append("|№|Алгоритм/Структура|Ф.И.О.|Примечание|Оц.").append("\n");
                 int count = 0;
                 for (String[] question : QUESTIONS) {
-                    w.append("\n");
-                    w.append("|").append(String.valueOf(count)).append("\n");
+                    writer.append("\n");
+                    writer.append("|").append(String.valueOf(count)).append("\n");
                     ++count;
-                    w.append("|**").append(question[0]).append("**\n");
-                    w.append("|").append(question[1]).append("\n");
-                    w.append("|").append("\n");
-                    w.append("|").append("\n");
+                    writer.append("|**").append(question[0]).append("**\n");
+                    writer.append("|").append(question[1]).append("\n");
+                    writer.append("|").append("\n");
+                    writer.append("|").append("\n");
                 }
-                w.append("|===").append("\n");
+                writer.append("|===").append("\n");
             }
         }
     }

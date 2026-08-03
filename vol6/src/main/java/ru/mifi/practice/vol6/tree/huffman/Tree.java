@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.PriorityQueue;
 
+/** Huffman compression and decompression of text. */
 @SuppressWarnings({"PMD.UseUtilityClass", "PMD.LooseCoupling"})
 public final class Tree {
 
@@ -15,8 +16,8 @@ public final class Tree {
         Node root = buildTree(frequency);
         buildCodes(root, "", codes);
         StringBuilder encoded = new StringBuilder();
-        for (char c : text.toCharArray()) {
-            encoded.append(codes.get(c));
+        for (char character : text.toCharArray()) {
+            encoded.append(codes.get(character));
         }
         return new Compressed(root, encoded.toString());
     }
@@ -35,7 +36,7 @@ public final class Tree {
 
     private static Node buildTree(Map<Character, Integer> frequency) {
         PriorityQueue<Node> min = new PriorityQueue<>();
-        frequency.forEach((k, v) -> min.add(new Node(k, v, null, null)));
+        frequency.forEach((character, count) -> min.add(new Node(character, count, null, null)));
         while (min.size() > 1) {
             Node left = Objects.requireNonNull(min.poll());
             Node right = Objects.requireNonNull(min.poll());
@@ -47,8 +48,8 @@ public final class Tree {
 
     private static void frequency(String text, Map<Character, Integer> frequency) {
         frequency.clear();
-        for (var c : text.toCharArray()) {
-            frequency.put(c, frequency.getOrDefault(c, 0) + 1);
+        for (var character : text.toCharArray()) {
+            frequency.put(character, frequency.getOrDefault(character, 0) + 1);
         }
     }
 
@@ -62,8 +63,8 @@ public final class Tree {
                 return String.valueOf(tree.character).repeat(text.length());
             }
             Node it = tree;
-            for (var c : text.toCharArray()) {
-                if (c == '0') {
+            for (var bit : text.toCharArray()) {
+                if (bit == '0') {
                     it = it.left;
                 } else {
                     it = it.right;

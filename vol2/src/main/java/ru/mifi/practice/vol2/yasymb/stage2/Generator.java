@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
+/** Генератор случайных ребусов сложения из чисел и их буквенных подстановок. */
 public final class Generator {
     private final Random random = new Random();
     private final int xSize;

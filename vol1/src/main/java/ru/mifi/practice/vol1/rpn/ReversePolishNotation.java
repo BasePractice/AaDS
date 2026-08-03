@@ -3,6 +3,7 @@ package ru.mifi.practice.vol1.rpn;
 import java.util.Optional;
 import java.util.Stack;
 
+/** Вычислитель арифметических выражений в обратной польской записи. */
 public interface ReversePolishNotation {
     Number evaluate(String expression);
 
@@ -20,9 +21,9 @@ public interface ReversePolishNotation {
                 if (Character.isDigit(part.charAt(0))) {
                     stack.push(Integer.parseInt(part));
                 } else {
-                    var o = part;
-                    Op.fromString(o).map(op -> op.eval(stack))
-                        .orElseThrow(() -> new UnsupportedOperationException("Unsupported " + o));
+                    var token = part;
+                    Op.fromString(token).map(op -> op.eval(stack))
+                        .orElseThrow(() -> new UnsupportedOperationException("Unsupported " + token));
                 }
             }
             if (stack.isEmpty()) {

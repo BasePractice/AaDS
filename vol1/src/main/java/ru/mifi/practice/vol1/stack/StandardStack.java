@@ -2,6 +2,7 @@ package ru.mifi.practice.vol1.stack;
 
 import ru.mifi.practice.vol1.array.Array;
 
+/** Стек LIFO поверх массива. */
 public final class StandardStack<T> implements Stack<T> {
     private final Array<T> array;
 

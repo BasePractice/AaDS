@@ -2,6 +2,7 @@ package ru.mifi.practice.vol1.queue;
 
 import ru.mifi.practice.vol1.array.Array;
 
+/** Очередь FIFO поверх массива. */
 public final class ArrayQueue<T> implements Queue<T> {
     private final Array<T> array;
 

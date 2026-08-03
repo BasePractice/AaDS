@@ -13,6 +13,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+/** Формирование ведомости студентов со статистикой их файлов кода. */
 public abstract class Information {
     private static final Set<String> ACCEPTING = Set.of("КАБО-01-23", "КАБО-02-23", "КВБО-01-23");
 
@@ -35,8 +36,8 @@ public abstract class Information {
             br.readLine();
             while ((line = br.readLine()) != null) {
                 String[] values = line.split(",");
-                String io = values[0].trim().replaceAll("\"", "");
-                String f = values[1].trim().replaceAll("\"", "");
+                String name = values[0].trim().replaceAll("\"", "");
+                String surname = values[1].trim().replaceAll("\"", "");
                 String code = values[2].trim().toUpperCase(Locale.ROOT).replaceAll("\"", "")
                     .replace('К', 'K').replace('Л', 'L').replace('Р', 'R');
                 String group = values[4].trim().toUpperCase(Locale.ROOT).replaceAll("\"", "");
@@ -44,14 +45,14 @@ public abstract class Information {
                     continue;
                 }
                 if (!code.isEmpty()) {
-                    String reduced = String.join(".", io.chars().filter(Character::isUpperCase).mapToObj(Character::toString).reduce("",
-                        (a, b) -> a + b, (a, b) -> a + b).split("")) + ".";
-                    students.computeIfAbsent(group, k -> new ArrayList<>())
-                        .add(new Student(code, group, String.format("%s %s", f, reduced)));
+                    String reduced = String.join(".", name.chars().filter(Character::isUpperCase).mapToObj(Character::toString).reduce("",
+                        (left, right) -> left + right, (left, right) -> left + right).split("")) + ".";
+                    students.computeIfAbsent(group, key -> new ArrayList<>())
+                        .add(new Student(code, group, String.format("%s %s", surname, reduced)));
                 }
             }
         }
-        students.forEach((k, v) -> v.sort(Student::compareTo));
+        students.forEach((group, list) -> list.sort(Student::compareTo));
         return students;
     }
 

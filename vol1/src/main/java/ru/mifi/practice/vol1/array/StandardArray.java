@@ -2,6 +2,7 @@ package ru.mifi.practice.vol1.array;
 
 import java.util.Objects;
 
+/** Динамический массив поверх авторасширяемого хранилища. */
 public final class StandardArray<T> implements Array<T> {
     private int capacity;
     private int size;

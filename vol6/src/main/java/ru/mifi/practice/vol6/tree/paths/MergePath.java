@@ -7,13 +7,14 @@ import ru.mifi.practice.vol6.tree.Tree;
 import java.util.Collections;
 import java.util.List;
 
+/** Path between two values found by merging their root paths. */
 public final class MergePath<T> implements Path<T> {
 
     @Override
     public List<Node<T>> path(Tree<T> tree, T start, T end) {
         Node<T> it = tree.find(start);
-        Node<T> nEnd = it.search(end);
-        if (nEnd != null) {
+        Node<T> found = it.search(end);
+        if (found != null) {
             return it.path(end);
         }
         while (it != null) {

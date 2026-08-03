@@ -2,6 +2,7 @@ package ru.mifi.practice.voln.event;
 
 import java.util.concurrent.atomic.AtomicLong;
 
+/** Монотонный генератор порядковых номеров событий. */
 public interface EventSequence {
     long next();
 

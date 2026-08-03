@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+/** Компилятор текста программы машины Поста в исполняемые команды. */
 public interface Compiler {
 
     List<Execute.Code> compile(Reader reader) throws IOException;
@@ -17,7 +18,7 @@ public interface Compiler {
         private final Map<Character, Execute.Information> executes;
 
         public Default(Execute.Information... executes) {
-            this.executes = Stream.of(executes).collect(Collectors.toMap(Execute.Information::getSymbol, e -> e));
+            this.executes = Stream.of(executes).collect(Collectors.toMap(Execute.Information::getSymbol, information -> information));
         }
 
         @Override
@@ -27,10 +28,10 @@ public interface Compiler {
             String line;
             while ((line = bufferedReader.readLine()) != null) {
                 line = line.trim();
-                char c = line.charAt(0);
-                Execute.Information information = this.executes.get(c);
+                char symbol = line.charAt(0);
+                Execute.Information information = this.executes.get(symbol);
                 if (information == null) {
-                    throw new IllegalStateException("Unknown command symbol: " + c);
+                    throw new IllegalStateException("Unknown command symbol: " + symbol);
                 }
                 int[] args = new int[information.getArguments()];
                 line = line.substring(1).trim();

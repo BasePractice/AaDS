@@ -17,6 +17,7 @@ import static java.awt.Color.BLACK;
 import static java.awt.Color.BLUE;
 import static java.awt.Color.DARK_GRAY;
 
+/** Отрисовка лабиринта и найденного пути в PNG-изображение. */
 public record ImageRepresentation(int width,
                                   int thickness,
                                   int pathThickness,
@@ -34,10 +35,10 @@ public record ImageRepresentation(int width,
         g.setColor(color);
         int lastX = -1;
         int lastY = -1;
-        for (Maze.Point p : path) {
+        for (Maze.Point point : path) {
             int halfWidth = width / 2;
-            int xCenter = (p.x() * width) + halfWidth;
-            int yCenter = (p.y() * width) + halfWidth;
+            int xCenter = (point.x() * width) + halfWidth;
+            int yCenter = (point.y() * width) + halfWidth;
             if (lastX >= 0 && lastY >= 0) {
                 g.drawLine(lastX, lastY, xCenter, yCenter);
             }
@@ -114,10 +115,10 @@ public record ImageRepresentation(int width,
         g.setStroke(new BasicStroke(thickness()));
         final Color lastColor = g.getColor();
         g.setColor(color);
-        for (Maze.Point p : points) {
+        for (Maze.Point point : points) {
             int halfWidth = width() / 2;
-            int xCenter = (p.x() * width()) + halfWidth;
-            int yCenter = (p.y() * width()) + halfWidth;
+            int xCenter = (point.x() * width()) + halfWidth;
+            int yCenter = (point.y() * width()) + halfWidth;
             drawCenteredCircle(g, xCenter, yCenter, pathThickness());
         }
         g.setStroke(lastStroke);

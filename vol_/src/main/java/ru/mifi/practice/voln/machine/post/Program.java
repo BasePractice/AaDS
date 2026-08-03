@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.List;
 
+/** Скомпилированная программа машины Поста, исполняемая головкой. */
 public interface Program {
 
     void execute(MechanicalHead head);

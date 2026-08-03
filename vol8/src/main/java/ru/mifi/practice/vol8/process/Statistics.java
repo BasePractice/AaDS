@@ -17,6 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
+/** Подсчёт уникальных и дублирующихся строк кода в каталогах студентов. */
 public interface Statistics {
     Map<String, Information> scan() throws IOException;
 

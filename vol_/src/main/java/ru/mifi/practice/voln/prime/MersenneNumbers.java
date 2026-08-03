@@ -54,15 +54,15 @@ public final class MersenneNumbers {
         if (maxP < 2) {
             return new int[0];
         }
-        List<Integer> exps = new ArrayList<>();
+        List<Integer> exponents = new ArrayList<>();
         for (int p = 2; p <= maxP; p++) {
             if (isMersennePrime(p)) {
-                exps.add(p);
+                exponents.add(p);
             }
         }
-        int[] result = new int[exps.size()];
-        for (int i = 0; i < exps.size(); i++) {
-            result[i] = exps.get(i);
+        int[] result = new int[exponents.size()];
+        for (int i = 0; i < exponents.size(); i++) {
+            result[i] = exponents.get(i);
         }
         return result;
     }

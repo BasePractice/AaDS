@@ -3,6 +3,7 @@ package ru.mifi.practice.vol1.cbs;
 import java.util.Optional;
 import java.util.Stack;
 
+/** Проверка сбалансированности скобочной последовательности во входной строке. */
 public interface CorrectBriceSequence {
 
     boolean isCorrect(String input);
@@ -44,8 +45,8 @@ public interface CorrectBriceSequence {
             Stack<Brice> stack = new Stack<>();
             int length = input.length();
             for (int i = 0; i < length; i++) {
-                char c = input.charAt(i);
-                Optional<Brice> is = Type.is(c);
+                char character = input.charAt(i);
+                Optional<Brice> is = Type.is(character);
                 if (is.isPresent()) {
                     Brice brice = is.get();
                     if (brice.kind == Kind.OPEN) {

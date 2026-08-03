@@ -31,6 +31,7 @@ import ru.mifi.practice.voln.repository.UserRepository;
 import java.util.List;
 import java.util.Optional;
 
+/** Сервис обработки сообщений Telegram-бота и регистрации пользователей. */
 @Slf4j
 @RequiredArgsConstructor
 @Service("TelegramHandler.Default")
@@ -128,9 +129,9 @@ public class TelegramHandlerService implements TelegramHandler {
         }
         Optional<UserEntity> userEntity = userRepository.findByTelegramId(userId);
         if (userEntity.isPresent()) {
-            UserEntity ue = userEntity.get();
-            if (ue.isTelegramRegistered()) {
-                processing(bot, update, ue);
+            UserEntity entity = userEntity.get();
+            if (entity.isTelegramRegistered()) {
+                processing(bot, update, entity);
             } else {
                 sendContactPermissions(bot, chatId);
             }

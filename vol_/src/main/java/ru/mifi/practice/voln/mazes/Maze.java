@@ -3,6 +3,7 @@ package ru.mifi.practice.voln.mazes;
 import java.awt.Color;
 import java.util.Objects;
 
+/** Прямоугольный лабиринт с генерацией, поиском пути и отрисовкой. */
 @SuppressWarnings("PMD.ConstantsInInterface")
 public interface Maze {
     char SQUARE_LEFT = 1;

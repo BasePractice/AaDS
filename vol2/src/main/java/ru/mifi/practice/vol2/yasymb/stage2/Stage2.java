@@ -3,6 +3,7 @@ package ru.mifi.practice.vol2.yasymb.stage2;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
+/** Решение ребуса сложения пошаговым перебором разрядов с откатом. */
 public interface Stage2 {
 
     static boolean start(String x, String y, String z, boolean debug) {
@@ -268,6 +269,7 @@ public interface Stage2 {
             boolean nextGeneration = true;
             while (true) {
                 //FIXME: Грязный хак
+                //FIXME: убрать досрочный выход по глобальному solution.isComplete(); отложено, так как меняет поток перебора
                 if (solution.isComplete()) {
                     return true;
                 }

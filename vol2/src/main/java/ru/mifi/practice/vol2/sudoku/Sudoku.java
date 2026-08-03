@@ -1,5 +1,6 @@
 package ru.mifi.practice.vol2.sudoku;
 
+/** Решатель судоку с подсчётом итераций перебора. */
 public interface Sudoku {
 
     static Factory recursionFactory(boolean debug) {
@@ -51,12 +52,12 @@ public interface Sudoku {
         }
 
         protected boolean isPlacement(int row, int col, Value digit) {
-            boolean b = !grid.isNumberInRow(row, digit)
+            boolean valid = !grid.isNumberInRow(row, digit)
                 && !grid.isNumberInCol(col, digit)
                 && !grid.isNumberInQuad(row, col, digit);
             iterations += grid.iterations();
             grid.clear();
-            return b;
+            return valid;
         }
 
         protected void printDeep(int row, int col, Value digit) {

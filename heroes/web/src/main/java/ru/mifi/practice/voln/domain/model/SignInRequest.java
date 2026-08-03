@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
+/** Запрос на вход по логину и паролю. */
 @Data
 @Schema(description = "Запрос на аутентификацию")
 public class SignInRequest {

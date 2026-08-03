@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
+/** Двухуровневый кэш значения по ключу с фоновым обновлением через оповещения. */
 public final class SimpleCacheableValue implements CacheableValue {
     private static final int MINIMUM_L1_DELTA_MS = 100;
     private static final String UPDATE_DATE = "update_date";
@@ -55,8 +56,8 @@ public final class SimpleCacheableValue implements CacheableValue {
     }
 
     private static long timestampCurrent() {
-        ZonedDateTime zdt = LocalDateTime.now().atZone(ZONE_ID);
-        return zdt.toInstant().toEpochMilli();
+        ZonedDateTime moment = LocalDateTime.now().atZone(ZONE_ID);
+        return moment.toInstant().toEpochMilli();
     }
 
     private static LocalDateTime timestampLdt(long timestamp) {

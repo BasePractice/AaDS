@@ -7,6 +7,7 @@ import ru.mifi.practice.voln.domain.model.UserModel;
 import ru.mifi.practice.voln.domain.model.UserRegistrationRequest;
 import ru.mifi.practice.voln.domain.model.UserRepresentation;
 
+/** MapStruct-маппер между сущностью пользователя и её моделями. */
 @Mapper
 public interface UserMapper {
     UserMapper MAPPER = Mappers.getMapper(UserMapper.class);

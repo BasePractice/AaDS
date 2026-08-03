@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Stream;
 
+/** Поток событий с добавлением и выборкой по смещению. */
 public interface EventStream {
     long id();
 

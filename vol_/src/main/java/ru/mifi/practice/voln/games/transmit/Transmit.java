@@ -3,6 +3,7 @@ package ru.mifi.practice.voln.games.transmit;
 import java.io.PrintStream;
 import java.util.Scanner;
 
+/** Двусторонний канал ввода-вывода поверх стандартных потоков. */
 public interface Transmit extends Input, Output {
 
     final class Standard implements Transmit {

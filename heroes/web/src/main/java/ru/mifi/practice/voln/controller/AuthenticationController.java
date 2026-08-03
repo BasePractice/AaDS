@@ -13,6 +13,7 @@ import ru.mifi.practice.voln.domain.model.SignInRequest;
 import ru.mifi.practice.voln.domain.model.SignUpRequest;
 import ru.mifi.practice.voln.service.AuthenticationService;
 
+/** REST-контроллер регистрации и авторизации пользователей. */
 @RestController
 @RequestMapping("/auth")
 @RequiredArgsConstructor

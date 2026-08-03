@@ -8,6 +8,7 @@ import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.concurrent.ThreadLocalRandom;
 
+/** Боевой юнит с атакой, защитой, здоровьем и скоростью. */
 public final class Unit {
     private static final int ATTACK_DIVIDER = 100;
     private final int attack;

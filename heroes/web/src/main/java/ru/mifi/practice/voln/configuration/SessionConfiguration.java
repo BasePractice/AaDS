@@ -7,6 +7,7 @@ import org.springframework.session.SessionRepository;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+/** Конфигурация хранилища сессий в памяти. */
 @Configuration
 public class SessionConfiguration {
     @Bean

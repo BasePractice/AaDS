@@ -6,6 +6,7 @@ import ru.mifi.practice.vol6.tree.Visitor;
 import java.util.ArrayList;
 import java.util.List;
 
+/** Visitor collecting the Euler tour of a tree. */
 public final class EulerPath<T> implements Visitor<T> {
     private final List<Node<T>> nodes = new ArrayList<>();
 

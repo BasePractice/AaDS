@@ -4,6 +4,7 @@ import ru.mifi.practice.commons.Counter;
 import java.util.Optional;
 import java.util.function.UnaryOperator;
 
+/** Абстракция поиска значения в числовом диапазоне по функции. */
 public interface Search<E extends Number & Comparable<E>, R extends Number> {
     Optional<R> search(E element, Range<E> range, Function<E> function, Counter counter);
 

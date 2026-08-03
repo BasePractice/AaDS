@@ -6,6 +6,7 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.resource.VersionResourceResolver;
 
+/** Конфигурация раздачи статических веб-ресурсов. */
 @Configuration
 @EnableWebMvc
 public class WebConfiguration implements WebMvcConfigurer {

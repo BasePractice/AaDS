@@ -4,6 +4,7 @@ import ru.mifi.practice.commons.Counter;
 
 import java.util.Optional;
 
+/** Binary search tree of comparable values. */
 public interface BinaryTree<T extends Comparable<T>> {
 
     BinaryTree<T> add(T value);

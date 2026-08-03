@@ -18,6 +18,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
+/** Сервис выпуска и проверки JWT-токенов. */
 @Service
 @RequiredArgsConstructor
 public class JwtService {

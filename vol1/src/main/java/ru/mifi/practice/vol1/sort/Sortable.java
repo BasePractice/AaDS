@@ -2,6 +2,7 @@ package ru.mifi.practice.vol1.sort;
 
 import java.util.Arrays;
 
+/** Стратегия сортировки массива сравнимых элементов. */
 @FunctionalInterface
 public interface Sortable<T extends Comparable<T>> {
     void sort(T[] data);
@@ -71,10 +72,10 @@ public interface Sortable<T extends Comparable<T>> {
         private MergeSorting() {
         }
 
-        private static <T> void swap(T[] x, int a, int b) {
-            T t = x[a];
-            x[a] = x[b];
-            x[b] = t;
+        private static <T> void swap(T[] array, int first, int second) {
+            T value = array[first];
+            array[first] = array[second];
+            array[second] = value;
         }
 
         private static <T extends Comparable<T>> void mergeSort(T[] src,
@@ -130,9 +131,9 @@ public interface Sortable<T extends Comparable<T>> {
             for (int i = 0; i < data.length - 1; i++) {
                 for (int j = 0; j < data.length - i - 1; j++) {
                     if (data[j].compareTo(data[j + 1]) > 0) {
-                        T temp = data[j];
+                        T value = data[j];
                         data[j] = data[j + 1];
-                        data[j + 1] = temp;
+                        data[j + 1] = value;
                     }
                 }
             }
@@ -153,9 +154,9 @@ public interface Sortable<T extends Comparable<T>> {
                         minimum = j;
                     }
                 }
-                T temp = data[minimum];
+                T value = data[minimum];
                 data[minimum] = data[i];
-                data[i] = temp;
+                data[i] = value;
             }
         }
     }

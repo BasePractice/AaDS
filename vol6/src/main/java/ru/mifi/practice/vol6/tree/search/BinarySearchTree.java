@@ -1,5 +1,6 @@
 package ru.mifi.practice.vol6.tree.search;
 
+/** Unbalanced binary search tree. */
 @SuppressWarnings("PMD.OverrideBothEqualsAndHashCodeOnComparable")
 public final class BinarySearchTree<T extends Comparable<T>> extends BinaryTree.AbstractBinaryTree<T> {
 

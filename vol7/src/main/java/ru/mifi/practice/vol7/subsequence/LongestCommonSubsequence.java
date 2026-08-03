@@ -2,7 +2,7 @@ package ru.mifi.practice.vol7.subsequence;
 
 import ru.mifi.practice.commons.Counter;
 
-//Наибольшая общая подпоследовательность
+/** Length of the longest common subsequence of two strings. */
 public interface LongestCommonSubsequence {
     int longestCommonSubsequence(String text1, String text2, Counter counter);
 
@@ -10,12 +10,12 @@ public interface LongestCommonSubsequence {
 
         @Override
         public int longestCommonSubsequence(String text1, String text2, Counter counter) {
-            int n = text1.length();
-            int m = text2.length();
-            int[][] table = new int[n + 1][m + 1];
-            for (int i = 1; i <= n; i++) {
+            int rows = text1.length();
+            int columns = text2.length();
+            int[][] table = new int[rows + 1][columns + 1];
+            for (int i = 1; i <= rows; i++) {
                 counter.increment();
-                for (int j = 1; j <= m; j++) {
+                for (int j = 1; j <= columns; j++) {
                     counter.increment();
                     if (text1.charAt(i - 1) == text2.charAt(j - 1)) {
                         table[i][j] = table[i - 1][j - 1] + 1;
@@ -24,7 +24,7 @@ public interface LongestCommonSubsequence {
                     }
                 }
             }
-            return table[n][m];
+            return table[rows][columns];
         }
     }
 }

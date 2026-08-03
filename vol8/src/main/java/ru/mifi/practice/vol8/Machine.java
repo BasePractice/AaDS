@@ -10,6 +10,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
+/** Абстрактный конечный автомат, исполняющий переходы состояний над контекстом. */
 @Getter
 public abstract class Machine {
     public static final Key MACHINE_CLASS = () -> "machine_class";
@@ -119,7 +120,7 @@ public abstract class Machine {
 
             @Override
             public void clear() {
-                //FIXME:
+                //FIXME: clear() стирает весь контекст вместе с текущим состоянием — уточнить, что должно переживать сброс
                 values.clear();
             }
 
@@ -139,17 +140,17 @@ public abstract class Machine {
             @Override
             public <T> Optional<T> get(Key key, Class<T> valueClass) {
                 return Optional.ofNullable(Optional.ofNullable((T) values.get(key.key())).orElseGet(() -> {
-                    String v = System.getenv(key.key().toUpperCase(Locale.ROOT));
-                    if (v == null || v.isEmpty()) {
-                        v = System.getProperty(key.key().toLowerCase(Locale.ROOT));
+                    String value = System.getenv(key.key().toUpperCase(Locale.ROOT));
+                    if (value == null || value.isEmpty()) {
+                        value = System.getProperty(key.key().toLowerCase(Locale.ROOT));
                     }
-                    if (v != null && !v.isEmpty()) {
+                    if (value != null && !value.isEmpty()) {
                         if (valueClass.isAssignableFrom(Integer.class)) {
-                            return (T) Integer.valueOf(v);
+                            return (T) Integer.valueOf(value);
                         } else if (valueClass.isAssignableFrom(LocalDateTime.class)) {
-                            return (T) DATE_TIME_FORMATTER.parse(v, LocalDateTime::from);
+                            return (T) DATE_TIME_FORMATTER.parse(value, LocalDateTime::from);
                         } else if (valueClass.isAssignableFrom(String.class)) {
-                            return (T) v;
+                            return (T) value;
                         } else {
                             throw new RuntimeException("Unsupported value type: " + valueClass);
                         }

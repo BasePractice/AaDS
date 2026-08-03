@@ -2,6 +2,7 @@ package ru.mifi.practice.vol8.regexp.machine;
 
 import java.util.Optional;
 
+/** Поток входных символов для сопоставления с конечным автоматом. */
 public interface Input {
 
     static Input of(String text) {

@@ -3,6 +3,7 @@ package ru.mifi.practice.vol8.regexp.tree;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
+/** Восстановление исходного текста регулярного выражения обходом дерева. */
 public final class OriginalTextGenerator extends AbstractStringVisitor {
     private final Deque<Boolean> nextOr = new ArrayDeque<>();
 

@@ -27,6 +27,7 @@ import java.util.function.Supplier;
 
 import static net.bytebuddy.matcher.ElementMatchers.isPublic;
 
+/** Пул переиспользуемых закрываемых объектов, выдаваемых через прокси. */
 public interface ObjectPool<T extends Closeable> extends Closeable {
     Optional<T> getObject(long timeout, TimeUnit unit);
 

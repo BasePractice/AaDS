@@ -13,6 +13,7 @@ import ru.mifi.practice.voln.repository.UserRepository;
 
 import java.util.List;
 
+/** Сервис регистрации и входа с выдачей JWT-токена. */
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {

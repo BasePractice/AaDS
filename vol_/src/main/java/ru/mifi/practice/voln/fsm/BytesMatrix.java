@@ -9,6 +9,7 @@ import java.util.BitSet;
 import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
+/** Тороидальная матрица байтов с заворачиванием координат по краям. */
 public interface BytesMatrix {
 
     static BytesMatrix defaults(int rows, int cols) {

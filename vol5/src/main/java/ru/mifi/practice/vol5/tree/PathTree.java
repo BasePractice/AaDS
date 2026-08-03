@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+/** Prefix tree that matches element paths, allowing wildcard segments. */
 public interface PathTree<K, V> {
 
     static <V> PathTree<String, V> create() {
@@ -61,7 +62,7 @@ public interface PathTree<K, V> {
         public void add(K[] elements, V value) {
             int index = 0;
             K element = transformer.transform(elements[index]);
-            Node<K, V> node = nodes.computeIfAbsent(element, e -> new Node<>(null, e));
+            Node<K, V> node = nodes.computeIfAbsent(element, key -> new Node<>(null, key));
             add(node, elements, index + 1, value);
         }
 
@@ -71,7 +72,7 @@ public interface PathTree<K, V> {
             }
             K element = transformer.transform(elements[index]);
             Map<K, Node<K, V>> nodes = parent.nodes;
-            Node<K, V> node = nodes.computeIfAbsent(element, e -> new Node<>(parent, e));
+            Node<K, V> node = nodes.computeIfAbsent(element, key -> new Node<>(parent, key));
             if (index + 1 < elements.length) {
                 add(node, elements, index + 1, value);
             } else {
@@ -85,7 +86,7 @@ public interface PathTree<K, V> {
 
         @Override
         public Optional<V> match(K[] key) {
-            return search(key).filter(n -> n.value != null).map(Node::value);
+            return search(key).filter(node -> node.value != null).map(Node::value);
         }
     }
 

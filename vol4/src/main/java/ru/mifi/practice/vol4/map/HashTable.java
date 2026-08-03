@@ -10,6 +10,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+/** Хеш-таблица с разрешением коллизий цепочками записей. */
 public interface HashTable<K, V> {
 
     void put(K key, V value, Counter counter);
@@ -117,6 +118,7 @@ public interface HashTable<K, V> {
         private void resize() {
             if (size > entries.length * 8) {
                 //TODO: реализовать перехеширование
+                //TODO: перераспределить записи по большему массиву при росте нагрузки; отложено, чтобы не менять логику в правке стиля
             }
         }
 
@@ -222,6 +224,7 @@ public interface HashTable<K, V> {
         }
 
         //FIXME: В высшей степени плохая реализация. Но зато быстрая.
+        //FIXME: собирать записи ленивым обходом вместо копирования всех корзин в список; отложено ради минимальной правки стиля
         @SuppressWarnings("PMD.ForLoopCanBeForeach")
         @Override
         public Stream<Entry<K, V>> sorted(Comparator<Entry<K, V>> comparator) {

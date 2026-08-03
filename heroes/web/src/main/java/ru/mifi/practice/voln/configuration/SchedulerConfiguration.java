@@ -9,6 +9,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
+/** Конфигурация планировщика задач с метриками. */
 @Configuration
 @EnableScheduling
 public class SchedulerConfiguration {

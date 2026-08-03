@@ -2,6 +2,7 @@ package ru.mifi.practice.voln.trampoline;
 
 import java.util.function.Supplier;
 
+/** Трамплин для разворачивания рекурсии в цикл без переполнения стека. */
 public interface Trampoline<T> {
     static <T> Trampoline<T> done(T value) {
         return new Done<>(value);

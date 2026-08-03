@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.function.Function;
 
+/** Ключи контекста для параметров и счётчиков одноразового пароля. */
 @SuppressWarnings("PMD")
 public enum OTPKey implements Machine.Key {
     BLOCKING_TIME_EXPIRED("blocking_time_expired", LocalDateTime.class),

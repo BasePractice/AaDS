@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/** Visitor recording entry and exit times of each node during traversal. */
 public final class OnSubTree<T> implements Visitor<T> {
     private final Map<Node<T>, Integer> stepsIn = new HashMap<>();
     private final Map<Node<T>, Integer> stepsOut = new HashMap<>();

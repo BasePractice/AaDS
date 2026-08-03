@@ -7,6 +7,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 
 import java.util.UUID;
 
+/** Конфигурация Redis-шаблона для хранения комнат. */
 @Configuration
 public class RedisConfiguration {
     @Bean

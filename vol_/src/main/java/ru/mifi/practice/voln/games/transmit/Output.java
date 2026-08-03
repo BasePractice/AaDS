@@ -1,5 +1,6 @@
 package ru.mifi.practice.voln.games.transmit;
 
+/** Приёмник форматированного вывода игры. */
 public interface Output {
     void print(String format, Object... args);
 

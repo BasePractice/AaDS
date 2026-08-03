@@ -2,6 +2,7 @@ package ru.mifi.practice.voln.games.logic;
 
 import lombok.NonNull;
 
+/** Сущность, обновляющая своё состояние на каждом такте игры. */
 public interface Updatable {
     void update(Context context);
 

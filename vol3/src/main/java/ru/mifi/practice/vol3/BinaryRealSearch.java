@@ -3,6 +3,7 @@ package ru.mifi.practice.vol3;
 import ru.mifi.practice.commons.Counter;
 import java.util.Optional;
 
+/** Двоичный поиск вещественного значения с заданной точностью. */
 public final class BinaryRealSearch implements Search<Double, Number> {
     private final Number delta;
     private final boolean debug;

@@ -5,6 +5,7 @@ import ru.mifi.practice.vol6.tree.Visitor;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
+/** Visitor counting the nodes of a tree. */
 public final class Count<T> implements Visitor<T> {
     private final AtomicInteger count = new AtomicInteger(0);
 

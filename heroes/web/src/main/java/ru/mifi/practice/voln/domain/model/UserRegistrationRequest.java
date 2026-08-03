@@ -4,7 +4,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-//FIXME: Как провалидировать?
+//FIXME: Поля запроса принимаются без проверок — нужно навесить валидацию имени, пароля и профиля, как в SignUpRequest
+/** Запрос на регистрацию пользователя из внешнего источника. */
 @Builder
 @Setter
 @Getter

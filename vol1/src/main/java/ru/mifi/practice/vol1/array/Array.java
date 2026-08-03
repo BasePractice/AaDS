@@ -1,5 +1,6 @@
 package ru.mifi.practice.vol1.array;
 
+/** Абстракция индексируемого массива элементов. */
 public interface Array<T> {
     T get(int index);
 

@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.function.Function;
 
+/** Loader that reads a braced source-target-weight text description into a graph. */
 @SuppressWarnings({"PMD.EmptyControlStatement", "PMD.CompareObjectsWithEquals"})
 public final class ParserText<T> implements Graph.Loader<String, T, Integer> {
 
@@ -24,15 +25,15 @@ public final class ParserText<T> implements Graph.Loader<String, T, Integer> {
         StringBuilder current = source;
         Graph<T, Integer> graph = new Graph.Standard<>();
         while ((ret = stream.read()) != -1) {
-            char c = (char) ret;
-            if (Character.isWhitespace(c)) {
+            char character = (char) ret;
+            if (Character.isWhitespace(character)) {
                 continue;
-            } else if (c == '{') {
+            } else if (character == '{') {
                 source.setLength(0);
                 target.setLength(0);
                 weight.setLength(0);
                 current = source;
-            } else if (c == '}') {
+            } else if (character == '}') {
                 String sourceText = source.toString();
                 String targetText = target.toString();
                 String weightText = weight.toString();
@@ -42,7 +43,7 @@ public final class ParserText<T> implements Graph.Loader<String, T, Integer> {
                 Graph.Vertex<T, Integer> sourceVertex = graph.addVertex(sourceText, value.apply(sourceText));
                 Graph.Vertex<T, Integer> targetVertex = graph.addVertex(targetText, value.apply(targetText));
                 sourceVertex.addEdge(targetVertex, weightFun.apply(weightText));
-            } else if (c == ',') {
+            } else if (character == ',') {
                 if (current == source) {
                     current = target;
                 } else if (current == target) {
@@ -50,7 +51,7 @@ public final class ParserText<T> implements Graph.Loader<String, T, Integer> {
                     current = weight;
                 }
             } else {
-                current.append(c);
+                current.append(character);
             }
         }
         return graph;

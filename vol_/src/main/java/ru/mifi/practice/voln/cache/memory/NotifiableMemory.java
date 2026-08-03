@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
+/** Оповещатель поверх очереди в памяти с фоновой доставкой подписчикам. */
 public final class NotifiableMemory implements Notifiable, Runnable {
     private final AtomicBoolean running = new AtomicBoolean(false);
     private final ExecutorService executor = Executors.newCachedThreadPool();
@@ -29,7 +30,7 @@ public final class NotifiableMemory implements Notifiable, Runnable {
 
     @Override
     public void registerNotify(String updateChannel, Consumer<Long> callback) {
-        listeners.computeIfAbsent(updateChannel, (u) -> new CopyOnWriteArrayList<>()).add(callback);
+        listeners.computeIfAbsent(updateChannel, (channel) -> new CopyOnWriteArrayList<>()).add(callback);
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")

@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+/** Пользовательские счётчики, разбитые на диапазоны, с учётом принятых порогов. */
 public interface CountRange {
 
     void increment(long countId, long userId, long delta);
@@ -78,8 +79,8 @@ public interface CountRange {
         @Override
         public void acceptValue(long countId, long userId) {
             processingCount(countId, userId, (count, key, value) -> {
-                int currentIt = indexOf(count.ranges, value.value());
-                if (currentIt > value.acceptedIndex()) {
+                int index = indexOf(count.ranges, value.value());
+                if (index > value.acceptedIndex()) {
                     values.put(key, value.toBuilder().acceptedIndex(value.acceptedIndex() + 1).build());
                 }
                 return Optional.empty();
@@ -89,8 +90,8 @@ public interface CountRange {
         @Override
         public boolean availableValue(long countId, long userId) {
             return processingCount(countId, userId, (count, key, value) -> {
-                int currentIt = indexOf(count.ranges, value.value());
-                return Optional.of(currentIt > value.acceptedIndex());
+                int index = indexOf(count.ranges, value.value());
+                return Optional.of(index > value.acceptedIndex());
             }).orElse(false);
         }
 

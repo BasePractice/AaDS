@@ -4,6 +4,7 @@ import ru.mifi.practice.commons.Counter;
 import java.util.ArrayList;
 import java.util.List;
 
+/** Сортировка целых чисел подсчётом вхождений. */
 public final class CountSort implements Sort<Integer> {
     private final int maxElement;
 
@@ -15,8 +16,8 @@ public final class CountSort implements Sort<Integer> {
     public List<Integer> sort(List<Integer> array, Counter counter, boolean debug) {
         List<Integer> result = new ArrayList<>(array.size());
         int[] filter = new int[maxElement + 1];
-        for (Integer it : array) {
-            ++filter[it];
+        for (Integer element : array) {
+            ++filter[element];
             counter.increment();
         }
         for (int val = 0; val <= maxElement; val++) {

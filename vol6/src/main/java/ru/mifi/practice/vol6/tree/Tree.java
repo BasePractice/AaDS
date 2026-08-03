@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.util.Comparator;
 import java.util.function.Function;
 
+/** Binary tree of values built from explicit parent-children links. */
 public interface Tree<T> extends Visitor.Visit<T>, Hashable {
 
     void add(T element);

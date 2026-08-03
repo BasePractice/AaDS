@@ -4,6 +4,7 @@ import ru.mifi.practice.commons.Counter;
 import java.util.Objects;
 import java.util.Optional;
 
+/** Двоичный поиск значения по натуральному числовому диапазону. */
 public final class BinaryNaturalSearch implements Search<Long, Number> {
     private final boolean debug;
 

@@ -15,6 +15,7 @@ import ru.mifi.practice.voln.repository.UserRepository;
 import java.util.Optional;
 import java.util.UUID;
 
+/** Сервис доступа к пользователям и загрузки учётных данных. */
 @RequiredArgsConstructor
 @Service
 public class UserService implements UserDetailsService {

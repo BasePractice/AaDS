@@ -10,6 +10,7 @@ import org.telegram.telegrambots.meta.generics.LongPollingBot;
 import org.telegram.telegrambots.starter.TelegramBotStarterConfiguration;
 import ru.mifi.practice.voln.api.TelegramHandler;
 
+/** Конфигурация Telegram-бота приложения. */
 @Configuration
 @Import(TelegramBotStarterConfiguration.class)
 public class TelegramConfiguration {

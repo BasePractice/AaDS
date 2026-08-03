@@ -1,5 +1,6 @@
 package ru.mifi.practice.vol8.regexp.tree;
 
+/** Обходчик дерева регулярного выражения с пустыми реализациями по умолчанию. */
 public abstract class AbstractVisitor implements Tree.Visitor {
     @Override
     public void visit(Tree.Char ch) {

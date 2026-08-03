@@ -10,32 +10,33 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+/** Path between two values passing through their lowest common ancestor. */
 public final class LowestCommonAncestorPath<T> implements Path<T> {
     @Override
     public List<Node<T>> path(Tree<T> tree, T start, T end) {
         Distance<T> vDistance = new Distance<>();
         tree.visit(vDistance, new VisitorStrategy.PreOrder<>());
         Map<Node<T>, Integer> distances = vDistance.distances();
-        var nStart = tree.find(start);
-        var nStartIt = nStart;
-        var nEnd = tree.find(end);
-        var nEndIt = nEnd;
-        int hStart = distances.get(nStart);
-        int hEnd = distances.get(nEnd);
-        while (hStart != hEnd) {
-            if (hStart > hEnd) {
-                nStartIt = nStartIt.parent();
-                hStart -= 1;
+        var origin = tree.find(start);
+        var originCursor = origin;
+        var terminus = tree.find(end);
+        var terminusCursor = terminus;
+        int originHeight = distances.get(origin);
+        int terminusHeight = distances.get(terminus);
+        while (originHeight != terminusHeight) {
+            if (originHeight > terminusHeight) {
+                originCursor = originCursor.parent();
+                originHeight -= 1;
             } else {
-                nEndIt = nEndIt.parent();
-                hEnd -= 1;
+                terminusCursor = terminusCursor.parent();
+                terminusHeight -= 1;
             }
         }
-        while (!nStartIt.equals(nEndIt)) {
-            nStartIt = nStartIt.parent();
-            nEndIt = nEndIt.parent();
+        while (!originCursor.equals(terminusCursor)) {
+            originCursor = originCursor.parent();
+            terminusCursor = terminusCursor.parent();
         }
-        var lca = nStartIt;
+        var lca = originCursor;
         List<Node<T>> path = lca.path(start);
         Collections.reverse(path);
         path.remove(path.size() - 1);

@@ -54,8 +54,8 @@ public final class HeapSort<E extends Comparable<E>> implements Sort<E> {
     }
 
     private void swap(List<E> heap, int left, int right) {
-        E tmp = heap.get(left);
+        E value = heap.get(left);
         heap.set(left, heap.get(right));
-        heap.set(right, tmp);
+        heap.set(right, value);
     }
 }

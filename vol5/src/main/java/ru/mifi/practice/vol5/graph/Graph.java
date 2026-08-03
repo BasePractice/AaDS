@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 
+/** Weighted graph of labelled vertices connected by directed edges. */
 @SuppressWarnings("UnusedReturnValue")
 public interface Graph<T, W extends Number & Comparable<W>> {
 

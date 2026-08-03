@@ -6,6 +6,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/** Механическая головка машины Поста над булевой лентой. */
 @SuppressWarnings({"PMD.AssignmentInOperand", "PMD.SimplifyBooleanReturns"})
 public interface MechanicalHead {
 
@@ -88,10 +89,10 @@ public interface MechanicalHead {
         public BooleanArrayHead initiate(int start, String data) {
             it.set(start);
             for (int pc = start, i = 0; pc < start + data.length(); pc++, i++) {
-                char c = data.charAt(i);
-                if (c == '0') {
+                char symbol = data.charAt(i);
+                if (symbol == '0') {
                     values[pc] = false;
-                } else if (c == '1') {
+                } else if (symbol == '1') {
                     values[pc] = true;
                 }
             }
@@ -194,10 +195,10 @@ public interface MechanicalHead {
         public BitSetHead initiate(int start, String data) {
             it.set(start);
             for (int pc = start, i = 0; pc < start + data.length(); pc++, i++) {
-                char c = data.charAt(i);
-                if (c == '0') {
+                char symbol = data.charAt(i);
+                if (symbol == '0') {
                     bitSet.clear(pc);
-                } else if (c == '1') {
+                } else if (symbol == '1') {
                     bitSet.set(pc);
                 }
             }

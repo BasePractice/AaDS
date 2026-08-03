@@ -2,6 +2,7 @@ package ru.mifi.practice.vol4.hash;
 
 import ru.mifi.practice.commons.Counter;
 
+/** Полиномиальное хеширование строк с подсчётом операций. */
 @FunctionalInterface
 public interface Hash {
     int POLY_MOD = Integer.MAX_VALUE;

@@ -5,7 +5,8 @@ import lombok.EqualsAndHashCode;
 import java.util.ArrayList;
 import java.util.List;
 
-//FIXME: Переписать проверку в FSM не через рекурсию
+//FIXME: Переписать проверку в FSM не через рекурсию — на длинном вводе рекурсивный спуск по состояниям грозит переполнением стека
+/** Состояние конечного автомата для сопоставления регулярного выражения. */
 @SuppressWarnings("PMD.SimplifyBooleanReturnss")
 @EqualsAndHashCode(of = "index")
 public abstract class State {
@@ -280,7 +281,7 @@ public abstract class State {
                 for (State next : accepted) {
                     Input copy = input.copy();
                     var accept = next.match(copy);
-                    //TODO: Реализовать для всех оставшихся путей
+                    //TODO: Реализовать для всех оставшихся путей — берётся первая принявшая ветка, остальные не перебираются
                     if (accept.ok()) {
                         if (this.next != null && next.accept(accept.input)) {
                             return next.match(accept.input);
@@ -338,7 +339,7 @@ public abstract class State {
             super(manager, index, state);
         }
 
-        //FIXME: Проверить правильность
+        //FIXME: Проверить правильность — accept() истинно при любом непустом вводе, даже когда ни сам элемент, ни продолжение его не принимают
         @Override
         public boolean accept(Input input) {
             return input.hasNext();

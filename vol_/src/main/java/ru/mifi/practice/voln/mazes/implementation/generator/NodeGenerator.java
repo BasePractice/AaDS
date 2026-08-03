@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
 //DFS
+/** Генерация лабиринта обходом в глубину со сносом стен. */
 public final class NodeGenerator implements Maze.Generator {
 
     @Override
@@ -44,8 +45,8 @@ public final class NodeGenerator implements Maze.Generator {
                 stack.pop();
                 continue;
             }
-            int idx = ThreadLocalRandom.current().nextInt(neighbors.size());
-            int[] nxt = neighbors.get(idx);
+            int index = ThreadLocalRandom.current().nextInt(neighbors.size());
+            int[] nxt = neighbors.get(index);
             int nr = nxt[0];
             int nc = nxt[1];
             if (nr == r - 1) {
@@ -81,20 +82,20 @@ public final class NodeGenerator implements Maze.Generator {
         private boolean right = true;
 
         private char value() {
-            char val = 0;
+            char mask = 0;
             if (up) {
-                val |= Maze.SQUARE_UP;
+                mask |= Maze.SQUARE_UP;
             }
             if (left) {
-                val |= Maze.SQUARE_LEFT;
+                mask |= Maze.SQUARE_LEFT;
             }
             if (down) {
-                val |= Maze.SQUARE_DOWN;
+                mask |= Maze.SQUARE_DOWN;
             }
             if (right) {
-                val |= Maze.SQUARE_RIGHT;
+                mask |= Maze.SQUARE_RIGHT;
             }
-            return val;
+            return mask;
         }
     }
 }

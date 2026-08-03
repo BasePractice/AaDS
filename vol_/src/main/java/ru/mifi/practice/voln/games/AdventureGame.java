@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 
+/** Состояние и правила пошаговой приключенческой игры на одной линии. */
 public final class AdventureGame implements Updatable, Updatable.Context {
     private static final int GAME_LINE_LENGTH = 20;
     private final Random random = new Random(new Date().getTime());
@@ -99,8 +100,8 @@ public final class AdventureGame implements Updatable, Updatable.Context {
 
     @Override
     public void update(Context context) {
-        for (Object o : gameLine) {
-            if (o instanceof Updatable update) {
+        for (Object element : gameLine) {
+            if (element instanceof Updatable update) {
                 update.update(context);
             }
         }
@@ -131,8 +132,8 @@ public final class AdventureGame implements Updatable, Updatable.Context {
             return new View(Type.ITEM, item);
         } else if (object instanceof Person.Mob mob) {
             return new View(Type.ENEMY, mob);
-        } else if (object instanceof Person.Player p) {
-            return new View(Type.PLAYER, p);
+        } else if (object instanceof Person.Player person) {
+            return new View(Type.PLAYER, person);
         }
         return new View(Type.EMPTY, null);
     }

@@ -3,6 +3,7 @@ package ru.mifi.practice.vol8.regexp.machine;
 import ru.mifi.practice.vol8.regexp.machine.Input.StringInput;
 import ru.mifi.practice.vol8.regexp.tree.Tree;
 
+/** Сопоставление строки с регулярным выражением через конечный автомат. */
 public interface Matcher {
     default boolean match(String text) {
         return match(new StringInput(text));

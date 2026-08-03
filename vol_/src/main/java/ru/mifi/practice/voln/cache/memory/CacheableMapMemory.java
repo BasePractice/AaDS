@@ -9,6 +9,7 @@ import ru.mifi.practice.voln.cache.CacheableMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+/** Кэш хешей поверх Guava-кэша в памяти процесса. */
 public final class CacheableMapMemory implements CacheableMap {
     private final Cache<String, Map<String, Long>> values;
 

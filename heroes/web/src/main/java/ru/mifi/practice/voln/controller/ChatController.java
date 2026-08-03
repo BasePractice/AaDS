@@ -30,6 +30,7 @@ import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
+/** REST-контроллер чата поверх Server-Sent Events. */
 @RestController
 @CrossOrigin
 public class ChatController {

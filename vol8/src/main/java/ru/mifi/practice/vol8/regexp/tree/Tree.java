@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/** Синтаксическое дерево регулярного выражения. */
 public interface Tree {
 
     Node root();
@@ -383,14 +384,14 @@ public interface Tree {
         }
 
         private Node parseChar() {
-            char c = peekChar();
-            if (c == 0) {
+            char symbol = peekChar();
+            if (symbol == 0) {
                 return new Empty();
-            } else if (c == '\\') {
+            } else if (symbol == '\\') {
                 next();
                 return new Escape(peekChar());
             }
-            return new Char(c);
+            return new Char(symbol);
         }
 
         private void next() {
@@ -407,9 +408,9 @@ public interface Tree {
             current = chars[index];
         }
 
-        private void expect(char c) {
-            if (eof() || peekChar() != c) {
-                throw new IllegalStateException("Unexpected character '" + c + "' but '" + peekChar() + "'");
+        private void expect(char symbol) {
+            if (eof() || peekChar() != symbol) {
+                throw new IllegalStateException("Unexpected character '" + symbol + "' but '" + peekChar() + "'");
             }
         }
 
