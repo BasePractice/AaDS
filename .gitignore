@@ -5,21 +5,7 @@ target
 logs
 users.json
 sudoku.log
-vol8/1.puml
-vol8/1.fsm.puml
-vol8/1.rgx.puml
-vol8/2.puml
-vol8/2.fsm.puml
-vol8/2.rgx.puml
-vol8/3.puml
-vol8/3.fsm.puml
-vol8/3.rgx.puml
-vol8/4.puml
-vol8/4.fsm.puml
-vol8/4.rgx.puml
-vol8/5.puml
-vol8/5.fsm.puml
-vol8/5.rgx.puml
+vol8/*.puml
 duplicate.csv
 .output
 questions.adoc
@@ -30,3 +16,4 @@ questions.html
 *x*.png
 /*.gif
 /matrix.txt
+.DS_Store
