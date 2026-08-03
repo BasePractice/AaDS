@@ -2,7 +2,6 @@ package ru.mifi.practice.vol8;
 
 import lombok.Getter;
 
-import java.lang.reflect.Constructor;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -13,7 +12,6 @@ import java.util.Optional;
 /** Абстрактный конечный автомат, исполняющий переходы состояний над контекстом. */
 @Getter
 public abstract class Machine {
-    public static final Key MACHINE_CLASS = () -> "machine_class";
     public static final Key MACHINE_HANDLER = () -> "machine_handler";
     private final Context context;
 
@@ -23,19 +21,6 @@ public abstract class Machine {
 
     protected Machine(Context context) {
         this.context = context;
-    }
-
-    @SuppressWarnings("PMD.AvoidAccessibilityAlteration")
-    public static Machine of(Context context) {
-        try {
-            String machineClass = context.get(MACHINE_CLASS, String.class).orElse(Standard.class.getSimpleName());
-            Class<?> klass = Class.forName(machineClass);
-            Constructor<?> constructor = klass.getDeclaredConstructor(Context.class);
-            constructor.setAccessible(true);
-            return (Machine) constructor.newInstance(context);
-        } catch (Exception ex) {
-            return new Standard(context);
-        }
     }
 
     public State execute() {
@@ -180,11 +165,5 @@ public abstract class Machine {
         boolean isCodeEquals(Context context, Key codeKey);
 
         void persist(Context context);
-    }
-
-    private static final class Standard extends Machine {
-        private Standard(Context context) {
-            super(context);
-        }
     }
 }

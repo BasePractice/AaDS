@@ -16,7 +16,6 @@ public final class OTPMachine extends Machine {
     public OTPMachine(Context context) {
         super(context);
         context.setCurrentState(OTP.INITIATE);
-        context.set(MACHINE_CLASS, OTPMachine.class);
         context.set(MACHINE_HANDLER, new OTPHandler());
     }
 
