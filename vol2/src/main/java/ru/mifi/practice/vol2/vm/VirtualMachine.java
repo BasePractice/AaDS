@@ -32,36 +32,40 @@ public interface VirtualMachine {
                 return DefaultValue.none();
             }
         },
+        /**
+         * Число хранится восемью байтами в формате IEEE-754, потому что машина считает в double.
+         * Раньше писался один байт от intValue: значения больше 255, отрицательные и дробные
+         * искажались при компиляции.
+         */
         NUMBER(1) {
-            //TODO: число пишется одним байтом, поэтому значения больше 255, отрицательные и дробные
-            // искажаются при компиляции, а строка пишет длину в символах при теле в байтах UTF-8 —
-            // кириллица ломает чтение. Чинится сменой формата байт-кода целиком, что выходит за
-            // рамки правки арифметики, поэтому вынесено в отдельную задачу
             @Override
             public void write(ByteArrayOutputStream output, Object value) {
-                Number number = (Number) value;
-                output.write(number.intValue());
+                writeLong(output, Double.doubleToLongBits(((Number) value).doubleValue()));
             }
 
             @Override
             public Value read(InputStream stream) throws IOException {
-                return DefaultValue.of(stream.read());
+                return DefaultValue.of(Double.longBitsToDouble(readLong(stream)));
             }
-        }, STRING(2) {
+        },
+        /**
+         * Строка хранится длиной в байтах и телом в UTF-8. Раньше длина писалась в символах, и
+         * кириллица, занимающая два байта на символ, ломала чтение.
+         */
+        STRING(2) {
             @Override
             public void write(ByteArrayOutputStream output, Object value) throws IOException {
-                String str = (String) value;
-                output.write(str.length());
-                output.write(str.getBytes(StandardCharsets.UTF_8));
+                byte[] bytes = ((String) value).getBytes(StandardCharsets.UTF_8);
+                writeInt(output, bytes.length);
+                output.write(bytes);
             }
 
             @Override
             public Value read(InputStream stream) throws IOException {
-                int length = stream.read();
-                byte[] bytes = new byte[length];
-                int read = stream.read(bytes);
-                if (read != length) {
-                    throw new EOFException();
+                int length = readInt(stream);
+                byte[] bytes = stream.readNBytes(length);
+                if (bytes.length != length) {
+                    throw new EOFException("Строка оборвалась: прочитано " + bytes.length + " байт из " + length);
                 }
                 return DefaultValue.of(new String(bytes, StandardCharsets.UTF_8));
             }
@@ -81,6 +85,42 @@ public interface VirtualMachine {
 
         Type(int code) {
             this.code = code;
+        }
+
+        static void writeLong(ByteArrayOutputStream output, long value) {
+            for (int shift = Long.SIZE - Byte.SIZE; shift >= 0; shift -= Byte.SIZE) {
+                output.write((int) (value >>> shift));
+            }
+        }
+
+        static long readLong(InputStream stream) throws IOException {
+            long value = 0;
+            for (int i = 0; i < Long.BYTES; i++) {
+                value = value << Byte.SIZE | nextByte(stream);
+            }
+            return value;
+        }
+
+        static void writeInt(ByteArrayOutputStream output, int value) {
+            for (int shift = Integer.SIZE - Byte.SIZE; shift >= 0; shift -= Byte.SIZE) {
+                output.write(value >>> shift);
+            }
+        }
+
+        static int readInt(InputStream stream) throws IOException {
+            int value = 0;
+            for (int i = 0; i < Integer.BYTES; i++) {
+                value = value << Byte.SIZE | nextByte(stream);
+            }
+            return value;
+        }
+
+        private static int nextByte(InputStream stream) throws IOException {
+            int read = stream.read();
+            if (read < 0) {
+                throw new EOFException("Байт-код оборвался посреди значения");
+            }
+            return read;
         }
 
         public static Type of(int code) {

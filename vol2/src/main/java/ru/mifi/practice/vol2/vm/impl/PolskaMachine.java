@@ -4,8 +4,10 @@ import ru.mifi.practice.vol2.vm.VirtualMachine;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Optional;
@@ -33,6 +35,10 @@ public final class PolskaMachine implements VirtualMachine {
                     Op op = code.get();
                     for (int i = 0; i < op.args(); i++) {
                         int arg = stream.read();
+                        if (arg < 0) {
+                            throw new EOFException("Байт-код оборвался на аргументе операции " + op);
+                        }
+                        //Ноль — это Type.NONE: операнд уже лежит на стеке как результат прошлой операции
                         if (arg > 0) {
                             stack.push(Type.of(arg).read(stream));
                         }
@@ -55,18 +61,22 @@ public final class PolskaMachine implements VirtualMachine {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         processing(input, stackInput, (op, stack) -> {
             output.write(op.code());
+            //Аргументы снимаются с вершины, а при исполнении кладутся в порядке чтения,
+            //поэтому записывать их надо в обратном порядке снятия — иначе операнды поменяются местами
+            Deque<Value> arguments = new ArrayDeque<>(op.args());
             for (int i = 0; i < op.args(); i++) {
+                arguments.push(stack.isEmpty() ? DefaultValue.none() : stack.pop());
+            }
+            for (Value argument : arguments) {
                 try {
-                    if (stack.isEmpty()) {
-                        output.write(Type.NONE.code());
-                    } else {
-                        Value value = stack.pop();
-                        value.write(output);
-                    }
+                    argument.write(output);
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    throw new UncheckedIOException("Не удалось записать аргумент операции " + op, e);
                 }
             }
+            //Результат операции остаётся на стеке: пустое значение в аргументе означает
+            //«операнд уже посчитан и лежит на стеке исполнителя»
+            stack.push(DefaultValue.none());
             return true;
         });
         return Binary.of(output.toByteArray());
