@@ -64,6 +64,7 @@ public final class BattleMap {
         long id = idCount.getAndIncrement();
         left.put(id, new StackKey(id, stack));
         map[row][col] = id;
+        fillTurnQueue();
         support.firePropertyChange("map", null, null);
     }
 
@@ -74,6 +75,7 @@ public final class BattleMap {
         long id = idCount.getAndIncrement();
         right.put(id, new StackKey(id, stack));
         map[row][col] = id;
+        fillTurnQueue();
         support.firePropertyChange("map", null, null);
     }
 
