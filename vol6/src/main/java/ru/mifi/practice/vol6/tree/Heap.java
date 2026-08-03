@@ -1,6 +1,7 @@
 package ru.mifi.practice.vol6.tree;
 
 import java.util.Arrays;
+import java.util.NoSuchElementException;
 
 public interface Heap<T extends Comparable<T>> {
 
@@ -24,20 +25,20 @@ public interface Heap<T extends Comparable<T>> {
         private int size;
 
         public Minimum(int capacity) {
-            this.heap = new Object[capacity + 1];
+            this.heap = new Object[capacity];
             this.capacity = capacity;
         }
 
         private static int positionParent(int position) {
-            return position / 2;
+            return (position - 1) / 2;
         }
 
         private static int positionLeft(int position) {
-            return position * 2;
+            return position * 2 + 1;
         }
 
         private static int positionRight(int position) {
-            return position * 2 + 1;
+            return position * 2 + 2;
         }
 
         private static Object nullable(Object value) {
@@ -47,10 +48,6 @@ public interface Heap<T extends Comparable<T>> {
             return value;
         }
 
-        private boolean isLeaf(int position) {
-            return position >= size / 2 && position <= size;
-        }
-
         private void swap(int position1, int position2) {
             Object tmp = heap[position1];
             heap[position1] = heap[position2];
@@ -58,30 +55,30 @@ public interface Heap<T extends Comparable<T>> {
         }
 
         private void heapify(int position) {
-            if (!isLeaf(position)) {
-                if (compare(position, positionLeft(position)) > 0
-                    || compare(position, positionRight(position)) > 0) {
-                    if (compare(positionLeft(position), positionRight(position)) < 0) {
-                        swap(position, positionLeft(position));
-                        heapify(positionLeft(position));
-                    } else {
-                        swap(position, positionRight(position));
-                        heapify(positionRight(position));
-                    }
-                }
+            int smallest = position;
+            int left = positionLeft(position);
+            int right = positionRight(position);
+            if (left < size && compare(left, smallest) < 0) {
+                smallest = left;
+            }
+            if (right < size && compare(right, smallest) < 0) {
+                smallest = right;
+            }
+            if (smallest != position) {
+                swap(position, smallest);
+                heapify(smallest);
             }
         }
 
         @Override
         public Heap<T> add(T value) {
             if (size >= capacity) {
-                return this;
+                throw new IllegalStateException("Куча заполнена, вместимость " + capacity);
             }
             heap[size] = value;
             int current = size;
             ++size;
-
-            while (compare(current, positionParent(current)) < 0) {
+            while (current > TOP && compare(current, positionParent(current)) < 0) {
                 swap(current, positionParent(current));
                 current = positionParent(current);
             }
@@ -90,7 +87,7 @@ public interface Heap<T extends Comparable<T>> {
 
         @Override
         public void refresh() {
-            for (int position = size / 2; position >= TOP; position--) {
+            for (int position = size / 2 - 1; position >= TOP; position--) {
                 heapify(position);
             }
         }
@@ -98,9 +95,10 @@ public interface Heap<T extends Comparable<T>> {
         @SuppressWarnings("unchecked")
         @Override
         public T deleteRoot() {
-            final T pop = (T) heap[TOP];
-            heap[TOP] = heap[size];
+            final T pop = (T) heap[requireNotEmpty()];
             --size;
+            heap[TOP] = heap[size];
+            heap[size] = null;
             heapify(TOP);
             return pop;
         }
@@ -108,15 +106,29 @@ public interface Heap<T extends Comparable<T>> {
         @SuppressWarnings("unchecked")
         @Override
         public T top() {
-            return (T) heap[TOP];
+            return (T) heap[requireNotEmpty()];
+        }
+
+        private int requireNotEmpty() {
+            if (size == 0) {
+                throw new NoSuchElementException("Куча пуста");
+            }
+            return TOP;
         }
 
         @Override
         public void print() {
             System.out.printf(FORMAT, "top", "left", "right");
-            for (int k = TOP; k <= size / 2; k++) {
-                System.out.printf(FORMAT, nullable(heap[k]), nullable(heap[positionLeft(k) + 1]), nullable(heap[positionRight(k) + 1]));
+            for (int k = TOP; k < size; k++) {
+                System.out.printf(FORMAT, nullable(heap[k]), child(positionLeft(k)), child(positionRight(k)));
             }
+        }
+
+        private Object child(int position) {
+            if (position >= size) {
+                return "-";
+            }
+            return nullable(heap[position]);
         }
 
         @Override

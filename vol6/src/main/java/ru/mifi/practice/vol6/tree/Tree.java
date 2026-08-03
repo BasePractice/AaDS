@@ -54,7 +54,7 @@ public interface Tree<T> extends Visitor.Visit<T>, Hashable {
 
         @Override
         Node<T> add(Node<T> root, T element) {
-            return null;
+            throw new UnsupportedOperationException("Standard принимает узлы только через add(owner, left, right)");
         }
 
         public void add(T owner, T left, T right) {

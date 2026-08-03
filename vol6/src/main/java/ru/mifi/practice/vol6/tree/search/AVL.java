@@ -121,10 +121,10 @@ public final class AVL<T extends Comparable<T>> extends BinaryTree.AbstractBinar
         }
         //LR
         if (balance > 1 && balance(node.left) < 0) {
-            node.left = rr(node.left);
+            node.left = lr(node.left);
             return rr(node);
         }
-        //PR
+        //RL
         if (balance < -1 && balance(node.right) > 0) {
             node.right = rr(node.right);
             return lr(node);

@@ -26,7 +26,7 @@ public final class Tree {
             return;
         }
         if (node.left == null && node.right == null) {
-            codes.put(node.character, code);
+            codes.put(node.character, code.isEmpty() ? "0" : code);
             return;
         }
         buildCodes(node.left, code + "0", codes);
@@ -57,6 +57,12 @@ public final class Tree {
     public record Compressed(Node tree, String text) {
         public String decompress() {
             StringBuilder result = new StringBuilder();
+            if (tree == null) {
+                return "";
+            }
+            if (tree.left == null && tree.right == null) {
+                return String.valueOf(tree.character).repeat(text.length());
+            }
             Node it = tree;
             for (var c : text.toCharArray()) {
                 if (c == '0') {
