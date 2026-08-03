@@ -42,6 +42,24 @@ public abstract class State {
         return new Match(false, input.copy());
     }
 
+    State lastState() {
+        return next;
+    }
+
+    String diagramLabel() {
+        return "Epsilon";
+    }
+
+    void describe(Diagram diagram, String stateName, String nextName) {
+        //Nothing
+    }
+
+    public interface Diagram {
+        String name(State state);
+
+        void edge(String from, String to);
+    }
+
     public record Match(boolean ok, Input input) {
 
         static Match ok(Input input) {
@@ -96,6 +114,11 @@ public abstract class State {
         @Override
         public String toString() {
             return symbol + super.toString();
+        }
+
+        @Override
+        String diagramLabel() {
+            return String.valueOf(symbol);
         }
     }
 
@@ -162,6 +185,11 @@ public abstract class State {
                 string = start.toString();
             }
             return string + super.toString();
+        }
+
+        @Override
+        State lastState() {
+            return last;
         }
     }
 
@@ -322,6 +350,11 @@ public abstract class State {
         public String toString() {
             return states + super.toString();
         }
+
+        @Override
+        State lastState() {
+            return this;
+        }
     }
 
     @SuppressWarnings("PMD.ModifierOrder")
@@ -375,6 +408,12 @@ public abstract class State {
         @Override
         public String toString() {
             return "(" + state + ")?" + super.toString();
+        }
+
+        @Override
+        void describe(Diagram diagram, String stateName, String nextName) {
+            diagram.edge(nextName, diagram.name(next));
+            diagram.edge(stateName, diagram.name(next));
         }
     }
 
@@ -430,6 +469,12 @@ public abstract class State {
         public String toString() {
             return "(" + state + ")*" + super.toString();
         }
+
+        @Override
+        void describe(Diagram diagram, String stateName, String nextName) {
+            diagram.edge(diagram.name(state), diagram.name(state));
+            diagram.edge(nextName, diagram.name(next));
+        }
     }
 
     public static final class OneOrMore extends SingleState {
@@ -476,6 +521,12 @@ public abstract class State {
         @Override
         public String toString() {
             return "(" + state + ")+" + super.toString();
+        }
+
+        @Override
+        void describe(Diagram diagram, String stateName, String nextName) {
+            diagram.edge(nextName, diagram.name(next));
+            diagram.edge(diagram.name(state.lastState()), diagram.name(state));
         }
     }
 }

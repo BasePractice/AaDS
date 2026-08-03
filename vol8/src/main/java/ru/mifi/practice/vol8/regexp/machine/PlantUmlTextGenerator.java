@@ -4,32 +4,20 @@ import java.util.HashSet;
 import java.util.Set;
 
 /** Генерация PlantUML-диаграммы состояний конечного автомата. */
-public final class PlantUmlTextGenerator extends Visitor.AbstractStringVisitor {
+public final class PlantUmlTextGenerator extends Visitor.AbstractStringVisitor implements State.Diagram {
     private final Set<State> visited = new HashSet<>();
     private final Set<String> printed = new HashSet<>();
     private final Set<String> declared = new HashSet<>();
 
-    private static State getLastState(State state) {
-        if (state instanceof State.Sequence sequence) {
-            return sequence.last;
-        } else if (state instanceof State.Parallel parallel) {
-            return parallel;
-        }
-        return state.next;
-    }
-
-    private String name(State state) {
+    @Override
+    public String name(State state) {
         if (state == null) {
             return "[*]";
         }
         String name = String.format("S%02d", state.index);
         if (!declared.contains(name)) {
             declared.add(name);
-            if (state instanceof State.Symbol symbol) {
-                buffer.append("state \"").append(symbol.symbol).append("\" as ").append(name).append("\n");
-            } else {
-                buffer.append("state \"Epsilon\" as ").append(name).append("\n");
-            }
+            buffer.append("state \"").append(state.diagramLabel()).append("\" as ").append(name).append("\n");
         }
         return name;
     }
@@ -50,33 +38,22 @@ public final class PlantUmlTextGenerator extends Visitor.AbstractStringVisitor {
 
     private void print(State state, State next) {
         if (next == null) {
-            String stateName = name(state);
-            print(stateName, "[*]");
+            edge(name(state), "[*]");
             return;
-        } else if (visited.contains(next)) {
+        }
+        if (visited.contains(next)) {
             return;
         }
         visited.add(next);
         String stateName = name(state);
         String nextName = name(next);
-        print(stateName, nextName);
-        if (state instanceof State.NoneOrOne) {
-            print(nextName, name(state.next));
-            print(stateName, name(state.next));
-        } else if (state instanceof State.OneOrMore) {
-            print(nextName, name(state.next));
-            State inner = ((State.OneOrMore) state).state;
-            State lastState = getLastState(inner);
-            print(name(lastState), name(inner));
-        } else if (state instanceof State.NoneOrMore) {
-            State inner = ((State.NoneOrMore) state).state;
-            print(name(inner), name(inner));
-            print(nextName, name(state.next));
-        }
+        edge(stateName, nextName);
+        state.describe(this, stateName, nextName);
     }
 
-    private void print(String start, String end) {
-        String text = start + " --> " + end;
+    @Override
+    public void edge(String from, String to) {
+        String text = from + " --> " + to;
         if (printed.contains(text)) {
             return;
         }
