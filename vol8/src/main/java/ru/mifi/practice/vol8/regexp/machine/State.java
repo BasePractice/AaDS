@@ -73,10 +73,13 @@ public abstract class State {
         public Match match(Input input) {
             if (accept(input)) {
                 input.next();
-                if (next != null && next.accept(input)) {
+                if (next == null) {
+                    return Match.ok(input);
+                }
+                if (next.accept(input)) {
                     return next.match(input);
                 }
-                return Match.ok(input);
+                return Match.failure(input);
             }
             return Match.failure(input);
         }

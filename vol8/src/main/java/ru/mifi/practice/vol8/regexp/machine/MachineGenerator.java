@@ -6,6 +6,10 @@ import ru.mifi.practice.vol8.regexp.tree.Tree;
 import java.util.LinkedList;
 
 @SuppressWarnings("PMD.LooseCoupling")
+//TODO: генератор не обрабатывает узлы Any, Escape, Range и отрицание множества, поэтому «.» не
+// порождает состояний, [a-z] даёт автомат только по литералам a и z, а [^of] ведёт себя как [of].
+// Требует расширения обхода дерева и Manager.CharacterMapper, что выходит за рамки правки
+// сопоставления, поэтому вынесено в отдельную задачу
 public final class MachineGenerator extends AbstractVisitor {
     private final LinkedList<State> states = new LinkedList<>();
     private final Manager manager;

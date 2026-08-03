@@ -28,8 +28,8 @@ public enum OTPKey implements Machine.Key {
 
     SEND_CODE_ATTEMPTS("send_code_attempts", Integer.class),
     MAX_SEND_CODE_ATTEMPTS("max_send_code_attempts", Integer.class),
-    VERIFICATION_CODE_ATTEMPTS("send_code_attempts", Integer.class),
-    MAX_VERIFICATION_CODE_ATTEMPTS("max_send_code_attempts", Integer.class),
+    VERIFICATION_CODE_ATTEMPTS("verification_code_attempts", Integer.class),
+    MAX_VERIFICATION_CODE_ATTEMPTS("max_verification_code_attempts", Integer.class),
     ;
     private final String key;
     private final Class<?> valueClass;
