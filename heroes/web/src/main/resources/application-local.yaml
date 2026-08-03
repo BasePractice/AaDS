@@ -7,7 +7,7 @@ spring:
         name: heroes
     datasource:
         driver-class-name: org.postgresql.Driver
-        url: jdbc:postgresql://127.0.0.1:5432/rooms
+        url: jdbc:postgresql://127.0.0.1:25432/rooms
         username: postgres
         password: postgres
     jpa:

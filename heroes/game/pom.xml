@@ -4,17 +4,11 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>ru.mifi.practice</groupId>
-        <artifactId>AaDS</artifactId>
+        <artifactId>heroes</artifactId>
         <version>${revision}</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <artifactId>heroes</artifactId>
-    <name>heroes</name>
-    <packaging>pom</packaging>
-    <description>Приложение «Герои»: веб-чат и настольная игра</description>
-
-    <modules>
-        <module>game</module>
-        <module>web</module>
-    </modules>
+    <artifactId>heroes-game</artifactId>
+    <name>heroes-game</name>
+    <description>Пошаговый бой на сетке: поиск пути, очередь ходов, Swing-интерфейс</description>
 </project>
