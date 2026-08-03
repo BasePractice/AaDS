@@ -19,8 +19,16 @@ public final class NotifiableRedis implements Notifiable {
     private final AtomicInteger inOrderSize = new AtomicInteger(0);
     private final StatefulRedisPubSubConnection<String, String> pubSub;
     private final Cache<Long, String> notified;
+    private final RedisClient client;
+    private final boolean owned;
 
     public NotifiableRedis(RedisClient client, MeterRegistry registry) {
+        this(client, false, registry);
+    }
+
+    private NotifiableRedis(RedisClient client, boolean owned, MeterRegistry registry) {
+        this.client = client;
+        this.owned = owned;
         this.pubSub = client.connectPubSub();
         this.notified = CacheBuilder.newBuilder()
             .expireAfterWrite(1000, TimeUnit.MILLISECONDS)
@@ -31,8 +39,12 @@ public final class NotifiableRedis implements Notifiable {
         Gauge.builder("CacheNotifyRedis", inOrderSize, AtomicInteger::intValue).tag("target", "in-order-size").register(registry);
     }
 
+    /**
+     * Клиент, созданный по строке подключения, принадлежит этому объекту и закрывается вместе
+     * с ним. Клиент, переданный снаружи, закрывает тот, кто его создал.
+     */
     public NotifiableRedis(String url, MeterRegistry registry) {
-        this(RedisClient.create(url), registry);
+        this(RedisClient.create(url), true, registry);
     }
 
     @Override
@@ -69,6 +81,12 @@ public final class NotifiableRedis implements Notifiable {
 
     @Override
     public void close() throws Exception {
-        pubSub.close();
+        try {
+            pubSub.close();
+        } finally {
+            if (owned) {
+                client.shutdown();
+            }
+        }
     }
 }

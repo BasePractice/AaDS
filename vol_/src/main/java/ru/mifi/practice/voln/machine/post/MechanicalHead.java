@@ -122,7 +122,7 @@ public interface MechanicalHead {
 
         @Override
         public int hashCode() {
-            return Objects.hashCode(values);
+            return Arrays.hashCode(values);
         }
 
         @Override
@@ -168,9 +168,9 @@ public interface MechanicalHead {
                 default -> throw new UnsupportedOperationException();
             }
             if (it.intValue() < 0) {
-                throw new IllegalStateException();
-            } else if (it.intValue() >= bitSet.length()) {
-                throw new IllegalStateException();
+                throw new IllegalStateException("Головка ушла левее начала ленты");
+            } else if (it.intValue() >= bitSet.size()) {
+                throw new IllegalStateException("Головка ушла правее конца ленты");
             }
             return num;
         }

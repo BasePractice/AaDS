@@ -24,20 +24,24 @@ public interface CountRange {
         private final Map<Long, Count> counts = new HashMap<>();
         private final Map<Key, Value> values = new HashMap<>();
 
+        /**
+         * Диапазоны полуоткрыты слева: значение попадает в индекс i, если оно больше ranges[i-1]
+         * и не больше ranges[i]. Обе границы раньше проверялись строго, поэтому значение, точно
+         * равное внутренней границе, не попадало ни в один диапазон и проваливалось в нулевой.
+         */
         private static int indexOf(long[] ranges, long value) {
-            if (value < ranges[0]) {
+            if (value <= ranges[0]) {
                 return 0;
             }
-            // если значение больше или равно последней границы — возвращаем последний индекс
-            if (value >= ranges[ranges.length - 1]) {
+            if (value > ranges[ranges.length - 1]) {
                 return ranges.length - 1;
             }
             for (int i = 1; i < ranges.length; i++) {
-                if (value > ranges[i - 1] && value < ranges[i]) {
+                if (value > ranges[i - 1] && value <= ranges[i]) {
                     return i;
                 }
             }
-            return 0;
+            return ranges.length - 1;
         }
 
         public long addCount(String name, long[] ranges, long[] values) {

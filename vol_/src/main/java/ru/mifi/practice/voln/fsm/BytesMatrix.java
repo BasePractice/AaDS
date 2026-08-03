@@ -15,6 +15,14 @@ public interface BytesMatrix {
         return new BytesTorusMatrix(rows, cols);
     }
 
+    /**
+     * Заворачивает координату на торе: клетка слева от нулевой — последняя, справа от
+     * последней — нулевая. Остаток в Java сохраняет знак, поэтому его нужно нормализовать.
+     */
+    static int wrap(int position, int size) {
+        return (position % size + size) % size;
+    }
+
     static BytesMatrix random(int rows, int cols) {
         ThreadLocalRandom random = ThreadLocalRandom.current();
         BytesTorusMatrix matrix = new BytesTorusMatrix(rows, cols);
@@ -54,16 +62,12 @@ public interface BytesMatrix {
 
         @Override
         public byte get(int row, int col) {
-            row = row % rows;
-            col = col % cols;
-            return (byte) (bitSet.get(row * cols + col) ? 1 : 0);
+            return (byte) (bitSet.get(wrap(row, rows) * cols + wrap(col, cols)) ? 1 : 0);
         }
 
         @Override
         public void set(int row, int col, byte value) {
-            row = row % rows;
-            col = col % cols;
-            bitSet.set(row * cols + col, value);
+            bitSet.set(wrap(row, rows) * cols + wrap(col, cols), value != 0);
         }
 
         @Override
@@ -89,28 +93,12 @@ public interface BytesMatrix {
 
         @Override
         public byte get(int row, int col) {
-            if (col < 0) {
-                col = Math.abs(cols - col);
-            }
-            if (row < 0) {
-                row = Math.abs(rows - row);
-            }
-            row = row % rows;
-            col = col % cols;
-            return data[row * cols + col];
+            return data[wrap(row, rows) * cols + wrap(col, cols)];
         }
 
         @Override
         public void set(int row, int col, byte value) {
-            if (col < 0) {
-                col = Math.abs(cols - col);
-            }
-            if (row < 0) {
-                row = Math.abs(rows - row);
-            }
-            row = row % rows;
-            col = col % cols;
-            data[row * cols + col] = value;
+            data[wrap(row, rows) * cols + wrap(col, cols)] = value;
         }
 
         @Override

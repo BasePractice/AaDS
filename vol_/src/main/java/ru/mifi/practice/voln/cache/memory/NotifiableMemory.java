@@ -4,11 +4,11 @@ import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import ru.mifi.practice.voln.cache.Notifiable;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -29,14 +29,13 @@ public final class NotifiableMemory implements Notifiable, Runnable {
 
     @Override
     public void registerNotify(String updateChannel, Consumer<Long> callback) {
-        listeners.computeIfAbsent(updateChannel, (u) -> new ArrayList<>()).add(callback);
+        listeners.computeIfAbsent(updateChannel, (u) -> new CopyOnWriteArrayList<>()).add(callback);
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     @Override
     public void notify(String channel, long key) {
-        if (!running.get()) {
-            running.set(true);
+        if (running.compareAndSet(false, true)) {
             executor.execute(this);
         }
         Message message = new Message(channel, key);

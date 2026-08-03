@@ -33,7 +33,7 @@ public class BytesMatrixImage {
         g.setColor(configuration.gridColor());
         for (int y = 0; y < matrix.rows(); y++) {
             for (int x = 0; x < matrix.cols(); x++) {
-                byte v = matrix.get(x, y);
+                byte v = matrix.get(y, x);
                 if (v != 0) {
                     Color c = g.getColor();
                     g.setColor(configuration.btc().apply(v));
