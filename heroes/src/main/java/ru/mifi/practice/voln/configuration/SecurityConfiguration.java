@@ -1,11 +1,13 @@
 package ru.mifi.practice.voln.configuration;
 
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -40,6 +42,8 @@ import ru.mifi.practice.voln.service.UserService;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Configuration
 @EnableWebSecurity
@@ -48,6 +52,13 @@ import java.util.List;
 public class SecurityConfiguration {
     private final JwtAuthenticationFilter filter;
     private final UserService userService;
+
+    /**
+     * Раньше здесь стоял шаблон «*» вместе с allowCredentials, то есть любой сайт мог слать
+     * запросы с куками пользователя. Список источников задаётся конфигурацией.
+     */
+    @Value("${app.cors.allowed-origins}")
+    private List<String> allowedOrigins;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) {
@@ -61,8 +72,9 @@ public class SecurityConfiguration {
                     "/login",
                     "/auth/sign-in", "/auth/sign-up",
                     "/error",
-                    "/actuator"
+                    "/actuator/health"
                 ).permitAll()
+                .requestMatchers("/actuator/**").hasRole("ADMIN")
                 .anyRequest().authenticated())
             .sessionManagement(manager -> manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authenticationProvider(authenticationProvider())
@@ -70,13 +82,12 @@ public class SecurityConfiguration {
         http.csrf(AbstractHttpConfigurer::disable);
         http.cors(cors -> cors.configurationSource(request -> {
             var corsConfiguration = new CorsConfiguration();
-            corsConfiguration.setAllowedOriginPatterns(List.of("*"));
+            corsConfiguration.setAllowedOrigins(allowedOrigins);
             corsConfiguration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-            corsConfiguration.setAllowedHeaders(List.of("*"));
+            corsConfiguration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
             corsConfiguration.setAllowCredentials(true);
             return corsConfiguration;
         }));
-        http.formLogin(login -> login.defaultSuccessUrl("/web/index.html"));
         return http.build();
     }
 
@@ -128,7 +139,14 @@ public class SecurityConfiguration {
             }
 
             var jwt = authHeader.substring(BEARER_PREFIX.length());
-            var userId = jwtService.extractUserId(jwt);
+            final Optional<UUID> userId;
+            try {
+                userId = jwtService.extractUserId(jwt);
+            } catch (JwtException | IllegalArgumentException ex) {
+                //Протухший, подделанный или битый токен — это отказ в доступе, а не ошибка сервера
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Токен недействителен");
+                return;
+            }
 
             if (SecurityContextHolder.getContext().getAuthentication() == null && userId.isPresent()) {
                 UserDetails userDetails = userService.loadUserById(userId.get());

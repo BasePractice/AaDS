@@ -9,7 +9,6 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -41,7 +40,7 @@ public class UserPresenceService {
     public RoomUser addUser(String username, UUID userId, SseEmitter emitter) {
         RoomUser user = new RoomUser(userId, username, emitter, LocalDateTime.now(), LocalDateTime.now());
         activeUsers.put(userId, user);
-        usernameToSessions.computeIfAbsent(username, k -> new HashSet<>()).add(userId);
+        usernameToSessions.computeIfAbsent(username, k -> ConcurrentHashMap.newKeySet()).add(userId);
         return user;
     }
 

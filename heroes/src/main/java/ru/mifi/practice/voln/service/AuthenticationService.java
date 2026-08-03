@@ -27,6 +27,7 @@ public class AuthenticationService {
             .email(request.getEmail())
             .password(passwordEncoder.encode(request.getPassword()))
             .authorities(List.of())
+            .enabled(true)
             .build();
         userRepository.saveAndFlush(user);
 

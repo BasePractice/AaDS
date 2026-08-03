@@ -3,6 +3,7 @@ package ru.mifi.practice.voln.controller;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.extern.jackson.Jacksonized;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -26,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 @RestController
@@ -34,7 +36,7 @@ public class ChatController {
 
     private static final int MAX_HISTORY = 100;
     private final UserPresenceService userPresenceService;
-    private final List<RoomMessage> messageHistory = new ArrayList<>();
+    private final List<RoomMessage> messageHistory = new CopyOnWriteArrayList<>();
 
     public ChatController(UserPresenceService userPresenceService) {
         this.userPresenceService = userPresenceService;
@@ -239,6 +241,7 @@ public class ChatController {
             LocalDateTime.now(), userListEvent));
     }
 
+    @Jacksonized
     @Builder(toBuilder = true)
     @Getter
     public static final class RoomMessage {
@@ -247,6 +250,7 @@ public class ChatController {
         private final LocalDateTime timestamp;
     }
 
+    @Jacksonized
     @Builder(toBuilder = true)
     @Getter
     public static final class RoomEvent {
