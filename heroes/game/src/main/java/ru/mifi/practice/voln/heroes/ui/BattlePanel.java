@@ -1,6 +1,8 @@
 package ru.mifi.practice.voln.heroes.ui;
 
+import ru.mifi.practice.voln.heroes.Battle;
 import ru.mifi.practice.voln.heroes.BattleMap;
+import ru.mifi.practice.voln.heroes.Tactics;
 import ru.mifi.practice.voln.heroes.Unit;
 
 import javax.swing.JPanel;
@@ -51,6 +53,7 @@ final class BattlePanel extends JPanel {
     private static final Color LEFT_UNIT_COLOR = new Color(100, 200, 100);
     private static final Color RIGHT_UNIT_COLOR = new Color(230, 100, 100);
 
+    private final transient Battle battle;
     private final BattleMap map;
     private final List<String> logs = new ArrayList<>();
     private final Timer animTimer;
@@ -63,6 +66,7 @@ final class BattlePanel extends JPanel {
     private List<int[]> previewPath;
 
     BattlePanel(BattleGui battleGui) {
+        this.battle = battleGui.getBattle();
         this.map = battleGui.getMap();
         setPreferredSize(new Dimension(WIDTH, HEIGHT));
         setBackground(BG_COLOR);
@@ -107,7 +111,7 @@ final class BattlePanel extends JPanel {
     }
 
     private void handleCellClick(int r, int c) {
-        if (map.isAnimating()) {
+        if (map.isAnimating() || !battle.ours()) {
             return;
         }
         Long activeId = map.getTurnQueue().peekFirst();
@@ -117,13 +121,12 @@ final class BattlePanel extends JPanel {
         int[] activeCoord = map.getStackCoord(activeId);
         int ar = activeCoord[0];
         int ac = activeCoord[1];
-
         if (previewR == r && previewC == c) {
             Unit.Stack target = map.getStack(r, c);
             if (target != null && map.isLeft(r, c) != map.isLeftTurn()) {
-                map.attack(ar, ac, r, c);
+                battle.apply(new Tactics.Decision(Tactics.Kind.ATTACK, r, c));
             } else if (target == null && !map.isObstacle(r, c)) {
-                map.move(ar, ac, r, c);
+                battle.apply(new Tactics.Decision(Tactics.Kind.MOVE, r, c));
             }
             clearPreview();
         } else {
