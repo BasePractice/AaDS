@@ -126,6 +126,24 @@ public final class Unit {
             return units.isEmpty();
         }
 
+        /**
+         * Сколько бойцов погибнет от удара такой силы. Запрос ничего не меняет: тактике нужно
+         * сравнить исходы до того, как удар нанесён, а damage считает потери разрушительно.
+         */
+        public int casualties(int attackAmount) {
+            int remaining = attackAmount;
+            int killed = 0;
+            for (Unit unit : units.stream().sorted(Comparator.comparing(Unit::health)).toList()) {
+                int kick = Math.max(0, remaining - unit.defense());
+                if (kick < unit.health()) {
+                    break;
+                }
+                remaining = kick - unit.health();
+                ++killed;
+            }
+            return killed;
+        }
+
         public void damage(int attackAmount) {
             int remaining = attackAmount;
             while (!units.isEmpty() && remaining > 0) {

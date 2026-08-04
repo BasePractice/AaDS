@@ -81,7 +81,18 @@ public final class BattleMap {
     }
 
     public void fillRandomly() {
-        Random random = new Random();
+        fill(new Random());
+    }
+
+    /**
+     * Расстановка по зерну генератора. Сетевой бой раздаёт обоим игрокам одно зерно, и поле
+     * получается одинаковым, хотя карта строится на каждой машине независимо.
+     */
+    public void fillRandomly(long seed) {
+        fill(new Random(seed));
+    }
+
+    private void fill(Random random) {
         generateObstacles(random);
         int stackCount = MIN_STACKS + random.nextInt(RANDOM_STACKS);
         for (int i = 0; i < stackCount; i++) {
@@ -199,85 +210,115 @@ public final class BattleMap {
         return obstacles[row][col];
     }
 
-    public void move(int sourceRow, int sourceColumn, int targetRow, int targetColumn) {
-        if (animating) {
-            return;
-        }
+    /**
+     * Путь перемещения на клетку или пустой список, если правила такой ход запрещают. Запрос
+     * отделён от команды: тактика перебирает варианты, не двигая при этом ни одного отряда.
+     */
+    public List<int[]> movePath(int sourceRow, int sourceColumn, int targetRow, int targetColumn) {
         Unit.Stack stack = getStack(sourceRow, sourceColumn);
-        if (stack == null || stack.hasActed() || isLeft(sourceRow, sourceColumn) != leftTurn) {
-            return;
+        if (animating || stack == null || stack.hasActed() || isLeft(sourceRow, sourceColumn) != leftTurn) {
+            return List.of();
         }
         if (getStack(targetRow, targetColumn) != null || isObstacle(targetRow, targetColumn)) {
-            return;
+            return List.of();
         }
         List<int[]> path = getPath(sourceRow, sourceColumn, targetRow, targetColumn, stack.getType() == Unit.Type.FLYER);
-        if (!path.isEmpty() && path.size() - 1 <= stack.speed()) {
-            map[targetRow][targetColumn] = map[sourceRow][sourceColumn];
-            map[sourceRow][sourceColumn] = null;
-            String message = String.format("%s(%s) ходит (%d, %d)",
-                stack.getType().getName(), leftTurn ? "L" : "R", targetRow, targetColumn);
-            support.firePropertyChange("log", null, message);
-            animating = true;
-            support.firePropertyChange("move", null, path);
+        if (path.isEmpty() || path.size() - 1 > stack.speed()) {
+            return List.of();
         }
+        return path;
     }
 
-    public void attack(int sourceRow, int sourceColumn, int targetRow, int targetColumn) {
-        if (animating) {
-            return;
-        }
+    /**
+     * Путь атаки: подход вплотную к цели и удар последним шагом. Пустой список означает, что
+     * цель недостижима — соседние с ней клетки заняты, закрыты препятствием или слишком далеко.
+     */
+    public List<int[]> attackPath(int sourceRow, int sourceColumn, int targetRow, int targetColumn) {
         Unit.Stack stack = getStack(sourceRow, sourceColumn);
         Unit.Stack target = getStack(targetRow, targetColumn);
-        if (stack == null || target == null || stack.hasActed() ||
-            isLeft(sourceRow, sourceColumn) != leftTurn || isLeft(targetRow, targetColumn) == leftTurn) {
-            return;
+        if (animating || stack == null || target == null || stack.hasActed()
+            || isLeft(sourceRow, sourceColumn) != leftTurn || isLeft(targetRow, targetColumn) == leftTurn) {
+            return List.of();
         }
-        List<int[]> path = getPath(sourceRow, sourceColumn, targetRow, targetColumn, stack.getType() == Unit.Type.FLYER);
+        boolean flying = stack.getType() == Unit.Type.FLYER;
+        List<int[]> path = getPath(sourceRow, sourceColumn, targetRow, targetColumn, flying);
+        if (path.isEmpty()) {
+            return List.of();
+        }
+        int[] melee = path.get(path.size() - 2);
+        if (isBlocked(melee[0], melee[1], sourceRow, sourceColumn)) {
+            path = detour(sourceRow, sourceColumn, targetRow, targetColumn, flying, stack.speed());
+        }
+        if (path.isEmpty() || path.size() - 2 > stack.speed()) {
+            return List.of();
+        }
+        return path;
+    }
+
+    private boolean isBlocked(int row, int column, int sourceRow, int sourceColumn) {
+        return isObstacle(row, column)
+            || getStack(row, column) != null && (row != sourceRow || column != sourceColumn);
+    }
+
+    /**
+     * Обход, когда клетка на прямом пути к цели занята: ищет свободную клетку по другую сторону
+     * от цели и достраивает к найденному пути завершающий удар.
+     */
+    private List<int[]> detour(int sourceRow, int sourceColumn, int targetRow, int targetColumn,
+                              boolean flying, int speed) {
+        int[] rows = {0, 0, 1, -1};
+        int[] columns = {1, -1, 0, 0};
+        for (int i = 0; i < DIRECTIONS_COUNT; i++) {
+            int nextRow = targetRow + rows[i];
+            int nextColumn = targetColumn + columns[i];
+            if (!isInside(nextRow, nextColumn) || isBlocked(nextRow, nextColumn, sourceRow, sourceColumn)) {
+                continue;
+            }
+            List<int[]> around = getPath(sourceRow, sourceColumn, nextRow, nextColumn, flying);
+            if (!around.isEmpty() && around.size() - 1 <= speed) {
+                List<int[]> path = new ArrayList<>(around);
+                path.add(new int[]{targetRow, targetColumn});
+                return path;
+            }
+        }
+        return List.of();
+    }
+
+    /** Лежит ли клетка внутри поля боя. */
+    public boolean isInside(int row, int column) {
+        return row >= 0 && row < ROWS && column >= 0 && column < COLS;
+    }
+
+    public void move(int sourceRow, int sourceColumn, int targetRow, int targetColumn) {
+        List<int[]> path = movePath(sourceRow, sourceColumn, targetRow, targetColumn);
         if (path.isEmpty()) {
             return;
         }
-        int[] moveTarget = path.get(path.size() - 2);
-        if (isObstacle(moveTarget[0], moveTarget[1]) || (getStack(moveTarget[0], moveTarget[1]) != null &&
-            (moveTarget[0] != sourceRow || moveTarget[1] != sourceColumn))) {
-            int[] drs = {0, 0, 1, -1};
-            int[] dcs = {1, -1, 0, 0};
-            boolean found = false;
-            for (int i = 0; i < DIRECTIONS_COUNT; i++) {
-                int nextRow = targetRow + drs[i];
-                int nextColumn = targetColumn + dcs[i];
-                if (nextRow >= 0 && nextRow < ROWS && nextColumn >= 0 && nextColumn < COLS && !isObstacle(nextRow, nextColumn) &&
-                    (getStack(nextRow, nextColumn) == null || (nextRow == sourceRow && nextColumn == sourceColumn))) {
-                    List<int[]> newPath = getPath(sourceRow, sourceColumn, nextRow, nextColumn, stack.getType() == Unit.Type.FLYER);
-                    if (!newPath.isEmpty() && newPath.size() - 1 <= stack.speed()) {
-                        path = new ArrayList<>(newPath);
-                        path.add(new int[]{targetRow, targetColumn});
-                        moveTarget = new int[]{nextRow, nextColumn};
-                        found = true;
-                        break;
-                    }
-                }
-            }
-            if (!found) {
-                return;
-            }
-        }
+        String message = String.format("%s(%s) ходит (%d, %d)",
+            getStack(sourceRow, sourceColumn).getType().getName(), leftTurn ? "L" : "R", targetRow, targetColumn);
+        map[targetRow][targetColumn] = map[sourceRow][sourceColumn];
+        map[sourceRow][sourceColumn] = null;
+        support.firePropertyChange("log", null, message);
+        animating = true;
+        support.firePropertyChange("move", null, path);
+    }
 
-        if (path.size() - 2 > stack.speed()) {
+    public void attack(int sourceRow, int sourceColumn, int targetRow, int targetColumn) {
+        List<int[]> path = attackPath(sourceRow, sourceColumn, targetRow, targetColumn);
+        if (path.isEmpty()) {
             return;
         }
-
-        int moveRow = moveTarget[0];
-        int moveColumn = moveTarget[1];
-        if (moveRow != sourceRow || moveColumn != sourceColumn) {
-            map[moveRow][moveColumn] = map[sourceRow][sourceColumn];
-            map[sourceRow][sourceColumn] = null;
-            animating = true;
-            pendingAttack = new int[]{targetRow, targetColumn};
-            support.firePropertyChange("move", null, new ArrayList<>(path.subList(0, path.size() - 1)));
-        } else {
+        int[] melee = path.get(path.size() - 2);
+        if (melee[0] == sourceRow && melee[1] == sourceColumn) {
             performAttack(sourceRow, sourceColumn, targetRow, targetColumn);
             finishTurn();
+            return;
         }
+        map[melee[0]][melee[1]] = map[sourceRow][sourceColumn];
+        map[sourceRow][sourceColumn] = null;
+        animating = true;
+        pendingAttack = new int[]{targetRow, targetColumn};
+        support.firePropertyChange("move", null, new ArrayList<>(path.subList(0, path.size() - 1)));
     }
 
     public void endAction() {

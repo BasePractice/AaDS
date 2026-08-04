@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Timeout;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
@@ -100,5 +101,48 @@ final class BattleMapTest {
         map.addRight(0, 1, target);
         map.move(0, 0, 0, 1);
         assertThat("the occupied target gets overwritten by the walker", map.getStack(0, 1), is(target));
+    }
+
+    /**
+     * На этом держится сетевой бой: обе стороны собирают поле у себя, обмениваясь одним зерном,
+     * а не пересылая расстановку целиком.
+     */
+    @DisplayName("Одно зерно даёт одинаковую расстановку")
+    @Test
+    @Timeout(1)
+    void repeatsTheFieldForTheSameSeed() {
+        BattleMap one = new BattleMap();
+        one.fillRandomly(20260804L);
+        BattleMap other = new BattleMap();
+        other.fillRandomly(20260804L);
+        assertThat("the same seed lays out different fields", picture(one), is(picture(other)));
+    }
+
+    @DisplayName("Разные зёрна дают разную расстановку")
+    @Test
+    @Timeout(1)
+    void variesTheFieldForDifferentSeeds() {
+        BattleMap one = new BattleMap();
+        one.fillRandomly(1L);
+        BattleMap other = new BattleMap();
+        other.fillRandomly(2L);
+        assertThat("different seeds lay out the same field", picture(one), is(not(picture(other))));
+    }
+
+    private static String picture(BattleMap map) {
+        StringBuilder drawing = new StringBuilder();
+        for (int row = 0; row < Constants.ROWS; row++) {
+            for (int column = 0; column < Constants.COLS; column++) {
+                Unit.Stack stack = map.getStack(row, column);
+                if (map.isObstacle(row, column)) {
+                    drawing.append('#');
+                } else if (stack == null) {
+                    drawing.append('.');
+                } else {
+                    drawing.append(map.isLeft(row, column) ? 'L' : 'R').append(stack.size());
+                }
+            }
+        }
+        return drawing.toString();
     }
 }
