@@ -23,39 +23,20 @@ public interface Tree<T> extends Visitor.Visit<T>, Hashable {
         Tree<T> parse(InputStream stream, Function<String, T> value, Comparator<T> comparator) throws IOException;
     }
 
-    abstract class AbstractTree<T> implements Tree<T> {
-        protected final Comparator<T> comparator;
-        protected Node<T> root;
+    final class Standard<T> implements Tree<T> {
+        private final Comparator<T> comparator;
+        private Node<T> root;
 
-        protected AbstractTree(Comparator<T> comparator) {
+        public Standard(Comparator<T> comparator) {
             this.comparator = comparator;
         }
 
         @Override
         public void add(T element) {
-            root = root == null ? Node.root(element) : add(root, element);
-        }
-
-        abstract Node<T> add(Node<T> root, T element);
-
-        @Override
-        public void visit(Visitor<T> visitor, VisitorStrategy<T> strategy) {
             if (root != null) {
-                strategy.visit(root, visitor, strategy);
-            } else {
-                visitor.empty();
+                throw new UnsupportedOperationException("Standard принимает узлы только через add(owner, left, right)");
             }
-        }
-    }
-
-    final class Standard<T> extends AbstractTree<T> implements Tree<T> {
-        public Standard(Comparator<T> comparator) {
-            super(comparator);
-        }
-
-        @Override
-        Node<T> add(Node<T> root, T element) {
-            throw new UnsupportedOperationException("Standard принимает узлы только через add(owner, left, right)");
+            root = Node.root(element);
         }
 
         public void add(T owner, T left, T right) {
@@ -70,6 +51,15 @@ public interface Tree<T> extends Visitor.Visit<T>, Hashable {
                 }
                 find.left(left);
                 find.right(right);
+            }
+        }
+
+        @Override
+        public void visit(Visitor<T> visitor, VisitorStrategy<T> strategy) {
+            if (root != null) {
+                strategy.visit(root, visitor, strategy);
+            } else {
+                visitor.empty();
             }
         }
 
