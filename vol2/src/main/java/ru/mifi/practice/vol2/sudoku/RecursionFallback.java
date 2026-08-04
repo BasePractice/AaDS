@@ -3,7 +3,11 @@ package ru.mifi.practice.vol2.sudoku;
 @SuppressWarnings("PMD.UnusedPrivateField")
 final class RecursionFallback extends Sudoku.AbstractSudoku {
     RecursionFallback(int size, int[][] values, boolean debug) {
-        super(Block.of(size, values), debug);
+        this(Block.of(size, values), debug);
+    }
+
+    RecursionFallback(Block grid, boolean debug) {
+        super(grid, debug);
     }
 
     @Override
