@@ -2,22 +2,10 @@ package ru.mifi.practice.vol7.distance;
 
 import ru.mifi.practice.commons.Counter;
 
-import java.util.Arrays;
-
 /** Levenshtein edit distance between two strings. */
 public interface Levenshtein extends Distance {
 
-    abstract class AbstractLevenshtein implements Levenshtein {
-        protected static int cost(char first, char second) {
-            return first == second ? 0 : 1;
-        }
-
-        protected static int min(int... numbers) {
-            return Arrays.stream(numbers).min().orElse(Integer.MAX_VALUE);
-        }
-    }
-
-    final class LevenshteinRecursion extends AbstractLevenshtein {
+    final class LevenshteinRecursion implements Levenshtein {
 
         @Override
         public int distance(String s1, String s2, Counter counter) {
@@ -29,14 +17,14 @@ public interface Levenshtein extends Distance {
             }
             counter.increment();
             int substitution = distance(s1.substring(1), s2.substring(1), counter)
-                + cost(s1.charAt(0), s2.charAt(0));
+                + (s1.charAt(0) == s2.charAt(0) ? 0 : 1);
             int insertion = distance(s1, s2.substring(1), counter) + 1;
             int deletion = distance(s1.substring(1), s2, counter) + 1;
-            return min(substitution, insertion, deletion);
+            return Math.min(substitution, Math.min(insertion, deletion));
         }
     }
 
-    final class VagnerFisherDynamited extends AbstractLevenshtein {
+    final class VagnerFisherDynamited implements Levenshtein {
         @Override
         public int distance(String s1, String s2, Counter counter) {
             int[][] table = new int[s1.length() + 1][s2.length() + 1];
@@ -49,9 +37,10 @@ public interface Levenshtein extends Distance {
                     } else if (j == 0) {
                         table[i][j] = i;
                     } else {
-                        table[i][j] = min(table[i - 1][j - 1] + cost(s1.charAt(i - 1), s2.charAt(j - 1)),
-                            table[i - 1][j] + 1,
-                            table[i][j - 1] + 1);
+                        int substitution = table[i - 1][j - 1]
+                            + (s1.charAt(i - 1) == s2.charAt(j - 1) ? 0 : 1);
+                        table[i][j] = Math.min(substitution,
+                            Math.min(table[i - 1][j] + 1, table[i][j - 1] + 1));
                     }
                 }
             }
