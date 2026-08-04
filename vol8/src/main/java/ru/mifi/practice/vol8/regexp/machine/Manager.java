@@ -49,47 +49,47 @@ public interface Manager {
 
         @Override
         public State.Symbol symbol(char symbol) {
-            return register(new State.Symbol(this, counter.getAndIncrement(), map(symbol)));
+            return register(new State.Symbol(counter.getAndIncrement(), map(symbol)));
         }
 
         @Override
         public State.Sequence sequence() {
-            return register(new State.Sequence(this, counter.getAndIncrement()));
+            return register(new State.Sequence(counter.getAndIncrement()));
         }
 
         @Override
         public State.Group group() {
-            return register(new State.Group(this, counter.getAndIncrement()));
+            return register(new State.Group(counter.getAndIncrement()));
         }
 
         @Override
         public State.Parallel parallel() {
-            return register(new State.Parallel(this, counter.getAndIncrement()));
+            return register(new State.Parallel(counter.getAndIncrement()));
         }
 
         @Override
         public State.Any any() {
-            return register(new State.Any(this, counter.getAndIncrement()));
+            return register(new State.Any(counter.getAndIncrement()));
         }
 
         @Override
         public State.Excluding excluding(State excluded) {
-            return register(new State.Excluding(this, counter.getAndIncrement(), excluded));
+            return register(new State.Excluding(counter.getAndIncrement(), excluded));
         }
 
         @Override
         public State.NoneOrOne noneOrOne(State state) {
-            return register(new State.NoneOrOne(this, counter.getAndIncrement(), state));
+            return register(new State.NoneOrOne(counter.getAndIncrement(), state));
         }
 
         @Override
         public State.NoneOrMore noneOrMore(State state) {
-            return register(new State.NoneOrMore(this, counter.getAndIncrement(), state));
+            return register(new State.NoneOrMore(counter.getAndIncrement(), state));
         }
 
         @Override
         public State.OneOrMore oneOrMore(State state) {
-            return register(new State.OneOrMore(this, counter.getAndIncrement(), state));
+            return register(new State.OneOrMore(counter.getAndIncrement(), state));
         }
 
         @Override

@@ -1,66 +1,34 @@
 package ru.mifi.practice.vol8.regexp.machine;
 
-import lombok.EqualsAndHashCode;
-
 import java.util.ArrayList;
 import java.util.List;
 
 //FIXME: Переписать проверку в FSM не через рекурсию — на длинном вводе рекурсивный спуск по состояниям грозит переполнением стека
 /** Состояние конечного автомата для сопоставления регулярного выражения. */
-@SuppressWarnings("PMD.SimplifyBooleanReturnss")
-@EqualsAndHashCode(of = "index")
-public abstract class State {
-    final Manager manager;
-    final int index;
-    protected State parent;
-    protected State next;
+public interface State {
+    void visit(Visitor visitor);
 
-    protected State(Manager manager, int index) {
-        this.manager = manager;
-        this.index = index;
-    }
+    void setNext(State next);
 
-    public abstract void visit(Visitor visitor);
+    boolean accept(Input input);
 
-    protected void setNext(State next) {
-        this.next = next;
-    }
+    Match match(Input input);
 
-    public boolean accept(Input input) {
-        return false;
-    }
+    int index();
 
-    @Override
-    public String toString() {
-        if (next != null) {
-            return " --> " + next;
-        }
-        return "";
-    }
+    State lastState();
 
-    public Match match(Input input) {
-        return new Match(false, input.copy());
-    }
+    String diagramLabel();
 
-    State lastState() {
-        return next;
-    }
+    void describe(Diagram diagram, String stateName, String nextName);
 
-    String diagramLabel() {
-        return "Epsilon";
-    }
-
-    void describe(Diagram diagram, String stateName, String nextName) {
-        //Nothing
-    }
-
-    public interface Diagram {
+    interface Diagram {
         String name(State state);
 
         void edge(String from, String to);
     }
 
-    public record Match(boolean ok, Input input) {
+    record Match(boolean ok, Input input) {
 
         static Match ok(Input input) {
             return new Match(true, input.copy());
@@ -75,11 +43,13 @@ public abstract class State {
         }
     }
 
-    public static final class Symbol extends State {
-        final Object symbol;
+    /** Символ шаблона: принимает ровно то значение, которым создан. */
+    final class Symbol implements State {
+        private final Link link;
+        private final Object symbol;
 
-        Symbol(Manager manager, int index, Object symbol) {
-            super(manager, index);
+        Symbol(int index, Object symbol) {
+            this.link = new Link(index);
             this.symbol = symbol;
         }
 
@@ -90,55 +60,107 @@ public abstract class State {
 
         @Override
         public Match match(Input input) {
-            if (accept(input)) {
-                input.next();
-                if (next == null) {
-                    return Match.ok(input);
-                }
-                if (next.accept(input)) {
-                    return next.match(input);
-                }
-                return Match.failure(input);
-            }
-            return Match.failure(input);
+            return link.consume(this, input);
         }
 
         @Override
         public void visit(Visitor visitor) {
-            visitor.visit(this, next);
-            if (next != null) {
-                next.visit(visitor);
-            }
+            link.visitNext(visitor, this);
+        }
+
+        @Override
+        public void setNext(State next) {
+            link.setNext(next);
+        }
+
+        @Override
+        public int index() {
+            return link.index();
+        }
+
+        @Override
+        public State lastState() {
+            return link.lastState();
+        }
+
+        @Override
+        public String diagramLabel() {
+            return String.valueOf(symbol);
+        }
+
+        @Override
+        public void describe(Diagram diagram, String stateName, String nextName) {
+            link.describe(diagram, stateName, nextName);
         }
 
         @Override
         public String toString() {
-            return symbol + super.toString();
-        }
-
-        @Override
-        String diagramLabel() {
-            return String.valueOf(symbol);
+            return symbol + link.toString();
         }
     }
 
-    static final class Group extends State {
-        Group(Manager manager, int index) {
-            super(manager, index);
+    /** Скобка шаблона: разметка для сборки автомата, в самом сопоставлении не участвует. */
+    final class Group implements State {
+        private final Link link;
+
+        Group(int index) {
+            this.link = new Link(index);
+        }
+
+        @Override
+        public boolean accept(Input input) {
+            return link.accept(input);
+        }
+
+        @Override
+        public Match match(Input input) {
+            return link.match(input);
         }
 
         @Override
         public void visit(Visitor visitor) {
             //Nothing
         }
+
+        @Override
+        public void setNext(State next) {
+            link.setNext(next);
+        }
+
+        @Override
+        public int index() {
+            return link.index();
+        }
+
+        @Override
+        public State lastState() {
+            return link.lastState();
+        }
+
+        @Override
+        public String diagramLabel() {
+            return link.diagramLabel();
+        }
+
+        @Override
+        public void describe(Diagram diagram, String stateName, String nextName) {
+            link.describe(diagram, stateName, nextName);
+        }
+
+        @Override
+        public String toString() {
+            return link.toString();
+        }
     }
 
-    public static final class Sequence extends State {
-        State last;
+    /** Цепочка состояний: принимает вход, который её звенья разбирают одно за другим. */
+    final class Sequence implements State {
+        private final Link link;
         private State start;
+        private State last;
 
-        Sequence(Manager manager, int index) {
-            super(manager, index);
+        Sequence(int index) {
+            this.link = new Link(index);
         }
 
         @Override
@@ -150,8 +172,9 @@ public abstract class State {
         public Match match(Input input) {
             if (accept(input)) {
                 var matched = start.match(input);
-                if (matched.ok() && next != null && next.accept(matched.input)) {
-                    return next.match(matched.input);
+                State next = link.next();
+                if (matched.ok() && next != null && next.accept(matched.input())) {
+                    return next.match(matched.input());
                 }
                 return matched;
             }
@@ -162,20 +185,44 @@ public abstract class State {
         public void visit(Visitor visitor) {
             visitor.visit(this, start);
             start.visit(visitor);
+            State next = link.next();
             if (next != null) {
                 next.visit(visitor);
             }
         }
 
         void add(State state) {
-            state.parent = this;
             if (start == null) {
                 start = state;
             } else {
-                state.parent = last;
                 last.setNext(state);
             }
             last = state;
+        }
+
+        @Override
+        public void setNext(State next) {
+            link.setNext(next);
+        }
+
+        @Override
+        public int index() {
+            return link.index();
+        }
+
+        @Override
+        public State lastState() {
+            return last;
+        }
+
+        @Override
+        public String diagramLabel() {
+            return link.diagramLabel();
+        }
+
+        @Override
+        public void describe(Diagram diagram, String stateName, String nextName) {
+            link.describe(diagram, stateName, nextName);
         }
 
         @Override
@@ -184,21 +231,18 @@ public abstract class State {
             if (start != null) {
                 string = start.toString();
             }
-            return string + super.toString();
-        }
-
-        @Override
-        State lastState() {
-            return last;
+            return string + link;
         }
     }
 
     /**
      * Точка регулярного выражения: принимает любой символ, лишь бы он был.
      */
-    public static final class Any extends State {
-        Any(Manager manager, int index) {
-            super(manager, index);
+    final class Any implements State {
+        private final Link link;
+
+        Any(int index) {
+            this.link = new Link(index);
         }
 
         @Override
@@ -208,31 +252,54 @@ public abstract class State {
 
         @Override
         public Match match(Input input) {
-            return consume(this, next, input);
+            return link.consume(this, input);
         }
 
         @Override
         public void visit(Visitor visitor) {
-            visitor.visit(this, next);
-            if (next != null) {
-                next.visit(visitor);
-            }
+            link.visitNext(visitor, this);
+        }
+
+        @Override
+        public void setNext(State next) {
+            link.setNext(next);
+        }
+
+        @Override
+        public int index() {
+            return link.index();
+        }
+
+        @Override
+        public State lastState() {
+            return link.lastState();
+        }
+
+        @Override
+        public String diagramLabel() {
+            return link.diagramLabel();
+        }
+
+        @Override
+        public void describe(Diagram diagram, String stateName, String nextName) {
+            link.describe(diagram, stateName, nextName);
         }
 
         @Override
         public String toString() {
-            return "." + super.toString();
+            return "." + link;
         }
     }
 
     /**
      * Отрицание множества: принимает символ, которого нет среди перечисленных.
      */
-    public static final class Excluding extends State {
+    final class Excluding implements State {
+        private final Link link;
         private final State excluded;
 
-        Excluding(Manager manager, int index, State excluded) {
-            super(manager, index);
+        Excluding(int index, State excluded) {
+            this.link = new Link(index);
             this.excluded = excluded;
         }
 
@@ -243,76 +310,69 @@ public abstract class State {
 
         @Override
         public Match match(Input input) {
-            return consume(this, next, input);
+            return link.consume(this, input);
         }
 
         @Override
         public void visit(Visitor visitor) {
-            visitor.visit(this, next);
-            if (next != null) {
-                next.visit(visitor);
-            }
+            link.visitNext(visitor, this);
+        }
+
+        @Override
+        public void setNext(State next) {
+            link.setNext(next);
+        }
+
+        @Override
+        public int index() {
+            return link.index();
+        }
+
+        @Override
+        public State lastState() {
+            return link.lastState();
+        }
+
+        @Override
+        public String diagramLabel() {
+            return link.diagramLabel();
+        }
+
+        @Override
+        public void describe(Diagram diagram, String stateName, String nextName) {
+            link.describe(diagram, stateName, nextName);
         }
 
         @Override
         public String toString() {
-            return "[^" + excluded + "]" + super.toString();
+            return "[^" + excluded + "]" + link;
         }
     }
 
-    /**
-     * Съедает один символ и передаёт управление продолжению. Если продолжение есть, но входа
-     * ему не хватает, это отказ, а не успех: иначе шаблон совпадал бы со своим префиксом.
-     */
-    private static Match consume(State current, State next, Input input) {
-        if (!current.accept(input)) {
-            return Match.failure(input);
-        }
-        input.next();
-        if (next == null) {
-            return Match.ok(input);
-        }
-        if (next.accept(input)) {
-            return next.match(input);
-        }
-        return Match.failure(input);
-    }
+    /** Развилка шаблона: принимает вход, который берёт хотя бы одна из её веток. */
+    final class Parallel implements State {
+        private final Link link;
+        private final List<State> states = new ArrayList<>();
 
-    public static final class Epsilon extends Parallel {
-        private Epsilon(Manager manager, int index) {
-            super(manager, index);
+        Parallel(int index) {
+            this.link = new Link(index);
         }
 
         @Override
         public boolean accept(Input input) {
-            return input.hasNext();
-        }
-    }
-
-    public static class Parallel extends State {
-        final List<State> states = new ArrayList<>();
-
-        Parallel(Manager manager, int index) {
-            super(manager, index);
-        }
-
-        @Override
-        public boolean accept(Input input) {
-            List<State> accepted = getAccepted(input);
-            return !accepted.isEmpty();
+            return !accepted(input).isEmpty();
         }
 
         @Override
         public Match match(Input input) {
             if (accept(input)) {
-                List<State> accepted = getAccepted(input);
-                for (State next : accepted) {
+                for (State branch : accepted(input)) {
                     Input copy = input.copy();
-                    var accept = next.match(copy);
+                    var accept = branch.match(copy);
                     //TODO: Реализовать для всех оставшихся путей — берётся первая принявшая ветка, остальные не перебираются
                     if (accept.ok()) {
-                        if (this.next != null && next.accept(accept.input)) {
-                            return next.match(accept.input);
+                        if (link.next() != null && branch.accept(accept.input())) {
+                            return branch.match(accept.input());
                         }
                         return accept;
                     }
@@ -321,7 +381,7 @@ public abstract class State {
             return Match.failure(input);
         }
 
-        private List<State> getAccepted(Input input) {
+        private List<State> accepted(Input input) {
             return states.stream().filter(c -> c.accept(input)).toList();
         }
 
@@ -331,45 +391,59 @@ public abstract class State {
                 visitor.visit(this, state);
                 state.visit(visitor);
             }
+            State next = link.next();
             if (next != null) {
                 next.visit(visitor);
             }
         }
 
         void add(State state) {
-            state.parent = this;
             states.add(state);
         }
 
+        void merge(Parallel parallel) {
+            parallel.states.forEach(this::add);
+        }
+
         @Override
-        protected void setNext(State next) {
+        public void setNext(State next) {
             states.forEach(s -> s.setNext(next));
         }
 
         @Override
-        public String toString() {
-            return states + super.toString();
+        public int index() {
+            return link.index();
         }
 
         @Override
-        State lastState() {
+        public State lastState() {
             return this;
         }
-    }
 
-    @SuppressWarnings("PMD.ModifierOrder")
-    private abstract static class SingleState extends State {
-        protected final State state;
+        @Override
+        public String diagramLabel() {
+            return link.diagramLabel();
+        }
 
-        protected SingleState(Manager manager, int index, State state) {
-            super(manager, index);
-            this.state = state;
+        @Override
+        public void describe(Diagram diagram, String stateName, String nextName) {
+            link.describe(diagram, stateName, nextName);
+        }
+
+        @Override
+        public String toString() {
+            return states + link.toString();
         }
     }
 
-    public static final class NoneOrOne extends SingleState {
-        NoneOrOne(Manager manager, int index, State state) {
-            super(manager, index, state);
+    /** Необязательное состояние: пропускает своё тело, если вход его не принимает. */
+    final class NoneOrOne implements State {
+        private final Link link;
+        private final State state;
+
+        NoneOrOne(int index, State state) {
+            this.link = new Link(index);
+            this.state = state;
         }
 
         //FIXME: Проверить правильность — accept() истинно при любом непустом вводе, даже когда ни сам элемент, ни продолжение его не принимают
@@ -382,10 +456,11 @@ public abstract class State {
         public Match match(Input input) {
             if (accept(input)) {
                 Input copy = input.copy();
+                State next = link.next();
                 if (state.accept(copy)) {
                     var matched = state.match(copy);
-                    if (matched.ok() && next != null && next.accept(matched.input)) {
-                        return next.match(matched.input);
+                    if (matched.ok() && next != null && next.accept(matched.input())) {
+                        return next.match(matched.input());
                     }
                     return matched;
                 } else if (next != null && next.accept(copy)) {
@@ -397,29 +472,49 @@ public abstract class State {
 
         @Override
         public void visit(Visitor visitor) {
-            visitor.visit(this, state);
-            state.visit(visitor);
-            if (next != null) {
-                visitor.visit(state, next);
-                next.visit(visitor);
-            }
+            link.visitBranch(visitor, this, state);
+        }
+
+        @Override
+        public void setNext(State next) {
+            link.setNext(next);
+        }
+
+        @Override
+        public int index() {
+            return link.index();
+        }
+
+        @Override
+        public State lastState() {
+            return link.lastState();
+        }
+
+        @Override
+        public String diagramLabel() {
+            return link.diagramLabel();
+        }
+
+        @Override
+        public void describe(Diagram diagram, String stateName, String nextName) {
+            diagram.edge(nextName, diagram.name(link.next()));
+            diagram.edge(stateName, diagram.name(link.next()));
         }
 
         @Override
         public String toString() {
-            return "(" + state + ")?" + super.toString();
-        }
-
-        @Override
-        void describe(Diagram diagram, String stateName, String nextName) {
-            diagram.edge(nextName, diagram.name(next));
-            diagram.edge(stateName, diagram.name(next));
+            return "(" + state + ")?" + link;
         }
     }
 
-    public static final class NoneOrMore extends SingleState {
-        NoneOrMore(Manager manager, int index, State state) {
-            super(manager, index, state);
+    /** Повторение от нуля: съедает столько повторов своего тела, сколько найдёт. */
+    final class NoneOrMore implements State {
+        private final Link link;
+        private final State state;
+
+        NoneOrMore(int index, State state) {
+            this.link = new Link(index);
+            this.state = state;
         }
 
         @Override
@@ -431,12 +526,13 @@ public abstract class State {
         public Match match(Input input) {
             if (accept(input)) {
                 Input copy = input.copy();
+                State next = link.next();
                 if (state.accept(copy)) {
                     var matched = state.match(copy);
                     if (matched.ok()) {
                         Input prev = copy;
                         while (matched.ok()) {
-                            prev = matched.input;
+                            prev = matched.input();
                             matched = state.match(copy);
                         }
                         copy = prev;
@@ -444,8 +540,8 @@ public abstract class State {
                             return next.match(copy);
                         }
                     }
-                    if (next != null && next.accept(matched.input)) {
-                        return next.match(matched.input);
+                    if (next != null && next.accept(matched.input())) {
+                        return next.match(matched.input());
                     }
                 } else if (next != null && next.accept(copy)) {
                     return next.match(copy);
@@ -457,29 +553,49 @@ public abstract class State {
 
         @Override
         public void visit(Visitor visitor) {
-            visitor.visit(this, state);
-            state.visit(visitor);
-            if (next != null) {
-                visitor.visit(state, next);
-                next.visit(visitor);
-            }
+            link.visitBranch(visitor, this, state);
+        }
+
+        @Override
+        public void setNext(State next) {
+            link.setNext(next);
+        }
+
+        @Override
+        public int index() {
+            return link.index();
+        }
+
+        @Override
+        public State lastState() {
+            return link.lastState();
+        }
+
+        @Override
+        public String diagramLabel() {
+            return link.diagramLabel();
+        }
+
+        @Override
+        public void describe(Diagram diagram, String stateName, String nextName) {
+            diagram.edge(diagram.name(state), diagram.name(state));
+            diagram.edge(nextName, diagram.name(link.next()));
         }
 
         @Override
         public String toString() {
-            return "(" + state + ")*" + super.toString();
-        }
-
-        @Override
-        void describe(Diagram diagram, String stateName, String nextName) {
-            diagram.edge(diagram.name(state), diagram.name(state));
-            diagram.edge(nextName, diagram.name(next));
+            return "(" + state + ")*" + link;
         }
     }
 
-    public static final class OneOrMore extends SingleState {
-        OneOrMore(Manager manager, int index, State state) {
-            super(manager, index, state);
+    /** Повторение от единицы: требует своё тело хотя бы раз, а дальше повторяет его жадно. */
+    final class OneOrMore implements State {
+        private final Link link;
+        private final State state;
+
+        OneOrMore(int index, State state) {
+            this.link = new Link(index);
+            this.state = state;
         }
 
         @Override
@@ -494,13 +610,14 @@ public abstract class State {
                 var matched = state.match(copy);
                 if (matched.ok()) {
                     Match prev = matched;
-                    Match next = matched;
-                    while (next.ok()) {
-                        prev = next;
-                        next = state.match(next.input);
+                    Match repeated = matched;
+                    while (repeated.ok()) {
+                        prev = repeated;
+                        repeated = state.match(repeated.input());
                     }
-                    if (this.next != null && this.next.accept(prev.input)) {
-                        return this.next.match(prev.input);
+                    State next = link.next();
+                    if (next != null && next.accept(prev.input())) {
+                        return next.match(prev.input());
                     }
                     return prev;
                 }
@@ -510,23 +627,38 @@ public abstract class State {
 
         @Override
         public void visit(Visitor visitor) {
-            visitor.visit(this, state);
-            state.visit(visitor);
-            if (next != null) {
-                visitor.visit(state, next);
-                next.visit(visitor);
-            }
+            link.visitBranch(visitor, this, state);
+        }
+
+        @Override
+        public void setNext(State next) {
+            link.setNext(next);
+        }
+
+        @Override
+        public int index() {
+            return link.index();
+        }
+
+        @Override
+        public State lastState() {
+            return link.lastState();
+        }
+
+        @Override
+        public String diagramLabel() {
+            return link.diagramLabel();
+        }
+
+        @Override
+        public void describe(Diagram diagram, String stateName, String nextName) {
+            diagram.edge(nextName, diagram.name(link.next()));
+            diagram.edge(diagram.name(state.lastState()), diagram.name(state));
         }
 
         @Override
         public String toString() {
-            return "(" + state + ")+" + super.toString();
-        }
-
-        @Override
-        void describe(Diagram diagram, String stateName, String nextName) {
-            diagram.edge(nextName, diagram.name(next));
-            diagram.edge(diagram.name(state.lastState()), diagram.name(state));
+            return "(" + state + ")+" + link;
         }
     }
 }

@@ -183,7 +183,7 @@ public final class MachineGenerator implements Tree.Visitor {
         }
         State.Parallel parallel = last();
         if (state instanceof State.Parallel pal) {
-            pal.states.forEach(parallel::add);
+            parallel.merge(pal);
         } else {
             parallel.add(state);
         }

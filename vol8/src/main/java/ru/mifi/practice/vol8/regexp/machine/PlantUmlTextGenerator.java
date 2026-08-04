@@ -17,7 +17,7 @@ public final class PlantUmlTextGenerator implements Visitor, State.Diagram {
         if (state == null) {
             return "[*]";
         }
-        String name = String.format("S%02d", state.index);
+        String name = String.format("S%02d", state.index());
         if (!declared.contains(name)) {
             declared.add(name);
             buffer.line("state \"" + state.diagramLabel() + "\" as " + name);
