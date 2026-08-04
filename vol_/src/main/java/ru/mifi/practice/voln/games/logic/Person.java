@@ -1,6 +1,5 @@
 package ru.mifi.practice.voln.games.logic;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /** Персонаж игры с очками здоровья, наносящий и получающий урон. */
@@ -11,76 +10,38 @@ public interface Person extends Updatable {
 
     int health();
 
-    abstract class AbstractPerson implements Person {
-        private final String name;
-        private int hitPoints;
-        private int updateCount;
-
-        protected AbstractPerson(String name, int hitPoints) {
-            this.name = name;
-            this.hitPoints = hitPoints;
-        }
-
-        @Override
-        public int health() {
-            return hitPoints;
-        }
-
-        @Override
-        public void update(Context context) {
-            ++updateCount;
-            if (updateCount % 150 == 0 && hitPoints < 100) {
-                ++hitPoints;
-            }
-        }
-
-        @Override
-        public void hit(Item item, Context context) {
-            context.hit(this, item);
-            hitPoints -= item.damage();
-            if (hitPoints <= 0) {
-                context.died(this);
-            }
-        }
-
-        @Override
-        public void healthUp(int health) {
-            hitPoints += health;
-            if (hitPoints > 100) {
-                hitPoints = 100;
-            }
-        }
-
-        @Override
-        public String toString() {
-            return name + ": " + hitPoints;
-        }
-    }
-
-    final class Mob extends AbstractPerson {
+    final class Mob implements Person {
+        private final Body body;
         private final int index;
-        private final Item.DamageItem damage;
-        private boolean aggressive;
+        private final Item damage;
         private boolean rage;
+
+        public Mob(String name, int hitPoints, int index, Item damage, boolean aggressive) {
+            this.body = new Body(name, hitPoints);
+            this.index = index;
+            this.damage = damage;
+            this.rage = aggressive;
+        }
 
         public int getIndex() {
             return index;
         }
 
-        public Mob(String name, int hitPoints, int index, Item.DamageItem damage, boolean aggressive) {
-            super(name, hitPoints);
-            this.index = index;
-            this.damage = damage;
-            this.aggressive = aggressive;
-            this.rage = false;
+        @Override
+        public int health() {
+            return body.health();
+        }
+
+        @Override
+        public void healthUp(int health) {
+            body.heal(health);
         }
 
         @Override
         public void update(Context context) {
-            super.update(context);
+            body.regenerate();
             View view = context.view(this);
-            if (view != null && view.type() == Type.PLAYER && (rage || aggressive)) {
-                rage = true;
+            if (view != null && view.type() == Type.PLAYER && rage) {
                 Player player = (Player) view.element();
                 player.hit(damage, context);
             }
@@ -88,25 +49,30 @@ public interface Person extends Updatable {
 
         @Override
         public void hit(Item item, Context context) {
-            super.hit(item, context);
+            body.hit(this, item, context);
             rage = true;
+        }
+
+        @Override
+        public String toString() {
+            return body.toString();
         }
     }
 
-    final class Player extends AbstractPerson {
-        private static final Item FIST = new Item.DamageItem(5);
-        private final List<Item> inventory = new ArrayList<>();
-        private Item selectedItem;
+    final class Player implements Person {
+        private static final int IDLE_LIMIT = 1000;
+        private static final int KILLS_PER_ATTACK = 10;
+        private final Body body;
+        private final Inventory inventory = new Inventory();
         private int idleTicks;
         private int kills;
 
-        public Item getSelectedItem() {
-            return selectedItem;
+        public Player(String name) {
+            this.body = new Body(name, 100);
         }
 
-        public Player(String name) {
-            super(name, 100);
-            selectedItem = FIST;
+        public Item getSelectedItem() {
+            return inventory.selected();
         }
 
         public int getIdleTicks() {
@@ -122,12 +88,12 @@ public interface Person extends Updatable {
         }
 
         public int getBaseAttack() {
-            return kills / 10;
+            return kills / KILLS_PER_ATTACK;
         }
 
         public void idleTick() {
             idleTicks++;
-            if (idleTicks >= 1000) {
+            if (idleTicks >= IDLE_LIMIT) {
                 healthUp(1);
                 idleTicks = 0;
             }
@@ -138,65 +104,55 @@ public interface Person extends Updatable {
         }
 
         public void selectItem(int item, Context context) {
-            if (item < 0 || item >= inventory.size()) {
-                selectedItem = FIST;
-                return;
-            }
-            selectedItem = inventory.get(item);
+            inventory.select(item);
         }
 
         public void useItem(int item, Context context) {
-            if (item < 0 || item >= inventory.size()) {
-                return;
-            }
-            Item element = inventory.get(item);
-            if (element instanceof Item.Once once) {
-                once.apply(this, context);
-                removeItem(item);
-            } else {
-                selectedItem = element;
-            }
+            inventory.use(item, this, context);
         }
 
         public void removeItem(int index) {
-            if (index < 0 || index >= inventory.size()) {
-                return;
-            }
-            Item item = inventory.remove(index);
-            if (item.equals(selectedItem)) {
-                selectedItem = FIST;
-            }
+            inventory.remove(index);
         }
 
         public List<Item> items() {
-            return inventory;
+            return inventory.items();
         }
 
         public void addInventory(Item item, Context context) {
-            inventory.add(item);
-            while (inventory.size() > 10) {
-                int minIndex = 0;
-                int minDamage = inventory.get(0).damage();
-                for (int i = 1; i < inventory.size(); i++) {
-                    if (inventory.get(i).damage() < minDamage) {
-                        minDamage = inventory.get(i).damage();
-                        minIndex = i;
-                    }
-                }
-                Item removed = inventory.get(minIndex);
-                if (context != null) {
-                    context.log("Removed (limit): " + removed);
-                }
-                removeItem(minIndex);
-            }
+            inventory.add(item, context);
         }
 
         public void reset() {
             healthUp(100 - health());
             inventory.clear();
-            selectedItem = FIST;
             idleTicks = 0;
             kills = 0;
+        }
+
+        @Override
+        public int health() {
+            return body.health();
+        }
+
+        @Override
+        public void healthUp(int health) {
+            body.heal(health);
+        }
+
+        @Override
+        public void update(Context context) {
+            body.regenerate();
+        }
+
+        @Override
+        public void hit(Item item, Context context) {
+            body.hit(this, item, context);
+        }
+
+        @Override
+        public String toString() {
+            return body.toString();
         }
     }
 }

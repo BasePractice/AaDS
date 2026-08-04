@@ -35,7 +35,7 @@ public interface Item {
         }
     }
 
-    class DamageItem implements Item {
+    final class DamageItem implements Item {
         private final int damage;
 
         public DamageItem(int damage) {
@@ -53,10 +53,17 @@ public interface Item {
         }
     }
 
-    final class Hummer extends DamageItem {
+    final class Hummer implements Item {
+        private final Item damage = new DamageItem(10);
 
-        public Hummer() {
-            super(10);
+        @Override
+        public int damage() {
+            return damage.damage();
+        }
+
+        @Override
+        public String toString() {
+            return damage.toString();
         }
     }
 
