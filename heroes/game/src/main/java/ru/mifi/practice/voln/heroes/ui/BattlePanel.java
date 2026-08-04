@@ -241,14 +241,15 @@ final class BattlePanel extends JPanel {
         return String.format(
             "<html><b>%s</b><br>Бойцов: %d<br>Удар: %d<br>Здоровье: %d<br>Скорость: %d%s%s%s</html>",
             stack.getType().getName(), stack.size(), stack.maximumMelee(), stack.totalHealth(), stack.speed(),
-            range(stack), aimed(r, c), stack.hasActed() ? "<br><i>(Уже ходил)</i>" : "");
+            bolts(stack), aimed(r, c), stack.hasActed() ? "<br><i>(Уже ходил)</i>" : "");
     }
 
-    private String range(Unit.Stack stack) {
-        if (stack.getType().getRange() <= 0) {
+    /** Запас стрел: кончился — и стрелок остаётся пехотой до конца боя. */
+    private String bolts(Unit.Stack stack) {
+        if (stack.getType() != Unit.Type.SHOOTER) {
             return "";
         }
-        return "<br>Дальность: " + stack.getType().getRange();
+        return "<br>Выстрелов: " + stack.shots();
     }
 
     /** Во что обойдётся дальность: сила выстрела по этой клетке видна до самого выстрела. */

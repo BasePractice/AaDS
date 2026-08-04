@@ -32,24 +32,83 @@ final class ShooterTest {
             map.shot(5, 5, 5, 10), is(lessThan(map.shot(5, 5, 5, 7))));
     }
 
-    @DisplayName("Цель в пределах дальности стрелок достаёт")
+    @DisplayName("Через всё поле стрелок достаёт")
     @Test
     @Timeout(1)
-    void reachesTheTargetWithinTheRange() {
+    void reachesTheFarSideOfTheField() {
         BattleMap map = new BattleMap();
-        map.addLeft(5, 5, shooters(100, 100));
-        map.addRight(5, 11, stack(10, 0, 500, 5));
-        assertThat("a target within the range stays out of reach", map.shot(5, 5, 5, 11), is(greaterThan(0)));
+        map.addLeft(5, 0, shooters(100, 100));
+        map.addRight(5, 14, stack(10, 0, 500, 5));
+        assertThat("the far side of the field stays out of reach", map.shot(5, 0, 5, 14), is(greaterThan(0)));
     }
 
-    @DisplayName("За дальностью стрелок не достаёт")
+    @DisplayName("Препятствие на пути закрывает выстрел")
     @Test
     @Timeout(1)
-    void dropsTheTargetBeyondTheRange() {
+    void dropsTheShotBehindAnObstacle() {
         BattleMap map = new BattleMap();
         map.addLeft(5, 5, shooters(100, 100));
-        map.addRight(5, 12, stack(10, 0, 500, 5));
-        assertThat("a target beyond the range still gets shot", map.shot(5, 5, 5, 12), is(0));
+        map.addRight(5, 9, stack(10, 0, 500, 5));
+        map.addObstacle(5, 7);
+        assertThat("the bolt flies through an obstacle", map.shot(5, 5, 5, 9), is(0));
+    }
+
+    @DisplayName("Препятствие в стороне выстрелу не мешает")
+    @Test
+    @Timeout(1)
+    void keepsTheShotPastAnObstacleAside() {
+        BattleMap map = new BattleMap();
+        map.addLeft(5, 5, shooters(100, 100));
+        map.addRight(5, 9, stack(10, 0, 500, 5));
+        map.addObstacle(8, 7);
+        assertThat("an obstacle aside stops the bolt", map.shot(5, 5, 5, 9), is(greaterThan(0)));
+    }
+
+    @DisplayName("Выстрел тратит запас стрел")
+    @Test
+    @Timeout(1)
+    void spendsABoltOnEveryShot() {
+        BattleMap map = new BattleMap();
+        Unit.Stack shooter = shooters(100, 100);
+        map.addLeft(5, 5, shooter);
+        map.addRight(5, 9, stack(10, 0, 500, 5));
+        map.shoot(5, 5, 5, 9);
+        map.endAction();
+        assertThat("the shot dont spend a bolt", shooter.shots(), is(14));
+    }
+
+    @DisplayName("Свежий стрелок несёт пятнадцать выстрелов")
+    @Test
+    @Timeout(1)
+    void carriesFifteenBoltsFromTheStart() {
+        assertThat("a fresh shooter carries another number of bolts", shooters(100, 100).shots(), is(15));
+    }
+
+    @DisplayName("Без стрел стрелок не стреляет")
+    @Test
+    @Timeout(1)
+    void keepsTheEmptyShooterFromShooting() {
+        BattleMap map = new BattleMap();
+        Unit.Stack shooter = shooters(100, 100);
+        map.addLeft(5, 5, shooter);
+        map.addRight(5, 9, stack(10, 0, 500, 5));
+        for (int bolt = 0; bolt < 15; bolt++) {
+            shooter.spend();
+        }
+        assertThat("a shooter out of bolts still shoots", map.shot(5, 5, 5, 9), is(0));
+    }
+
+    @DisplayName("Без стрел удар руками не слабеет")
+    @Test
+    @Timeout(1)
+    void keepsTheSwingOfAnEmptyShooter() {
+        Unit.Stack shooter = shooters(100, 100);
+        int swing = shooter.maximumMelee();
+        for (int bolt = 0; bolt < 15; bolt++) {
+            shooter.spend();
+        }
+        assertThat("the shooter swings weaker once it runs out of bolts",
+            shooter.maximumMelee(), is(swing));
     }
 
     @DisplayName("Пехота не стреляет")
@@ -177,10 +236,10 @@ final class ShooterTest {
         assertThat("the shot dont reach the battle log", logs, hasItem(containsString("стреляет")));
     }
 
-    @DisplayName("Руками стрелок бьёт слабее, чем стреляет в упор")
+    @DisplayName("Руками стрелок бьёт в семь десятых самого сильного выстрела")
     @Test
     @Timeout(1)
-    void swingsWeakerThanItShootsPointBlank() {
+    void swingsAtSevenTenthsOfItsStrongestShot() {
         Unit.Stack shooter = shooters(100, 100);
         assertThat("the shooter swings as hard as it shoots point blank",
             shooter.maximumMelee(), is(shooter.maximumShot(1) * 70 / 100));

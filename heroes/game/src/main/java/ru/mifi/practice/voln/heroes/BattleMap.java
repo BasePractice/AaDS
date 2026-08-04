@@ -99,6 +99,12 @@ public final class BattleMap {
         engaged = engaged || !left.isEmpty() && !right.isEmpty();
     }
 
+    /** Поставить препятствие: пеший его обходит, а стрела в него втыкается. */
+    public void addObstacle(int row, int column) {
+        obstacles[row][column] = true;
+        support.firePropertyChange("map", null, null);
+    }
+
     public void fillRandomly() {
         fill(new Random());
     }
@@ -283,15 +289,29 @@ public final class BattleMap {
 
     /**
      * Сила выстрела по цели: чем дальше цель, тем слабее удар, а ноль означает, что стрелять
-     * нельзя. Стреляют только стрелки, только по противнику в пределах дальности и только пока
-     * рядом никто не стоит: в ближнем бою луку размаха нет.
+     * нельзя. Стрелок достаёт любую клетку поля, но только пока цель на виду, запас стрел не
+     * кончился и рядом никто не стоит: в ближнем бою луку размаха нет.
      */
     public int shot(int sourceRow, int sourceColumn, int targetRow, int targetColumn) {
-        if (!ready(sourceRow, sourceColumn, targetRow, targetColumn) || surrounded(sourceRow, sourceColumn)) {
+        if (!ready(sourceRow, sourceColumn, targetRow, targetColumn) || surrounded(sourceRow, sourceColumn)
+            || !visible(sourceRow, sourceColumn, targetRow, targetColumn)) {
             return 0;
         }
         return getStack(sourceRow, sourceColumn)
             .maximumShot(distance(sourceRow, sourceColumn, targetRow, targetColumn));
+    }
+
+    /** Видно ли цель: стрела летит по прямой и втыкается в первое же препятствие на пути. */
+    private boolean visible(int sourceRow, int sourceColumn, int targetRow, int targetColumn) {
+        int steps = distance(sourceRow, sourceColumn, targetRow, targetColumn);
+        for (int step = 1; step < steps; step++) {
+            int row = sourceRow + (targetRow - sourceRow) * step / steps;
+            int column = sourceColumn + (targetColumn - sourceColumn) * step / steps;
+            if (isObstacle(row, column)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -440,6 +460,7 @@ public final class BattleMap {
         int distance = distance(sourceRow, sourceColumn, targetRow, targetColumn);
         int startSize = target.size();
         target.damage(stack.shot(distance));
+        stack.spend();
         support.firePropertyChange("log", null, String.format("%s(%s) стреляет в %s с %d клеток (-%d)",
             stack.getType().getName(), leftTurn ? "L" : "R", target.getType().getName(),
             distance, startSize - target.size()));

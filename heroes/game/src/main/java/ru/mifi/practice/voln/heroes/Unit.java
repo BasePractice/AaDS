@@ -43,19 +43,16 @@ public final class Unit {
         this.health -= damage;
     }
 
-    /** Род войск и дальность его выстрела: нулевая дальность означает, что бьют только вплотную. */
     @Getter
     public enum Type {
-        SHOOTER("Стрелок", 6),
-        FLYER("Летающий", 0),
-        WALKER("Пехота", 0);
+        SHOOTER("Стрелок"),
+        FLYER("Летающий"),
+        WALKER("Пехота");
 
         private final String name;
-        private final int range;
 
-        Type(String name, int range) {
+        Type(String name) {
             this.name = name;
-            this.range = range;
         }
 
     }
@@ -64,9 +61,11 @@ public final class Unit {
         private static final int ATTACK_SPREAD = 20;
         private static final int MELEE_SHARE = 70;
         private static final int WHOLE_SHARE = 100;
+        private static final int BOLTS = 15;
         @Getter
         private final Type type;
         private final Queue<Unit> units = new PriorityQueue<>(Comparator.comparing(Unit::health));
+        private int shots = BOLTS;
         @Setter
         private boolean acted;
         @Setter
@@ -102,8 +101,9 @@ public final class Unit {
         }
 
         /**
-         * Удар вплотную: стрелок отбивается руками, и выходит у него семь десятых от выстрела
-         * в упор, а пехота и летуны бьют в полную силу.
+         * Удар вплотную: стрелок отбивается руками, и выходит у него семь десятых от самого
+         * сильного своего выстрела, — а пехота и летуны бьют в полную силу. Запас стрел на удар
+         * не влияет: без стрел стрелок остаётся той же пехотой, что и с ними.
          */
         public int melee() {
             return hand(attack());
@@ -115,10 +115,10 @@ public final class Unit {
         }
 
         private int hand(int force) {
-            if (type.getRange() <= 0) {
+            if (type != Type.SHOOTER) {
                 return force;
             }
-            return fade(force, 1) * MELEE_SHARE / WHOLE_SHARE;
+            return bolt(force, 1) * MELEE_SHARE / WHOLE_SHARE;
         }
 
         public int attack() {
@@ -140,11 +140,14 @@ public final class Unit {
         }
 
         /**
-         * Сила выстрела на расстоянии: вплотную стрелок бьёт в полную силу, на границе дальности —
-         * вполовину, а дальше границы стрела не долетает вовсе.
+         * Сила выстрела на расстоянии: стрелок достаёт куда угодно на поле, но урон падает
+         * пропорционально дальности — вплотную в полную силу, с края в край вполовину.
          */
         public int shot(int distance) {
-            return fade(attack(), distance);
+            if (type != Type.SHOOTER || shots <= 0 || distance > Constants.SPAN) {
+                return 0;
+            }
+            return bolt(attack(), distance);
         }
 
         /**
@@ -152,15 +155,24 @@ public final class Unit {
          * случайное значение из разброса.
          */
         public int maximumShot(int distance) {
-            return fade(maximumAttack(), distance);
-        }
-
-        private int fade(int force, int distance) {
-            int range = type.getRange();
-            if (range <= 0 || distance > range) {
+            if (type != Type.SHOOTER || shots <= 0 || distance > Constants.SPAN) {
                 return 0;
             }
-            return force * (2 * range - distance) / (2 * range);
+            return bolt(maximumAttack(), distance);
+        }
+
+        /** Сколько выстрелов осталось: запас конечен, и с последней стрелой стрелок — пехота. */
+        public int shots() {
+            return shots;
+        }
+
+        /** Потратить стрелу. */
+        public void spend() {
+            shots--;
+        }
+
+        private int bolt(int force, int distance) {
+            return force * (2 * Constants.SPAN - distance) / (2 * Constants.SPAN);
         }
 
         public int totalHealth() {
