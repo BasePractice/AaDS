@@ -33,9 +33,16 @@ public interface PathTree<K, V> {
             this.skip = skip;
         }
 
+        /**
+         * Первый сегмент искался только точным совпадением, поэтому шаблон, начинающийся с
+         * подстановки, не срабатывал ни на чём: «{id}/items» не принимал «7/items». Откат на
+         * подстановку здесь тот же, что и на всех остальных уровнях.
+         */
         private Optional<Node<K, V>> search(K[] elements) {
-            K element = elements[0];
-            Node<K, V> node = nodes.get(element);
+            Node<K, V> node = nodes.get(elements[0]);
+            if (node == null) {
+                node = nodes.get(skip);
+            }
             if (node == null) {
                 return Optional.empty();
             }
@@ -58,12 +65,20 @@ public interface PathTree<K, V> {
             return search(node, elements, index + 1);
         }
 
+        /**
+         * Значение приписывалось только из спуска по остатку пути, а спуск для пути из одного
+         * сегмента сразу возвращался, — такой путь заводился в дереве, но оставался без значения
+         * и потому никогда не находился.
+         */
         @Override
         public void add(K[] elements, V value) {
-            int index = 0;
-            K element = transformer.transform(elements[index]);
+            K element = transformer.transform(elements[0]);
             Node<K, V> node = nodes.computeIfAbsent(element, key -> new Node<>(null, key));
-            add(node, elements, index + 1, value);
+            if (elements.length == 1) {
+                assign(node, value);
+                return;
+            }
+            add(node, elements, 1, value);
         }
 
         private void add(Node<K, V> parent, K[] elements, int index, V value) {
@@ -76,11 +91,15 @@ public interface PathTree<K, V> {
             if (index + 1 < elements.length) {
                 add(node, elements, index + 1, value);
             } else {
-                if (node.value == null) {
-                    node.value = value;
-                } else if (!node.value.equals(value)) {
-                    System.err.println("Node value conflict, expected " + node.value + " but assigned " + value);
-                }
+                assign(node, value);
+            }
+        }
+
+        private void assign(Node<K, V> node, V value) {
+            if (node.value == null) {
+                node.value = value;
+            } else if (!node.value.equals(value)) {
+                System.err.println("Node value conflict, expected " + node.value + " but assigned " + value);
             }
         }
 

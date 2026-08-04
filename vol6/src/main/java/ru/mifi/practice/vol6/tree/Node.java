@@ -69,11 +69,19 @@ public interface Node<T> extends Visitor.Visit<T>, Hashable {
             this.generator = generator;
         }
 
+        /**
+         * Хеш поддерева: значение узла вместе с хешами потомков.
+         *
+         * <p>Раньше вклад потомка брался как логарифм его хеша, а логарифм любого int не
+         * превосходит двадцати одного, поэтому от целого поддерева до суммы доходило меньше
+         * пяти бит. Деревья «1:{2,3}» и «1:{4,5}» получали один и тот же хеш, как и деревья
+         * одинакового состава, но разной формы, — то есть структурным этот хеш не был.
+         */
         @Override
         public int hash() {
-            int left = left() != null ? (int) Math.log(left().hash()) : 0;
-            int right = right() != null ? (int) Math.log(right().hash()) : 0;
-            return Objects.hash(value) + left + right;
+            return Objects.hash(value,
+                left() == null ? 0 : left().hash(),
+                right() == null ? 0 : right().hash());
         }
 
         @Override
