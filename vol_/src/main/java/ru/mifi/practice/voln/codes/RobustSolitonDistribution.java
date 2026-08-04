@@ -2,6 +2,11 @@ package ru.mifi.practice.voln.codes;
 
 /**
  * Устойчивое солитонное распределение (Robust Soliton) для выбора степени LT.
+ *
+ * <p>Порог, за которым добавка обрывается, считается как k/R и при малом числе символов
+ * оказывается больше самого k: для десятка символов и настроек по умолчанию он равен четырнадцати.
+ * Цикл по добавке этого не учитывал и выходил за границу массива — распределение падало на любом
+ * k не больше десяти, хотя условие ниже показывает, что случай был известен.
  */
 public final class RobustSolitonDistribution {
     private static final int MIN_DEGREE = 1;
@@ -47,7 +52,7 @@ public final class RobustSolitonDistribution {
         }
 
         double[] tau = new double[k + 1];
-        for (int d = 1; d < threshold; d++) {
+        for (int d = 1; d < Math.min(threshold, k + 1); d++) {
             tau[d] = r / (d * k);
         }
         if (threshold <= k) {
