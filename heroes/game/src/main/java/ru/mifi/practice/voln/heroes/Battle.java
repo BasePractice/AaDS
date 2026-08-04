@@ -28,6 +28,7 @@ public interface Battle {
         }
         switch (decision.kind()) {
             case ATTACK -> map().attack(coord[0], coord[1], decision.row(), decision.column());
+            case SHOOT -> map().shoot(coord[0], coord[1], decision.row(), decision.column());
             case MOVE -> map().move(coord[0], coord[1], decision.row(), decision.column());
             case WAIT -> map().waitTurn();
             case SKIP -> map().skipTurn();

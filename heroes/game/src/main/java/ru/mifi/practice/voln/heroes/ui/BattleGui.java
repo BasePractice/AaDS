@@ -7,7 +7,6 @@ import ru.mifi.practice.voln.heroes.Tactics;
 import ru.mifi.practice.voln.heroes.Talk;
 
 import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 import java.awt.BorderLayout;
@@ -15,12 +14,12 @@ import java.beans.PropertyChangeEvent;
 import java.util.List;
 
 /**
- * Окно боя: поле, кнопки хода и — в сетевой партии — панель разговора с соперником.
+ * Бой на холсте окна: поле, кнопки хода и — в сетевой партии — панель разговора с соперником.
  *
  * <p>Ход соперника-программы считается по таймеру, а не сразу вслед за нашим: иначе вся очередь
  * правых отыгралась бы внутри одного обработчика клика и на экране выглядела бы как скачок.
  */
-public final class BattleGui extends JFrame {
+public final class BattleGui extends JPanel {
     private static final int ANSWER_DELAY = 400;
 
     @Getter
@@ -30,10 +29,6 @@ public final class BattleGui extends JFrame {
 
     public BattleGui(Battle battle, Talk talk) {
         this.battle = battle;
-        setTitle("Герои");
-        setType(Type.UTILITY);
-        setResizable(false);
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
         this.board = new BattlePanel(this);
         this.chat = talk.present() ? new ChatPanel(talk) : null;
@@ -44,8 +39,6 @@ public final class BattleGui extends JFrame {
         add(buttons(), BorderLayout.SOUTH);
         battle.map().addPropertyChangeListener(this::observe);
         new Timer(ANSWER_DELAY, e -> answer()).start();
-        pack();
-        setLocationRelativeTo(null);
     }
 
     public BattleMap getMap() {
@@ -105,6 +98,9 @@ public final class BattleGui extends JFrame {
         } else if ("move".equals(event.getPropertyName())) {
             //noinspection unchecked
             board.startAnimation((List<int[]>) event.getNewValue());
+        } else if ("shot".equals(event.getPropertyName())) {
+            //noinspection unchecked
+            board.startShot((List<int[]>) event.getNewValue());
         }
         board.repaint();
     }

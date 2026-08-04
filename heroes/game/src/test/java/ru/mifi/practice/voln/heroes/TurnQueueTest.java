@@ -282,10 +282,13 @@ final class TurnQueueTest {
         s3.add(new Unit(10, 5, 100, 5));
         Unit.Stack s2 = new Unit.Stack(Unit.Type.WALKER);
         s2.add(new Unit(10, 5, 50, 5));
+        Unit.Stack s4 = new Unit.Stack(Unit.Type.WALKER);
+        s4.add(new Unit(10, 5, 100, 5));
         BattleMap map = new BattleMap();
         map.addLeft(0, 0, s1);
         map.addLeft(1, 0, s3);
         map.addRight(0, 2, s2);
+        map.addRight(10, 14, s4);
         map.fillTurnQueue();
         map.attack(0, 0, 0, 2);
         map.endAction();

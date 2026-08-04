@@ -15,6 +15,7 @@ public interface Tactics {
     /** Что делает отряд в свой ход. */
     enum Kind {
         ATTACK,
+        SHOOT,
         MOVE,
         WAIT,
         SKIP
@@ -50,7 +51,7 @@ public interface Tactics {
                 return new Decision(Kind.SKIP, -1, -1);
             }
             Decision strike = strike(map, stack, coord);
-            if (strike.kind() == Kind.ATTACK) {
+            if (strike.kind() != Kind.SKIP) {
                 return strike;
             }
             return approach(map, stack, coord);
@@ -58,24 +59,36 @@ public interface Tactics {
 
         /** Самый выгодный из достижимых ударов или пропуск, если ни одна цель не достаётся. */
         private Decision strike(BattleMap map, Unit.Stack stack, int[] coord) {
-            Decision best = new Decision(Kind.SKIP, -1, -1);
-            int bestProfit = Integer.MIN_VALUE;
+            Aim best = new Aim(new Decision(Kind.SKIP, -1, -1), Integer.MIN_VALUE);
             for (int row = 0; row < Constants.ROWS; row++) {
                 for (int column = 0; column < Constants.COLS; column++) {
-                    if (!isEnemy(map, row, column)) {
-                        continue;
-                    }
-                    if (map.attackPath(coord[0], coord[1], row, column).isEmpty()) {
-                        continue;
-                    }
-                    int profit = profit(stack, map.getStack(row, column));
-                    if (profit > bestProfit) {
-                        bestProfit = profit;
-                        best = new Decision(Kind.ATTACK, row, column);
+                    Aim aim = aim(map, stack, coord, row, column);
+                    if (aim.profit() > best.profit()) {
+                        best = aim;
                     }
                 }
             }
-            return best;
+            return best.decision();
+        }
+
+        /**
+         * Лучшее, что отряд может сделать с одной целью: выстрелить, если стрела долетает, или
+         * подойти вплотную. Выстрел не вызывает ответа, поэтому и оценивается без вычета
+         * собственных потерь — и оказывается выгоднее равного по урону подхода.
+         */
+        private Aim aim(BattleMap map, Unit.Stack stack, int[] coord, int row, int column) {
+            Aim none = new Aim(new Decision(Kind.SKIP, -1, -1), Integer.MIN_VALUE);
+            if (!isEnemy(map, row, column)) {
+                return none;
+            }
+            int shot = map.shot(coord[0], coord[1], row, column);
+            if (shot > 0) {
+                return new Aim(new Decision(Kind.SHOOT, row, column), gain(map.getStack(row, column), shot));
+            }
+            if (map.attackPath(coord[0], coord[1], row, column).isEmpty()) {
+                return none;
+            }
+            return new Aim(new Decision(Kind.ATTACK, row, column), profit(stack, map.getStack(row, column)));
         }
 
         /**
@@ -84,14 +97,19 @@ public interface Tactics {
          * оценивается выше равного по урону, но не смертельного.
          */
         private int profit(Unit.Stack attacker, Unit.Stack defender) {
-            int damage = attacker.maximumAttack();
+            int damage = attacker.maximumMelee();
             int killed = defender.casualties(damage);
-            int gain = killed * CASUALTY_WEIGHT + Math.min(damage, defender.totalHealth());
+            int gain = gain(defender, damage);
             if (killed >= defender.size() || defender.hasCounterAttacked()) {
                 return gain;
             }
-            int counter = defender.maximumAttack() * (defender.size() - killed) / defender.size();
+            int counter = defender.maximumMelee() * (defender.size() - killed) / defender.size();
             return gain - attacker.casualties(counter) * CASUALTY_WEIGHT - Math.min(counter, attacker.totalHealth());
+        }
+
+        /** Выгода удара по цели: гибель бойца весит на два порядка больше нанесённого урона. */
+        private int gain(Unit.Stack defender, int damage) {
+            return defender.casualties(damage) * CASUALTY_WEIGHT + Math.min(damage, defender.totalHealth());
         }
 
         /** Шаг в сторону ближайшего противника на всю доступную скорость. */
@@ -151,6 +169,10 @@ public interface Tactics {
 
         private boolean isEnemy(BattleMap map, int row, int column) {
             return map.getStack(row, column) != null && map.isLeft(row, column) != map.isLeftTurn();
+        }
+
+        /** Прицел: что тактика сделает с целью и во что это ей обойдётся. */
+        private record Aim(Decision decision, int profit) {
         }
     }
 }

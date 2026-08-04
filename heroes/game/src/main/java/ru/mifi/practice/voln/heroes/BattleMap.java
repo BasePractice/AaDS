@@ -52,7 +52,9 @@ public final class BattleMap {
     private boolean leftTurn = true;
     @Getter
     private boolean animating;
+    private boolean engaged;
     private int[] pendingAttack;
+    private int[] pendingShot;
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
@@ -65,6 +67,7 @@ public final class BattleMap {
         long id = idCount.getAndIncrement();
         left.put(id, new StackKey(id, stack));
         map[row][col] = id;
+        engage();
         fillTurnQueue();
         support.firePropertyChange("map", null, null);
     }
@@ -76,8 +79,24 @@ public final class BattleMap {
         long id = idCount.getAndIncrement();
         right.put(id, new StackKey(id, stack));
         map[row][col] = id;
+        engage();
         fillTurnQueue();
         support.firePropertyChange("map", null, null);
+    }
+
+    /**
+     * Исход боя: побеждает сторона, у которой на поле остались отряды. Пока обе стороны стоят —
+     * или пока хотя бы одна ещё не вышла на поле — исхода нет.
+     */
+    public Outcome outcome() {
+        if (!engaged || left.isEmpty() == right.isEmpty()) {
+            return Outcome.NONE;
+        }
+        return right.isEmpty() ? Outcome.LEFT : Outcome.RIGHT;
+    }
+
+    private void engage() {
+        engaged = engaged || !left.isEmpty() && !right.isEmpty();
     }
 
     public void fillRandomly() {
@@ -216,7 +235,8 @@ public final class BattleMap {
      */
     public List<int[]> movePath(int sourceRow, int sourceColumn, int targetRow, int targetColumn) {
         Unit.Stack stack = getStack(sourceRow, sourceColumn);
-        if (animating || stack == null || stack.hasActed() || isLeft(sourceRow, sourceColumn) != leftTurn) {
+        if (animating || stack == null || stack.hasActed() || isLeft(sourceRow, sourceColumn) != leftTurn
+            || outcome() != Outcome.NONE) {
             return List.of();
         }
         if (getStack(targetRow, targetColumn) != null || isObstacle(targetRow, targetColumn)) {
@@ -234,12 +254,10 @@ public final class BattleMap {
      * цель недостижима — соседние с ней клетки заняты, закрыты препятствием или слишком далеко.
      */
     public List<int[]> attackPath(int sourceRow, int sourceColumn, int targetRow, int targetColumn) {
-        Unit.Stack stack = getStack(sourceRow, sourceColumn);
-        Unit.Stack target = getStack(targetRow, targetColumn);
-        if (animating || stack == null || target == null || stack.hasActed()
-            || isLeft(sourceRow, sourceColumn) != leftTurn || isLeft(targetRow, targetColumn) == leftTurn) {
+        if (!ready(sourceRow, sourceColumn, targetRow, targetColumn)) {
             return List.of();
         }
+        Unit.Stack stack = getStack(sourceRow, sourceColumn);
         boolean flying = stack.getType() == Unit.Type.FLYER;
         List<int[]> path = getPath(sourceRow, sourceColumn, targetRow, targetColumn, flying);
         if (path.isEmpty()) {
@@ -253,6 +271,61 @@ public final class BattleMap {
             return List.of();
         }
         return path;
+    }
+
+    /** Может ли отряд взяться за цель: ход его, он ещё не ходил, а на клетке цели стоит противник. */
+    private boolean ready(int sourceRow, int sourceColumn, int targetRow, int targetColumn) {
+        Unit.Stack stack = getStack(sourceRow, sourceColumn);
+        return !animating && outcome() == Outcome.NONE && stack != null && !stack.hasActed()
+            && getStack(targetRow, targetColumn) != null
+            && isLeft(sourceRow, sourceColumn) == leftTurn && isLeft(targetRow, targetColumn) != leftTurn;
+    }
+
+    /**
+     * Сила выстрела по цели: чем дальше цель, тем слабее удар, а ноль означает, что стрелять
+     * нельзя. Стреляют только стрелки, только по противнику в пределах дальности и только пока
+     * рядом никто не стоит: в ближнем бою луку размаха нет.
+     */
+    public int shot(int sourceRow, int sourceColumn, int targetRow, int targetColumn) {
+        if (!ready(sourceRow, sourceColumn, targetRow, targetColumn) || surrounded(sourceRow, sourceColumn)) {
+            return 0;
+        }
+        return getStack(sourceRow, sourceColumn)
+            .maximumShot(distance(sourceRow, sourceColumn, targetRow, targetColumn));
+    }
+
+    /**
+     * Выстрел: стрелок бьёт с места, и цель на удар издали не отвечает. Урон ложится не сразу —
+     * сначала летит снаряд, и попадание считается там же, где заканчивается ход после перемещения.
+     */
+    public void shoot(int sourceRow, int sourceColumn, int targetRow, int targetColumn) {
+        if (shot(sourceRow, sourceColumn, targetRow, targetColumn) <= 0) {
+            return;
+        }
+        animating = true;
+        pendingShot = new int[]{targetRow, targetColumn};
+        support.firePropertyChange("shot", null,
+            List.of(new int[]{sourceRow, sourceColumn}, new int[]{targetRow, targetColumn}));
+    }
+
+    /** Дальность выстрела: стрела летит по прямой, и шаг наискось стоит столько же, сколько прямой. */
+    private int distance(int sourceRow, int sourceColumn, int targetRow, int targetColumn) {
+        return Math.max(Math.abs(targetRow - sourceRow), Math.abs(targetColumn - sourceColumn));
+    }
+
+    /** Стоит ли рядом с отрядом противник. */
+    private boolean surrounded(int row, int column) {
+        int[] rows = {0, 0, 1, -1};
+        int[] columns = {1, -1, 0, 0};
+        for (int i = 0; i < DIRECTIONS_COUNT; i++) {
+            int nextRow = row + rows[i];
+            int nextColumn = column + columns[i];
+            if (isInside(nextRow, nextColumn) && getStack(nextRow, nextColumn) != null
+                && isLeft(nextRow, nextColumn) != isLeft(row, column)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean isBlocked(int row, int column, int sourceRow, int sourceColumn) {
@@ -335,6 +408,15 @@ public final class BattleMap {
                 performAttack(pos[0], pos[1], targetRow, targetColumn);
             }
         }
+        if (pendingShot != null) {
+            int targetRow = pendingShot[0];
+            int targetColumn = pendingShot[1];
+            pendingShot = null;
+            int[] pos = getStackCoord(turnQueue.peekFirst());
+            if (pos.length == 2) {
+                performShot(pos[0], pos[1], targetRow, targetColumn);
+            }
+        }
         finishTurn();
     }
 
@@ -349,6 +431,23 @@ public final class BattleMap {
         support.firePropertyChange("map", null, null);
     }
 
+    private void performShot(int sourceRow, int sourceColumn, int targetRow, int targetColumn) {
+        Unit.Stack stack = getStack(sourceRow, sourceColumn);
+        Unit.Stack target = getStack(targetRow, targetColumn);
+        if (stack == null || target == null) {
+            return;
+        }
+        int distance = distance(sourceRow, sourceColumn, targetRow, targetColumn);
+        int startSize = target.size();
+        target.damage(stack.shot(distance));
+        support.firePropertyChange("log", null, String.format("%s(%s) стреляет в %s с %d клеток (-%d)",
+            stack.getType().getName(), leftTurn ? "L" : "R", target.getType().getName(),
+            distance, startSize - target.size()));
+        if (target.isEmpty()) {
+            removeStack(targetRow, targetColumn);
+        }
+    }
+
     private void performAttack(int sourceRow, int sourceColumn, int targetRow, int targetColumn) {
         Unit.Stack stack = getStack(sourceRow, sourceColumn);
         Unit.Stack target = getStack(targetRow, targetColumn);
@@ -356,7 +455,7 @@ public final class BattleMap {
             return;
         }
         int startSize = target.size();
-        target.damage(stack.attack());
+        target.damage(stack.melee());
         int killed = startSize - target.size();
         String message = String.format("%s(%s) бьет %s (-%d)", stack.getType().getName(), leftTurn ? "R" : "L",
             target.getType().getName(), killed);
@@ -389,6 +488,12 @@ public final class BattleMap {
     }
 
     private void checkTurnEnd() {
+        if (outcome() != Outcome.NONE) {
+            turnQueue.clear();
+            support.firePropertyChange("log", null,
+                String.format("--- Бой окончен, победа: %s ---", outcome().getName()));
+            return;
+        }
         while (turnQueue.isEmpty()) {
             leftTurn = !leftTurn;
             String message = String.format("--- Ход %s ---", leftTurn ? "ЛЕВЫХ" : "ПРАВЫХ");
@@ -494,6 +599,21 @@ public final class BattleMap {
                 placed++;
             }
         }
+    }
+
+    /** Кто выиграл бой: сторона, у которой на поле остались отряды, или никто, пока бой идёт. */
+    @Getter
+    public enum Outcome {
+        NONE("никто"),
+        LEFT("ЛЕВЫЕ (Зеленые)"),
+        RIGHT("ПРАВЫЕ (Красные)");
+
+        private final String name;
+
+        Outcome(String name) {
+            this.name = name;
+        }
+
     }
 
     private record StackKey(long id, Unit.Stack stack) {

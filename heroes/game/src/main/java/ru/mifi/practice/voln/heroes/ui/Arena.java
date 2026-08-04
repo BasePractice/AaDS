@@ -16,12 +16,14 @@ import javax.swing.SwingUtilities;
  * события начала — до этого момента оно пустое у обоих игроков.
  */
 public final class Arena implements Message.Sink {
+    private final Screen screen;
     private final Remote remote;
     private final String nickname;
     private Online battle;
     private BattleGui window;
 
-    public Arena(Remote remote, String nickname) {
+    public Arena(Screen screen, Remote remote, String nickname) {
+        this.screen = screen;
         this.remote = remote;
         this.nickname = nickname;
     }
@@ -58,8 +60,7 @@ public final class Arena implements Message.Sink {
 
     private void open(Remote.Seat seat) {
         battle = new Online(new BattleMap(), remote, seat.left(), nickname);
-        window = new BattleGui(battle, battle);
-        window.setVisible(true);
+        window = screen.battle(battle, battle);
         window.logged("Комната " + seat.room());
         window.logged("Играем за " + (seat.left() ? "ЛЕВЫХ" : "ПРАВЫХ"));
         window.logged("Ждём соперника");

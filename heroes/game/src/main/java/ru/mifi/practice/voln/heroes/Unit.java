@@ -43,22 +43,27 @@ public final class Unit {
         this.health -= damage;
     }
 
+    /** Род войск и дальность его выстрела: нулевая дальность означает, что бьют только вплотную. */
     @Getter
     public enum Type {
-        SHOOTER("Стрелок"),
-        FLYER("Летающий"),
-        WALKER("Пехота");
+        SHOOTER("Стрелок", 6),
+        FLYER("Летающий", 0),
+        WALKER("Пехота", 0);
 
         private final String name;
+        private final int range;
 
-        Type(String name) {
+        Type(String name, int range) {
             this.name = name;
+            this.range = range;
         }
 
     }
 
     public static final class Stack {
         private static final int ATTACK_SPREAD = 20;
+        private static final int MELEE_SHARE = 70;
+        private static final int WHOLE_SHARE = 100;
         @Getter
         private final Type type;
         private final Queue<Unit> units = new PriorityQueue<>(Comparator.comparing(Unit::health));
@@ -93,7 +98,27 @@ public final class Unit {
 
         public int counterAttack() {
             int maximum = units.stream().mapToInt(Unit::attack).sum();
-            return between(maximum / 2, maximum);
+            return hand(between(maximum / 2, maximum));
+        }
+
+        /**
+         * Удар вплотную: стрелок отбивается руками, и выходит у него семь десятых от выстрела
+         * в упор, а пехота и летуны бьют в полную силу.
+         */
+        public int melee() {
+            return hand(attack());
+        }
+
+        /** Наибольший удар вплотную: тактике нужно сравнить исходы до броска. */
+        public int maximumMelee() {
+            return hand(maximumAttack());
+        }
+
+        private int hand(int force) {
+            if (type.getRange() <= 0) {
+                return force;
+            }
+            return fade(force, 1) * MELEE_SHARE / WHOLE_SHARE;
         }
 
         public int attack() {
@@ -112,6 +137,30 @@ public final class Unit {
                 return high;
             }
             return ThreadLocalRandom.current().nextInt(low, high);
+        }
+
+        /**
+         * Сила выстрела на расстоянии: вплотную стрелок бьёт в полную силу, на границе дальности —
+         * вполовину, а дальше границы стрела не долетает вовсе.
+         */
+        public int shot(int distance) {
+            return fade(attack(), distance);
+        }
+
+        /**
+         * Наибольшая сила выстрела: тактике нужно сравнить исходы до броска, а сам бросок отдаёт
+         * случайное значение из разброса.
+         */
+        public int maximumShot(int distance) {
+            return fade(maximumAttack(), distance);
+        }
+
+        private int fade(int force, int distance) {
+            int range = type.getRange();
+            if (range <= 0 || distance > range) {
+                return 0;
+            }
+            return force * (2 * range - distance) / (2 * range);
         }
 
         public int totalHealth() {
