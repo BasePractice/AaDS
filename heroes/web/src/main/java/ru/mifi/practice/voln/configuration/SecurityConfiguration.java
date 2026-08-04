@@ -72,6 +72,7 @@ public class SecurityConfiguration {
                     "/web/images/**",
                     "/login",
                     "/auth/sign-in", "/auth/sign-up",
+                    "/api/rooms/**",
                     "/error",
                     "/actuator/health"
                 ).permitAll()

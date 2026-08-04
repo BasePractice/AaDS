@@ -4,40 +4,52 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import ru.mifi.practice.voln.domain.model.JoinResult;
-import ru.mifi.practice.voln.domain.model.PingResult;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+import ru.mifi.practice.voln.service.RoomService;
 
 import java.util.UUID;
-import java.util.stream.Stream;
 
-/** REST-контроллер игровых комнат. */
+/**
+ * REST-контроллер комнат сетевого боя.
+ *
+ * <p>Отвечает и принимает обычный текст того же протокола, что ходит по потоку событий: партию
+ * видно в curl целиком, а разбирать её на клиенте можно без библиотеки разбора JSON.
+ */
 @RestController
 @RequestMapping("/api/rooms")
-@Tag(name = "Комнаты", description = "Комнаты комнаты")
+@Tag(name = "Комнаты", description = "Подбор соперника и обмен ходами")
 public class RoomController {
+    private final RoomService rooms;
 
-    @Operation(summary = "Доступен только авторизованным пользователям")
-    @GetMapping(path = "/{room-id}/join", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public ResponseEntity<Stream<String>> stream(@RequestHeader("X-User-ID") Long userId, @PathVariable("room-id") UUID id) {
-        return ResponseEntity.ok(Stream.of());
+    public RoomController(RoomService rooms) {
+        this.rooms = rooms;
     }
 
-    @PreAuthorize("hasRole('USER')")
-    @PostMapping(path = "/{room-id}/ping")
-    public ResponseEntity<PingResult> ping(@RequestHeader("X-User-ID") Long userId, @PathVariable("room-id") UUID id) {
-        return ResponseEntity.ok(PingResult.builder().build());
+    @Operation(summary = "Занять свободный слот или создать комнату и ждать соперника")
+    @PostMapping(path = "/join", produces = MediaType.TEXT_PLAIN_VALUE)
+    public String join(@RequestParam("nickname") String nickname) {
+        return rooms.join(nickname).encode();
     }
 
-    @PreAuthorize("hasRole('USER')")
-    @PostMapping(path = "/join", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<JoinResult> join(@RequestHeader("X-User-ID") Long userId) {
-        return ResponseEntity.ok(JoinResult.builder().build());
+    @Operation(summary = "Поток событий комнаты: начало боя, ходы соперника и его реплики")
+    @GetMapping(path = "/{room-id}/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter stream(@PathVariable("room-id") UUID id, @RequestParam("left") boolean left) {
+        return rooms.stream(id, left);
+    }
+
+    @Operation(summary = "Передать сопернику ход или реплику")
+    @PostMapping(path = "/{room-id}/message", consumes = MediaType.TEXT_PLAIN_VALUE)
+    public ResponseEntity<Void> message(@PathVariable("room-id") UUID id,
+                                        @RequestParam("left") boolean left,
+                                        @RequestBody String message) {
+        rooms.relay(id, left, message.trim());
+        return ResponseEntity.accepted().build();
     }
 }
