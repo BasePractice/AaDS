@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.PriorityQueue;
 
-/** Huffman compression and decompression of text. */
+/** Сжатие и восстановление текста кодом Хаффмана. */
 @SuppressWarnings({"PMD.UseUtilityClass", "PMD.LooseCoupling"})
 public final class Tree {
 

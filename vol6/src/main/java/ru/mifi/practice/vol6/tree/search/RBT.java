@@ -4,7 +4,7 @@ import ru.mifi.practice.commons.Counter;
 
 import java.util.Optional;
 
-/** Self-balancing red-black binary search tree. */
+/** Самобалансирующееся красно-чёрное дерево поиска. */
 @SuppressWarnings("PMD.CompareObjectsWithEquals")
 public final class RBT<T extends Comparable<T>> implements BinaryTree<T> {
     private static final int RED = 0;

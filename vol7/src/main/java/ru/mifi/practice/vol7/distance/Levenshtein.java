@@ -2,7 +2,7 @@ package ru.mifi.practice.vol7.distance;
 
 import ru.mifi.practice.commons.Counter;
 
-/** Levenshtein edit distance between two strings. */
+/** Редакционное расстояние Левенштейна между двумя строками. */
 public interface Levenshtein extends Distance {
 
     final class LevenshteinRecursion implements Levenshtein {

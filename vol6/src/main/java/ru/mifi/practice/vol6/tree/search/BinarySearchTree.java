@@ -4,7 +4,7 @@ import ru.mifi.practice.commons.Counter;
 
 import java.util.Optional;
 
-/** Unbalanced binary search tree. */
+/** Несбалансированное двоичное дерево поиска. */
 @SuppressWarnings("PMD.OverrideBothEqualsAndHashCodeOnComparable")
 public final class BinarySearchTree<T extends Comparable<T>> implements BinaryTree<T> {
     private final Nodes<T> nodes = new Nodes<>();

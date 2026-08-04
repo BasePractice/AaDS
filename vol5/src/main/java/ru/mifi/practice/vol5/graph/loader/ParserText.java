@@ -8,7 +8,7 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.function.Function;
 
-/** Loader that reads a braced source-target-weight text description into a graph. */
+/** Чтение графа из текстового описания вида «исходная-целевая-вес» в фигурных скобках. */
 @SuppressWarnings({"PMD.EmptyControlStatement", "PMD.CompareObjectsWithEquals"})
 public final class ParserText<T> implements Graph.Loader<String, T, Integer> {
 

@@ -3,7 +3,7 @@ package ru.mifi.practice.vol6.tree;
 import java.util.Arrays;
 import java.util.NoSuchElementException;
 
-/** Binary heap keeping its minimum element at the root. */
+/** Двоичная куча, хранящая минимальный элемент в корне. */
 public interface Heap<T extends Comparable<T>> {
 
     T deleteRoot();

@@ -11,7 +11,7 @@ import java.util.Queue;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
-/** Binary tree node linking a value to its parent and children. */
+/** Узел двоичного дерева: связывает значение с родителем и потомками. */
 public interface Node<T> extends Visitor.Visit<T>, Hashable {
     static <T> Node<T> root(T value) {
         return new Default<>(null, value, new Supplier<>() {

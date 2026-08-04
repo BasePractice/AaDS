@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-/** Prefix tree that matches element paths, allowing wildcard segments. */
+/** Префиксное дерево путей: сопоставляет путь элемента с шаблоном, допуская сегменты-подстановки. */
 public interface PathTree<K, V> {
 
     static <V> PathTree<String, V> create() {

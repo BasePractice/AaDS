@@ -4,7 +4,7 @@ import ru.mifi.practice.commons.Counter;
 
 import java.util.Optional;
 
-/** Self-balancing AVL binary search tree. */
+/** Самобалансирующееся АВЛ-дерево поиска. */
 public final class AVL<T extends Comparable<T>> implements BinaryTree<T> {
     private final Nodes<T> nodes = new Nodes<>();
     Node<T> root;

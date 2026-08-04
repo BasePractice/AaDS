@@ -5,7 +5,7 @@ import ru.mifi.practice.vol5.graph.Graph;
 import java.util.List;
 import java.util.Map;
 
-/** Contracts for graph traversal, cycle detection and shortest-path search. */
+/** Контракты обхода графа, поиска циклов и кратчайшего пути. */
 public interface Algorithms {
 
     @FunctionalInterface

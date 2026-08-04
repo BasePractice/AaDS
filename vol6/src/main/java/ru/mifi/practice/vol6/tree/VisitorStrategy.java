@@ -3,7 +3,7 @@ package ru.mifi.practice.vol6.tree;
 import java.util.HashSet;
 import java.util.Set;
 
-/** Traversal order that drives a visitor across a tree. */
+/** Порядок обхода, в котором посетитель проходит дерево. */
 @FunctionalInterface
 public interface VisitorStrategy<T> {
     void visit(Node<T> node, Visitor<T> visitor, VisitorStrategy<T> strategy);

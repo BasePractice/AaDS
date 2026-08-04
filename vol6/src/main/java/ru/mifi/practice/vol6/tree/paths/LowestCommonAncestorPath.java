@@ -10,7 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-/** Path between two values passing through their lowest common ancestor. */
+/** Путь между двумя значениями через их наименьшего общего предка. */
 public final class LowestCommonAncestorPath<T> implements Path<T> {
     @Override
     public List<Node<T>> path(Tree<T> tree, T start, T end) {

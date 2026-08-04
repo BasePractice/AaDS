@@ -1,6 +1,6 @@
 package ru.mifi.practice.vol6.tree;
 
-/** Callback invoked while a tree is traversed node by node. */
+/** Обратный вызов, срабатывающий при обходе дерева узел за узлом. */
 public interface Visitor<T> {
     void enterNode(Node<T> node);
 

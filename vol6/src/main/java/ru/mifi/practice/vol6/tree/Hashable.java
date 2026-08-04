@@ -1,6 +1,6 @@
 package ru.mifi.practice.vol6.tree;
 
-/** Object that exposes a structural hash of itself. */
+/** Объект, отдающий структурный хеш самого себя. */
 @FunctionalInterface
 public interface Hashable {
     int hash();

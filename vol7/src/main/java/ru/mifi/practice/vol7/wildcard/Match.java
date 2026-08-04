@@ -2,7 +2,7 @@ package ru.mifi.practice.vol7.wildcard;
 
 import ru.mifi.practice.commons.Counter;
 
-/** Tests whether a wildcard pattern matches a text. */
+/** Проверка соответствия текста шаблону с подстановочными знаками. */
 public interface Match {
     boolean isMatch(String pattern, String text, Counter counter);
 

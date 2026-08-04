@@ -7,7 +7,7 @@ import ru.mifi.practice.vol6.tree.Tree;
 import java.util.Collections;
 import java.util.List;
 
-/** Path between two values found by merging their root paths. */
+/** Путь между двумя значениями, полученный слиянием их путей до корня. */
 public final class MergePath<T> implements Path<T> {
 
     @Override

@@ -5,7 +5,7 @@ import ru.mifi.practice.vol6.tree.visitors.Distance;
 
 import java.util.List;
 
-/** Finds the longest path between two nodes of a tree. */
+/** Диаметр дерева — самый длинный путь между двумя его узлами. */
 public final class Diameter<T> {
 
     public List<Node<T>> path(Tree<T> tree) {

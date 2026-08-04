@@ -12,7 +12,7 @@ import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Set;
 
-/** Dijkstra computation of shortest distances from a source vertex. */
+/** Кратчайшие расстояния от исходной вершины по алгоритму Дейкстры. */
 public final class DijkstraShortestPath<T, W extends Number & Comparable<W>> implements Algorithms.ShortestDistance<T, W> {
     private final W maxDistance;
     private final W minDistance;

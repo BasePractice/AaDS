@@ -6,7 +6,7 @@ import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
 
-/** Computes the n-th Fibonacci number. */
+/** Вычисление n-го числа Фибоначчи. */
 @FunctionalInterface
 public interface Fibonacci {
     BigInteger fibonacci(int n, Counter counter);

@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-/** Ant-colony optimization search for the shortest path between two vertices. */
+/** Поиск кратчайшего пути между двумя вершинами муравьиным алгоритмом. */
 public final class AntShortestPath<T, W extends Number & Comparable<W>> implements Algorithms.ShortestPath<T, W> {
     private final Parameters parameters = Parameters.started();
 

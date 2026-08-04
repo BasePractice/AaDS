@@ -2,7 +2,7 @@ package ru.mifi.practice.vol7.subsequence;
 
 import ru.mifi.practice.commons.Counter;
 
-/** Length of the longest common subsequence of two strings. */
+/** Длина наибольшей общей подпоследовательности двух строк. */
 public interface LongestCommonSubsequence {
     int longestCommonSubsequence(String text1, String text2, Counter counter);
 

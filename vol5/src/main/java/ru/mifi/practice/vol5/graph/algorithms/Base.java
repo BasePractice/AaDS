@@ -12,7 +12,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-/** Depth-first, breadth-first and cycle search over a graph. */
+/** Обход графа в глубину и в ширину, а также поиск циклов. */
 public final class Base<T, W extends Number & Comparable<W>>
     implements Algorithms.CircleSearch<T, W>, Algorithms.FirstSearch<T, W> {
 

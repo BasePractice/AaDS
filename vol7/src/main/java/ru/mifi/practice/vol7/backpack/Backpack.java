@@ -5,7 +5,7 @@ import lombok.NonNull;
 import java.util.ArrayList;
 import java.util.List;
 
-/** Knapsack selecting items to carry within a weight limit. */
+/** Задача о рюкзаке: выбор предметов, укладывающихся в предел веса. */
 public interface Backpack {
 
     int maxWeight();
