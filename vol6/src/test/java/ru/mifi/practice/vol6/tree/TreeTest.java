@@ -42,6 +42,28 @@ final class TreeTest {
         assertThat("the description dont link the right child", tree.find(3).right().value(), is(5));
     }
 
+    /**
+     * Разбиение отбрасывало хвостовые пустые части, поэтому запись без пробелов падала
+     * обращением за границу массива, а та же запись с пробелами читалась.
+     */
+    @DisplayName("Пропущенный потомок без пробелов читается так же, как с пробелами")
+    @Test
+    @Timeout(1)
+    void readsAnOmittedChildWrittenTightly() throws IOException {
+        Tree<Integer> tree = new ParserText<Integer>()
+            .parse("1:{2,}\n", Integer::valueOf, Comparator.naturalOrder());
+        assertThat("a tightly written omitted child breaks the parser", tree.find(1).right(), is(nullValue()));
+    }
+
+    @DisplayName("Описание без второго потомка отвергается сразу")
+    @Test
+    @Timeout(1)
+    void refusesADescriptionWithoutASecondChild() {
+        assertThrows(IllegalArgumentException.class,
+            () -> new ParserText<Integer>().parse("1:{2}\n", Integer::valueOf, Comparator.naturalOrder()),
+            "a description without a second child passes the parser");
+    }
+
     @DisplayName("Пропущенный потомок остаётся пустым")
     @Test
     @Timeout(1)

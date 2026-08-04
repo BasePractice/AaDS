@@ -9,7 +9,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.Comparator;
 import java.util.function.Function;
 
-/** Чтение дерева из текстового описания «владелец: потомки», разделённого двоеточием. */
+/**
+ * Чтение дерева из текстового описания «владелец: потомки», разделённого двоеточием.
+ *
+ * <p>Пропущенный потомок записывается пустым местом между запятой и скобкой. Раньше разбиение
+ * отбрасывало хвостовые пустые части, и запись «1:{2,}» падала обращением за границу массива,
+ * тогда как «1:{2,   }» с теми же пробелами читалась — теперь обе означают одно и то же.
+ */
 @SuppressWarnings({"PMD.EmptyControlStatement", "PMD.CompareObjectsWithEquals"})
 public final class ParserText<T> implements Tree.Loader<T> {
 
@@ -36,7 +42,10 @@ public final class ParserText<T> implements Tree.Loader<T> {
                     continue;
                 } else if (description.charAt(0) == '{' && description.charAt(description.length() - 1) == '}') {
                     description = description.substring(1, description.length() - 1);
-                    parts = description.split(",");
+                    parts = description.split(",", -1);
+                    if (parts.length != 2) {
+                        throw new IllegalArgumentException("Описание узла ждёт двух потомков через запятую: " + line);
+                    }
                     left = parts[0].trim();
                     right = parts[1].trim();
                 }
