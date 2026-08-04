@@ -1,12 +1,20 @@
 package ru.mifi.practice.vol8.regexp.tree;
 
+import ru.mifi.practice.vol8.regexp.TextBuffer;
+
 import java.util.ArrayDeque;
 import java.util.Deque;
 
 /** Генерация PlantUML-диаграммы EBNF по дереву регулярного выражения. */
-public final class PlantUmlTextGenerator extends AbstractStringVisitor {
+public final class PlantUmlTextGenerator implements Tree.Visitor {
+    private final TextBuffer buffer = new TextBuffer();
     private final Deque<Boolean> nextOr = new ArrayDeque<>();
     private final Deque<Boolean> nextSet = new ArrayDeque<>();
+
+    @Override
+    public void visit(Tree.Char ch) {
+        buffer.append(ch.ch());
+    }
 
     @Override
     public void enter(Tree.Or or) {
@@ -62,17 +70,17 @@ public final class PlantUmlTextGenerator extends AbstractStringVisitor {
 
     @Override
     public void start() {
-        super.start();
+        buffer.reset();
         nextSet.clear();
         nextOr.clear();
-        buffer.append("@startebnf").append("\n");
+        buffer.line("@startebnf");
         buffer.append("pattern = ");
     }
 
     @Override
     public void end() {
-        buffer.append(";").append("\n");
-        buffer.append("@endebnf").append("\n");
+        buffer.line(";");
+        buffer.line("@endebnf");
     }
 
     @Override
@@ -101,5 +109,10 @@ public final class PlantUmlTextGenerator extends AbstractStringVisitor {
     @Override
     public void nextRange() {
         buffer.append("-");
+    }
+
+    @Override
+    public String toString() {
+        return buffer.toString();
     }
 }

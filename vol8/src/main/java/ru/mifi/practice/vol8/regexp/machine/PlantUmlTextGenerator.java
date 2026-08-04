@@ -1,10 +1,13 @@
 package ru.mifi.practice.vol8.regexp.machine;
 
+import ru.mifi.practice.vol8.regexp.TextBuffer;
+
 import java.util.HashSet;
 import java.util.Set;
 
 /** Генерация PlantUML-диаграммы состояний конечного автомата. */
-public final class PlantUmlTextGenerator extends Visitor.AbstractStringVisitor implements State.Diagram {
+public final class PlantUmlTextGenerator implements Visitor, State.Diagram {
+    private final TextBuffer buffer = new TextBuffer();
     private final Set<State> visited = new HashSet<>();
     private final Set<String> printed = new HashSet<>();
     private final Set<String> declared = new HashSet<>();
@@ -17,7 +20,7 @@ public final class PlantUmlTextGenerator extends Visitor.AbstractStringVisitor i
         String name = String.format("S%02d", state.index);
         if (!declared.contains(name)) {
             declared.add(name);
-            buffer.append("state \"").append(state.diagramLabel()).append("\" as ").append(name).append("\n");
+            buffer.line("state \"" + state.diagramLabel() + "\" as " + name);
         }
         return name;
     }
@@ -28,12 +31,12 @@ public final class PlantUmlTextGenerator extends Visitor.AbstractStringVisitor i
     }
 
     public void start(State state) {
-        buffer.setLength(0);
-        buffer.append("@startuml").append("\n");
-        buffer.append("hide empty description").append("\n");
+        buffer.reset();
+        buffer.line("@startuml");
+        buffer.line("hide empty description");
         state.visit(this);
-        buffer.append("[*] --> ").append(name(state)).append("\n");
-        buffer.append("@enduml").append("\n");
+        buffer.line("[*] --> " + name(state));
+        buffer.line("@enduml");
     }
 
     private void print(State state, State next) {
@@ -58,6 +61,11 @@ public final class PlantUmlTextGenerator extends Visitor.AbstractStringVisitor i
             return;
         }
         printed.add(text);
-        buffer.append(text).append("\n");
+        buffer.line(text);
+    }
+
+    @Override
+    public String toString() {
+        return buffer.toString();
     }
 }

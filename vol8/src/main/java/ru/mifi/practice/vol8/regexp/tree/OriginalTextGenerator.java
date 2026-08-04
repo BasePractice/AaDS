@@ -1,11 +1,24 @@
 package ru.mifi.practice.vol8.regexp.tree;
 
+import ru.mifi.practice.vol8.regexp.TextBuffer;
+
 import java.util.ArrayDeque;
 import java.util.Deque;
 
 /** Восстановление исходного текста регулярного выражения обходом дерева. */
-public final class OriginalTextGenerator extends AbstractStringVisitor {
+public final class OriginalTextGenerator implements Tree.Visitor {
+    private final TextBuffer buffer = new TextBuffer();
     private final Deque<Boolean> nextOr = new ArrayDeque<>();
+
+    @Override
+    public void start() {
+        buffer.reset();
+    }
+
+    @Override
+    public void visit(Tree.Char ch) {
+        buffer.append(ch.ch());
+    }
 
     @Override
     public void enter(Tree.Or or) {
@@ -67,5 +80,10 @@ public final class OriginalTextGenerator extends AbstractStringVisitor {
     @Override
     public void nextRange() {
         buffer.append("-");
+    }
+
+    @Override
+    public String toString() {
+        return buffer.toString();
     }
 }

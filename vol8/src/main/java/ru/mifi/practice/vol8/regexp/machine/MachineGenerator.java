@@ -1,13 +1,12 @@
 package ru.mifi.practice.vol8.regexp.machine;
 
-import ru.mifi.practice.vol8.regexp.tree.AbstractVisitor;
 import ru.mifi.practice.vol8.regexp.tree.Tree;
 
 import java.util.LinkedList;
 
 /** Построение конечного автомата обходом синтаксического дерева регулярного выражения. */
 @SuppressWarnings("PMD.LooseCoupling")
-public final class MachineGenerator extends AbstractVisitor {
+public final class MachineGenerator implements Tree.Visitor {
     private final LinkedList<State> states = new LinkedList<>();
     private final Manager manager;
 

@@ -44,48 +44,94 @@ public interface Tree {
         }
     }
 
+    /**
+     * Обходчик дерева. Каждый метод по умолчанию ничего не делает, поэтому реализация
+     * описывает только интересные ей узлы, не перечисляя два десятка пустых заглушек.
+     */
     interface Visitor {
-        void visit(Char ch);
+        default void visit(Char ch) {
+            //Nothing
+        }
 
-        void visit(Escape escape);
+        default void visit(Escape escape) {
+            //Nothing
+        }
 
-        void enter(And and);
+        default void enter(And and) {
+            //Nothing
+        }
 
-        void enter(Or or);
+        default void enter(Or or) {
+            //Nothing
+        }
 
-        void enter(Unary unary);
+        default void enter(Unary unary) {
+            //Nothing
+        }
 
-        void enter(Group group);
+        default void enter(Group group) {
+            //Nothing
+        }
 
-        void enter(Range range);
+        default void enter(Range range) {
+            //Nothing
+        }
 
-        void enter(Set set);
+        default void enter(Set set) {
+            //Nothing
+        }
 
-        void exit(And and);
+        default void exit(And and) {
+            //Nothing
+        }
 
-        void exit(Or or);
+        default void exit(Or or) {
+            //Nothing
+        }
 
-        void exit(Unary unary);
+        default void exit(Unary unary) {
+            //Nothing
+        }
 
-        void exit(Group group);
+        default void exit(Group group) {
+            //Nothing
+        }
 
-        void exit(Range range);
+        default void exit(Range range) {
+            //Nothing
+        }
 
-        void exit(Set set);
+        default void exit(Set set) {
+            //Nothing
+        }
 
-        void start();
+        default void start() {
+            //Nothing
+        }
 
-        void end();
+        default void end() {
+            //Nothing
+        }
 
-        void any();
+        default void any() {
+            //Nothing
+        }
 
-        void nextOr();
+        default void nextOr() {
+            //Nothing
+        }
 
-        void nextAnd();
+        default void nextAnd() {
+            //Nothing
+        }
 
-        void nextSet();
+        default void nextSet() {
+            //Nothing
+        }
 
-        void nextRange();
+        default void nextRange() {
+            //Nothing
+        }
     }
 
     record Empty() implements Node {
