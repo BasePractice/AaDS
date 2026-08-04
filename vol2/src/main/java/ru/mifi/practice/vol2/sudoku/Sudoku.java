@@ -23,47 +23,4 @@ public interface Sudoku {
     interface Factory {
         Sudoku create(int size, int[][] values);
     }
-
-    abstract class AbstractSudoku implements Sudoku {
-        protected final Block grid;
-        protected final boolean debug;
-        protected int deep = 0;
-        protected int iterations = 0;
-
-        protected AbstractSudoku(Block grid, boolean debug) {
-            this.grid = grid;
-            this.debug = debug;
-        }
-
-        @Override
-        public void print(String title) {
-            grid.print(title);
-        }
-
-        @Override
-        public int iterations() {
-            return iterations;
-        }
-
-        @Override
-        public void clear() {
-            deep = 0;
-            iterations = 0;
-        }
-
-        protected boolean isPlacement(int row, int col, Value digit) {
-            boolean valid = !grid.isNumberInRow(row, digit)
-                && !grid.isNumberInCol(col, digit)
-                && !grid.isNumberInQuad(row, col, digit);
-            iterations += grid.iterations();
-            grid.clear();
-            return valid;
-        }
-
-        protected void printDeep(int row, int col, Value digit) {
-            if (debug && deep >= 59) {
-                grid.print(String.format("%2d] %d:%d = %s", deep, row + 1, col + 1, digit));
-            }
-        }
-    }
 }
