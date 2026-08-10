@@ -13,7 +13,7 @@
     <description>Веб-чат с комнатами: SSE, Telegram LongPolling, JWT</description>
 
     <properties>
-        <version.boot>4.0.1</version.boot>
+        <version.boot>4.1.0</version.boot>
     </properties>
 
     <dependencyManagement>
