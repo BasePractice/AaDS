@@ -15,7 +15,7 @@
         <maven.compiler.target>17</maven.compiler.target>
         <flatten-maven-plugin.version>1.7.3</flatten-maven-plugin.version>
         <version.jupiter>6.0.1</version.jupiter>
-        <version.pmd>7.19.0</version.pmd>
+        <version.pmd>7.26.0</version.pmd>
         <version.lombok>1.18.42</version.lombok>
         <version.hamcrest>3.0</version.hamcrest>
         <version.surefire>3.5.4</version.surefire>
