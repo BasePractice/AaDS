@@ -44,6 +44,11 @@ final class Field {
         return copy;
     }
 
+    /** То же поле с теми же камнями, но занятые клетки в нём другие. */
+    Field with(boolean[][] troops) {
+        return new Field(stones, troops);
+    }
+
     boolean isStone(int row, int column) {
         return stones[row][column];
     }
@@ -110,7 +115,15 @@ final class Field {
      * до которого на один шаг ближе.
      */
     List<int[]> path(int sourceRow, int sourceColumn, int targetRow, int targetColumn, boolean flying) {
-        int[][] distances = distances(sourceRow, sourceColumn, flying, targetRow, targetColumn);
+        return trace(distances(sourceRow, sourceColumn, flying, targetRow, targetColumn),
+            sourceRow, sourceColumn, targetRow, targetColumn);
+    }
+
+    /**
+     * Путь по готовой разметке обхода. Перебор вариантов размечает поле один раз на позицию, а
+     * потом ходит по разметке, поэтому обход ему считать заново незачем.
+     */
+    List<int[]> trace(int[][] distances, int sourceRow, int sourceColumn, int targetRow, int targetColumn) {
         if (distances[targetRow][targetColumn] == Integer.MAX_VALUE) {
             return new ArrayList<>();
         }

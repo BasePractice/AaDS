@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
 import java.util.NavigableMap;
+import java.util.Optional;
 import java.util.Random;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -317,6 +318,34 @@ public final class BattleMap {
     /** Дальность выстрела: стрела летит по прямой, и шаг наискось стоит столько же, сколько прямой. */
     private int distance(int sourceRow, int sourceColumn, int targetRow, int targetColumn) {
         return Field.distance(sourceRow, sourceColumn, targetRow, targetColumn);
+    }
+
+    /**
+     * Снимок позиции: тактика перебирает по нему варианты, не трогая живое поле. Первыми в
+     * снимок попадают те, кому ещё ходить, и в том же порядке, в каком стоят в очереди.
+     */
+    Position snapshot() {
+        List<Position.Troop> troops = new ArrayList<>();
+        turnQueue.forEach(id -> troop(id, getStackCoord(id)).ifPresent(troops::add));
+        for (int row = 0; row < Constants.ROWS; row++) {
+            for (int column = 0; column < Constants.COLS; column++) {
+                Long id = map[row][column];
+                if (id != null && !turnQueue.contains(id)) {
+                    troop(id, new int[]{row, column}).ifPresent(troops::add);
+                }
+            }
+        }
+        boolean[][] empty = new boolean[Constants.ROWS][Constants.COLS];
+        return new Position(new Field(obstacles, empty), troops, leftTurn);
+    }
+
+    private Optional<Position.Troop> troop(Long id, int[] coord) {
+        Unit.Stack stack = getStackById(id);
+        if (stack == null || coord.length != 2) {
+            return Optional.empty();
+        }
+        return Optional.of(new Position.Troop(id, new Position.Cell(coord[0], coord[1]),
+            left.containsKey(id), stack.snapshot(), stack.hasActed(), stack.hasCounterAttacked()));
     }
 
     /** Геометрия поля на эту минуту: где камни и какие клетки заняты отрядами. */
