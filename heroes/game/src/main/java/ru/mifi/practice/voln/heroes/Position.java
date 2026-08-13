@@ -73,9 +73,7 @@ record Position(Field terrain, List<Troop> troops, boolean leftTurn) {
                 moves.add(enemy.cell().decision(Tactics.Kind.ATTACK));
             }
         }
-        if (moves.isEmpty()) {
-            approach(troop, field, distances).ifPresent(moves::add);
-        }
+        approach(troop, field, distances).ifPresent(moves::add);
         moves.add(new Tactics.Decision(Tactics.Kind.SKIP, -1, -1));
         return moves;
     }

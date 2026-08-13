@@ -175,4 +175,112 @@ public interface Tactics {
         private record Aim(Decision decision, int profit) {
         }
     }
+
+    /**
+     * Перебор на несколько полуходов вперёд с альфа-бета-отсечением.
+     *
+     * <p>Жадная тактика считает свой удар и ответ цели, а дальше не смотрит, поэтому не видит ни
+     * подставы под всю очередь противника, ни размена, который окупится вторым ударом. Здесь ходы
+     * перебираются по снимку позиции: ход отдаёт новую позицию, старая остаётся нетронутой, и
+     * откатывать ничего не нужно.
+     *
+     * <p>Ветки, которые уже не могут оказаться лучше найденного, отсекаются: если противник в
+     * ответвлении находит ответ хуже того, что мы уже обеспечили себе в другой ветке, дальше эту
+     * ветку читать незачем. Отсечение не меняет выбор — оно только сокращает перебор.
+     *
+     * <p>Ходы в корне перебора проверяются по живому полю боя, а не по снимку: снимок считает
+     * достижимость одним обходом и в редких случаях обхода занятой клетки расходится с полем.
+     * Решение, которого поле не примет, оставило бы очередь стоять на месте.
+     *
+     * <p>Шаг к ближайшему противнику перебор считает наравне с ударом: иначе отряд, которому
+     * подставиться выгоднее только на вид, выбирал бы между самоубийственным ударом и стоянием на
+     * месте. А когда снимок не предложил ни удара, ни шага, ход берётся у жадной тактики: перебору
+     * там всё равно нечего сравнивать.
+     */
+    final class Deep implements Tactics {
+        private static final int DEFAULT_DEPTH = 3;
+
+        private final int depth;
+        private final Tactics approach;
+
+        public Deep() {
+            this(DEFAULT_DEPTH);
+        }
+
+        public Deep(int depth) {
+            this(depth, new Greedy());
+        }
+
+        Deep(int depth, Tactics approach) {
+            this.depth = depth;
+            this.approach = approach;
+        }
+
+        @Override
+        public Decision decide(BattleMap map) {
+            Position position = map.snapshot();
+            List<Decision> candidates = candidates(map, position);
+            if (candidates.stream().allMatch(candidate -> candidate.kind() == Kind.SKIP)) {
+                return approach.decide(map);
+            }
+            Decision best = new Decision(Kind.SKIP, -1, -1);
+            int alpha = Integer.MIN_VALUE;
+            for (Decision candidate : candidates) {
+                int value = value(position.after(candidate), position.leftTurn(), depth - 1,
+                    alpha, Integer.MAX_VALUE);
+                if (value > alpha) {
+                    alpha = value;
+                    best = candidate;
+                }
+            }
+            return best;
+        }
+
+        /** Ходы в корне: те из предложенных снимком, которые примет и живое поле боя. */
+        private List<Decision> candidates(BattleMap map, Position position) {
+            int[] coord = map.getStackCoord(map.getTurnQueue().peekFirst());
+            if (coord.length != 2) {
+                return List.of();
+            }
+            return position.moves().stream().filter(decision -> allowed(map, coord, decision)).toList();
+        }
+
+        private boolean allowed(BattleMap map, int[] coord, Decision decision) {
+            return switch (decision.kind()) {
+                case ATTACK -> !map.attackPath(coord[0], coord[1], decision.row(), decision.column()).isEmpty();
+                case SHOOT -> map.shot(coord[0], coord[1], decision.row(), decision.column()) > 0;
+                case MOVE -> !map.movePath(coord[0], coord[1], decision.row(), decision.column()).isEmpty();
+                default -> true;
+            };
+        }
+
+        /**
+         * Чего стоит позиция для той стороны, за которую идёт расчёт. Своим ходом сторона берёт
+         * лучшее, чужим — готовится к худшему, а на исходе отпущенной глубины позиция оценивается
+         * как есть.
+         */
+        private int value(Position position, boolean ours, int left, int alpha, int beta) {
+            if (left <= 0 || position.over() || position.active().isEmpty()) {
+                return position.score(ours);
+            }
+            boolean gaining = position.leftTurn() == ours;
+            int best = gaining ? Integer.MIN_VALUE : Integer.MAX_VALUE;
+            int low = alpha;
+            int high = beta;
+            for (Decision decision : position.moves()) {
+                int value = value(position.after(decision), ours, left - 1, low, high);
+                if (gaining) {
+                    best = Math.max(best, value);
+                    low = Math.max(low, best);
+                } else {
+                    best = Math.min(best, value);
+                    high = Math.min(high, best);
+                }
+                if (high <= low) {
+                    break;
+                }
+            }
+            return best;
+        }
+    }
 }
