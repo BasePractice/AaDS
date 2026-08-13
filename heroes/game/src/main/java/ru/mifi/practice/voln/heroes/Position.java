@@ -58,36 +58,77 @@ record Position(Field terrain, List<Troop> troops, boolean leftTurn) {
         if (active.isEmpty()) {
             return List.of();
         }
-        Troop troop = active.get();
-        Field field = field();
-        int[][] distances = field.distances(troop.cell().row(), troop.cell().column(), troop.flying());
-        List<Tactics.Decision> moves = new ArrayList<>();
-        for (Troop enemy : troops) {
-            if (enemy.left() == leftTurn) {
-                continue;
-            }
-            if (volley(troop, enemy, field) > 0) {
-                moves.add(enemy.cell().decision(Tactics.Kind.SHOOT));
-            }
-            if (melee(troop, enemy, distances).isPresent()) {
-                moves.add(enemy.cell().decision(Tactics.Kind.ATTACK));
-            }
-        }
-        approach(troop, field, distances).ifPresent(moves::add);
+        List<Tactics.Decision> moves = new ArrayList<>(actions(active.get()));
         moves.add(new Tactics.Decision(Tactics.Kind.SKIP, -1, -1));
         return moves;
     }
 
     /**
-     * Позиция после хода. Удар ложится сразу вместе с ответом цели, а когда сторона отходила
-     * всеми отрядами, очередь переходит к противнику и все встают в неё заново.
+     * Чем сторона может ответить: ходы каждого отряда, которому в этом ходу ещё ходить.
+     *
+     * <p>В бою отряды ходят в порядке очереди, и выбирать, кем ходить, нельзя. Но перебору важно
+     * не воспроизвести очередь, а не проглядеть наказание: стоящий первым отряд наказать чаще
+     * всего не может, а тот, кто может, ждёт своей строки в очереди и в счёт не попадает.
+     * Поэтому в ответной ветке ходит любой, и перебор считает худшее для себя.
+     *
+     * <p>Пропуск в список идёт один на сторону: кто именно из отрядов постоит, для позиции
+     * безразлично.
+     */
+    List<Reply> replies() {
+        List<Reply> replies = new ArrayList<>();
+        for (Troop troop : troops) {
+            if (troop.left() == leftTurn && !troop.acted()) {
+                actions(troop).forEach(decision -> replies.add(new Reply(troop.id(), decision)));
+            }
+        }
+        active().ifPresent(troop ->
+            replies.add(new Reply(troop.id(), new Tactics.Decision(Tactics.Kind.SKIP, -1, -1))));
+        return replies;
+    }
+
+    /**
+     * Что отряд может сделать: выстрел и удар по каждому достижимому противнику и шаг к
+     * ближайшему.
+     *
+     * <p>Перебирать все клетки поля незачем: ход, не меняющий ни здоровья, ни расстояний, ветку
+     * перебора только удлиняет. Достижимость берётся из одного обхода поля на отряд — противник
+     * достаётся, если хоть одна свободная клетка рядом с ним отстоит не дальше скорости.
+     */
+    private List<Tactics.Decision> actions(Troop troop) {
+        Field field = field();
+        int[][] distances = field.distances(troop.cell().row(), troop.cell().column(), troop.flying());
+        List<Tactics.Decision> actions = new ArrayList<>();
+        for (Troop enemy : troops) {
+            if (enemy.left() == troop.left()) {
+                continue;
+            }
+            if (volley(troop, enemy, field) > 0) {
+                actions.add(enemy.cell().decision(Tactics.Kind.SHOOT));
+            }
+            if (melee(troop, enemy, distances).isPresent()) {
+                actions.add(enemy.cell().decision(Tactics.Kind.ATTACK));
+            }
+        }
+        approach(troop, field, distances).ifPresent(actions::add);
+        return actions;
+    }
+
+    /**
+     * Позиция после хода отряда, стоящего в очереди первым. Удар ложится сразу вместе с ответом
+     * цели, а когда сторона отходила всеми отрядами, очередь переходит к противнику и все встают
+     * в неё заново.
      */
     Position after(Tactics.Decision decision) {
-        Optional<Troop> active = active();
-        if (active.isEmpty()) {
-            return this;
-        }
-        Troop troop = active.get();
+        return active().map(troop -> after(troop, decision)).orElse(this);
+    }
+
+    /** Позиция после хода того отряда, которым сторона решила ответить. */
+    Position after(Reply reply) {
+        return troops.stream().filter(troop -> troop.id() == reply.id()).findFirst()
+            .map(troop -> after(troop, reply.decision())).orElse(this);
+    }
+
+    private Position after(Troop troop, Tactics.Decision decision) {
         List<Troop> next = switch (decision.kind()) {
             case ATTACK -> attacked(troop, decision);
             case SHOOT -> shot(troop, decision);
@@ -259,7 +300,15 @@ record Position(Field terrain, List<Troop> troops, boolean leftTurn) {
      * отвечает тут же. Если ход и без того перешёл — отдавать нечего.
      */
     Position answer(Tactics.Decision decision) {
-        Position next = after(decision);
+        return handed(after(decision));
+    }
+
+    /** То же для ответа, сделанного не первым в очереди отрядом. */
+    Position answer(Reply reply) {
+        return handed(after(reply));
+    }
+
+    private Position handed(Position next) {
         if (next.leftTurn() != leftTurn) {
             return next;
         }
@@ -294,6 +343,10 @@ record Position(Field terrain, List<Troop> troops, boolean leftTurn) {
         boolean[][] occupied = new boolean[Constants.ROWS][Constants.COLS];
         troops.forEach(troop -> occupied[troop.cell().row()][troop.cell().column()] = true);
         return terrain.with(occupied);
+    }
+
+    /** Ответ стороны: каким отрядом и что именно она делает. */
+    record Reply(long id, Tactics.Decision decision) {
     }
 
     /** Клетка поля. */

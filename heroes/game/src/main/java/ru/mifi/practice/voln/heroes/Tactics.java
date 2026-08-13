@@ -199,11 +199,14 @@ public interface Tactics {
      */
     final class Deep implements Tactics {
         /**
-         * Глубина по умолчанию — чётная: свой ход и ответ противника. На нечётной перебор
-         * обрывает счёт на собственном ударе и оценивает позицию оптимистично, а какой ответ за
-         * этот удар придёт, узнаёт уже в бою.
+         * Глубина по умолчанию — чётная: счёт кончается на ответе противника, а не на своём
+         * ударе. На нечётной перебор оценивает позицию оптимистично — какой ответ придёт за
+         * последний удар, он узнаёт уже в бою, и в замере нечётные глубины проигрывают чётным.
+         *
+         * <p>Четыре, а не два: глубже перебор считает лучше, а дороже — терпимо. Шесть уже не
+         * укладывается в разумное время хода.
          */
-        private static final int DEFAULT_DEPTH = 2;
+        private static final int DEFAULT_DEPTH = 4;
 
         private final int depth;
         private final Tactics approach;
@@ -263,6 +266,10 @@ public interface Tactics {
          * Чего стоит позиция для той стороны, за которую идёт расчёт. Своим ходом сторона берёт
          * лучшее, чужим — готовится к худшему, а на исходе отпущенной глубины позиция оценивается
          * как есть.
+         *
+         * <p>Внутри перебора ходит любой отряд стороны, а не только первый в очереди: наказать
+         * за плохой ход чаще всего может не он, и, считая ответ по очереди, перебор наказания бы
+         * не увидел. В корне это не так — там ход делает тот, чья очередь на самом деле.
          */
         private int value(Position position, boolean ours, int left, int alpha, int beta) {
             if (left <= 0 || position.over() || position.active().isEmpty()) {
@@ -272,8 +279,8 @@ public interface Tactics {
             int best = gaining ? Integer.MIN_VALUE : Integer.MAX_VALUE;
             int low = alpha;
             int high = beta;
-            for (Decision decision : position.moves()) {
-                int value = value(position.answer(decision), ours, left - 1, low, high);
+            for (Position.Reply reply : position.replies()) {
+                int value = value(position.answer(reply), ours, left - 1, low, high);
                 if (gaining) {
                     best = Math.max(best, value);
                     low = Math.max(low, best);

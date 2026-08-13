@@ -132,18 +132,27 @@ final class DeepTest {
     }
 
     /**
-     * Подстава: слабый противник стоит так, что добить его можно, только подойдя вплотную к
-     * сильному, — и тот следующим полуходом сносит подошедшего целиком.
+     * Подстава: слабый противник стоит так, что добить его можно, только встав на единственную
+     * клетку рядом с сильным, — и тот следующим полуходом сносит подошедшего целиком. Сильный
+     * зажат камнями и неподвижен, поэтому отряд, оставшийся на месте, ему недосягаем: уклониться
+     * от размена и вправду выгоднее, чем разменяться.
      */
     private static BattleMap trap() {
         BattleMap map = new BattleMap();
-        map.addLeft(5, 0, stack(Unit.Type.WALKER, 10, 500));
-        map.addRight(5, 4, stack(Unit.Type.WALKER, 1, 5));
+        map.addObstacle(3, 8);
+        map.addObstacle(4, 7);
+        map.addObstacle(4, 9);
+        Unit.Stack ours = new Unit.Stack(Unit.Type.WALKER);
+        ours.add(new Unit(10, 0, 500, 1));
+        map.addLeft(5, 7, ours);
+        Unit.Stack bait = new Unit.Stack(Unit.Type.WALKER);
+        bait.add(new Unit(1, 0, 5, 1));
+        map.addRight(5, 9, bait);
         Unit.Stack killer = new Unit.Stack(Unit.Type.WALKER);
         for (int fighter = 0; fighter < 3; fighter++) {
-            killer.add(new Unit(500, 0, 100, 4));
+            killer.add(new Unit(500, 0, 100, 0));
         }
-        map.addRight(5, 6, killer);
+        map.addRight(4, 8, killer);
         return map;
     }
 
@@ -175,8 +184,8 @@ final class DeepTest {
         }
         boolean gaining = position.leftTurn() == ours;
         int best = gaining ? Integer.MIN_VALUE : Integer.MAX_VALUE;
-        for (Tactics.Decision decision : position.moves()) {
-            int value = reference(position.answer(decision), ours, left - 1);
+        for (Position.Reply reply : position.replies()) {
+            int value = reference(position.answer(reply), ours, left - 1);
             best = gaining ? Math.max(best, value) : Math.min(best, value);
         }
         return best;
