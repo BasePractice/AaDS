@@ -198,7 +198,12 @@ public interface Tactics {
      * там всё равно нечего сравнивать.
      */
     final class Deep implements Tactics {
-        private static final int DEFAULT_DEPTH = 3;
+        /**
+         * Глубина по умолчанию — чётная: свой ход и ответ противника. На нечётной перебор
+         * обрывает счёт на собственном ударе и оценивает позицию оптимистично, а какой ответ за
+         * этот удар придёт, узнаёт уже в бою.
+         */
+        private static final int DEFAULT_DEPTH = 2;
 
         private final int depth;
         private final Tactics approach;
@@ -226,7 +231,7 @@ public interface Tactics {
             Decision best = new Decision(Kind.SKIP, -1, -1);
             int alpha = Integer.MIN_VALUE;
             for (Decision candidate : candidates) {
-                int value = value(position.after(candidate), position.leftTurn(), depth - 1,
+                int value = value(position.answer(candidate), position.leftTurn(), depth - 1,
                     alpha, Integer.MAX_VALUE);
                 if (value > alpha) {
                     alpha = value;
@@ -268,7 +273,7 @@ public interface Tactics {
             int low = alpha;
             int high = beta;
             for (Decision decision : position.moves()) {
-                int value = value(position.after(decision), ours, left - 1, low, high);
+                int value = value(position.answer(decision), ours, left - 1, low, high);
                 if (gaining) {
                     best = Math.max(best, value);
                     low = Math.max(low, best);

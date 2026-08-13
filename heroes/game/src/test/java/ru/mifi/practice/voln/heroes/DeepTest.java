@@ -91,10 +91,10 @@ final class DeepTest {
         Position position = map.snapshot();
         Tactics.Decision chosen = new Tactics.Deep(3).decide(map);
         int best = candidates(map, position).stream()
-            .mapToInt(decision -> reference(position.after(decision), position.leftTurn(), 2))
+            .mapToInt(decision -> reference(position.answer(decision), position.leftTurn(), 2))
             .max().orElseThrow();
         assertThat("the cut off branches take away the best move the plain search finds",
-            reference(position.after(chosen), position.leftTurn(), 2), is(best));
+            reference(position.answer(chosen), position.leftTurn(), 2), is(best));
     }
 
     @DisplayName("Перебор на полном поле укладывается в отведённое время")
@@ -105,6 +105,30 @@ final class DeepTest {
         map.fillRandomly(20260814);
         assertThat("the search on a full field takes longer than a move may take, or finds nothing to do",
             new Tactics.Deep().decide(map).kind(), is(not(Tactics.Kind.SKIP)));
+    }
+
+    /**
+     * Бой до конца, а не один ход: решение, которого поле боя не примет, оставило бы очередь
+     * стоять на месте, и бой не кончился бы никогда.
+     */
+    @DisplayName("Бой перебора против жадной тактики доигрывается до победы")
+    @Test
+    @Timeout(60)
+    void playsTheBattleToTheEnd() {
+        BattleMap map = new BattleMap();
+        map.fillRandomly(20260814);
+        Tactics left = new Tactics.Deep();
+        Tactics right = new Tactics.Greedy();
+        for (int step = 0; step < 5000 && map.outcome() == BattleMap.Outcome.NONE; step++) {
+            if (map.isAnimating()) {
+                map.endAction();
+                continue;
+            }
+            Tactics tactics = map.isLeftTurn() ? left : right;
+            new Battle.Local(map, tactics).apply(tactics.decide(map));
+        }
+        assertThat("the battle between the two tactics never comes to an end",
+            map.outcome(), is(not(BattleMap.Outcome.NONE)));
     }
 
     /**
@@ -152,7 +176,7 @@ final class DeepTest {
         boolean gaining = position.leftTurn() == ours;
         int best = gaining ? Integer.MIN_VALUE : Integer.MAX_VALUE;
         for (Tactics.Decision decision : position.moves()) {
-            int value = reference(position.after(decision), ours, left - 1);
+            int value = reference(position.answer(decision), ours, left - 1);
             best = gaining ? Math.max(best, value) : Math.min(best, value);
         }
         return best;

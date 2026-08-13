@@ -183,11 +183,20 @@ record Position(Field terrain, List<Troop> troops, boolean leftTurn) {
         if (enemy.counterAttacked()) {
             return replaced(striker, enemy.struck(hit));
         }
-        Troop answered = striker.struck(striker.squad().damaged(hit.maximumMelee()));
+        Troop answered = striker.struck(striker.squad().damaged(counter(hit)));
         if (answered.squad().isEmpty()) {
             return without(troop, replaced(beaten));
         }
         return replaced(answered, beaten);
+    }
+
+    /**
+     * Ответный удар цели. В бою он выпадает между половиной наибольшего и наибольшим, поэтому
+     * модель берёт середину: считая ответ по верхней границе, перебор боялся бы размена сильнее,
+     * чем стоит, и предпочитал бы стоять на месте.
+     */
+    private int counter(Unit.Squad squad) {
+        return squad.maximumMelee() * 3 / 4;
     }
 
     /** Отряды после выстрела: цель теряет бойцов, а стрелок — стрелу, и на удар издали не отвечает. */
@@ -238,6 +247,23 @@ record Position(Field terrain, List<Troop> troops, boolean leftTurn) {
     /** Поле без павшего отряда. */
     private List<Troop> without(Troop fallen, List<Troop> rest) {
         return rest.stream().filter(troop -> troop.id() != fallen.id()).toList();
+    }
+
+    /**
+     * Позиция после хода, где очередь отдана противнику, как если бы остальные отряды стороны
+     * выждали.
+     *
+     * <p>Перебору это нужно, чтобы увидеть ответ: сторона ходит всеми отрядами подряд, поэтому
+     * три полухода подряд при семи отрядах — это три хода своих же, а противник остаётся за
+     * горизонтом. Отдав ход сразу, перебор считает худшее: что на каждый наш ход противник
+     * отвечает тут же. Если ход и без того перешёл — отдавать нечего.
+     */
+    Position answer(Tactics.Decision decision) {
+        Position next = after(decision);
+        if (next.leftTurn() != leftTurn) {
+            return next;
+        }
+        return new Position(next.terrain(), ready(next.troops()), !next.leftTurn());
     }
 
     /** Позиция после хода: пока стороне есть кем ходить, очередь остаётся у неё. */

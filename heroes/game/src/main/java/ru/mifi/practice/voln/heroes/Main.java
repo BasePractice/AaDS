@@ -30,8 +30,8 @@ public final class Main {
     private static void choose() {
         Screen screen = new Screen();
         screen.offer(List.of(
-            new Screen.Choice("Против компьютера", () -> alone(screen, new Tactics.Deep())),
-            new Screen.Choice("Против жадного компьютера", () -> alone(screen, new Tactics.Greedy())),
+            new Screen.Choice("Против компьютера", () -> alone(screen, new Tactics.Greedy())),
+            new Screen.Choice("Против компьютера с перебором", () -> alone(screen, new Tactics.Deep())),
             new Screen.Choice("По сети", () -> online(screen)),
             new Screen.Choice("Выход", screen::dispose)));
         screen.setVisible(true);
