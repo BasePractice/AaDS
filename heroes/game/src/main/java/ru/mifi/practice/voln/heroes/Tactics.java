@@ -217,6 +217,13 @@ public interface Tactics {
          */
         private static final int DEFAULT_WIDTH = 12;
 
+        /**
+         * Сколько ударов перебор доигрывает за отпущенной глубиной, чтобы не обрывать счёт
+         * посреди размена. Размен на поле редко длиннее нескольких ударов, а каждый лишний
+         * полуход доигрывания стоит как ветка обычного перебора.
+         */
+        private static final int EXCHANGES = 4;
+
         private final int depth;
         private final int width;
         private final Tactics approach;
@@ -300,7 +307,7 @@ public interface Tactics {
          */
         private int value(Position position, boolean ours, int left, int alpha, int beta) {
             if (left <= 0 || position.over() || position.active().isEmpty()) {
-                return position.score(ours);
+                return quiet(position, ours, alpha, beta, EXCHANGES);
             }
             boolean gaining = position.leftTurn() == ours;
             int best = gaining ? Integer.MIN_VALUE : Integer.MAX_VALUE;
@@ -317,6 +324,39 @@ public interface Tactics {
                 }
                 if (high <= low) {
                     break;
+                }
+            }
+            return best;
+        }
+
+        /**
+         * Оценка позиции, доигранной до затишья: пока у стороны есть чем ударить не сходя с
+         * места, размен считается дальше, и только потом позиция оценивается.
+         *
+         * <p>Иначе счёт обрывается посреди размена и позиция «я ударил, мне вот-вот ответят»
+         * считается выигранной. Сторона вправе и остановиться — оценка позиции как есть служит
+         * нижней границей: бить её никто не заставляет.
+         */
+        private int quiet(Position position, boolean ours, int alpha, int beta, int left) {
+            int standing = position.score(ours);
+            boolean gaining = position.leftTurn() == ours;
+            if (left <= 0 || position.over()) {
+                return standing;
+            }
+            int best = standing;
+            int low = gaining ? Math.max(alpha, standing) : alpha;
+            int high = gaining ? beta : Math.min(beta, standing);
+            for (Position.Reply exchange : position.exchanges()) {
+                if (high <= low) {
+                    break;
+                }
+                int value = quiet(position.answer(exchange), ours, low, high, left - 1);
+                if (gaining) {
+                    best = Math.max(best, value);
+                    low = Math.max(low, best);
+                } else {
+                    best = Math.min(best, value);
+                    high = Math.min(high, best);
                 }
             }
             return best;
