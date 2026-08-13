@@ -6,21 +6,15 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Deque;
 import java.util.List;
 import java.util.NavigableMap;
-import java.util.PriorityQueue;
-import java.util.Queue;
 import java.util.Random;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 /** Поле боя: расстановка отрядов, очередь ходов, перемещение и бой. */
 public final class BattleMap {
-    private static final int ROWS = 11;
-    private static final int COLS = 15;
     private static final int MIN_STACKS = 5;
     private static final int RANDOM_STACKS = 3;
     private static final int MAX_COL_INDEX = 14;
@@ -43,8 +37,8 @@ public final class BattleMap {
     private final AtomicLong idCount = new AtomicLong(0);
     private final NavigableMap<Long, StackKey> left = new TreeMap<>();
     private final NavigableMap<Long, StackKey> right = new TreeMap<>();
-    private final Long[][] map = new Long[ROWS][COLS];
-    private final boolean[][] obstacles = new boolean[ROWS][COLS];
+    private final Long[][] map = new Long[Constants.ROWS][Constants.COLS];
+    private final boolean[][] obstacles = new boolean[Constants.ROWS][Constants.COLS];
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     @Getter
     private final Deque<Long> turnQueue = new ArrayDeque<>();
@@ -123,11 +117,11 @@ public final class BattleMap {
         for (int i = 0; i < stackCount; i++) {
             int row;
             do {
-                row = random.nextInt(ROWS);
+                row = random.nextInt(Constants.ROWS);
             } while (map[row][0] != null);
             addLeft(row, 0, createRandomStack(random));
             do {
-                row = random.nextInt(ROWS);
+                row = random.nextInt(Constants.ROWS);
             } while (map[row][MAX_COL_INDEX] != null);
             addRight(row, MAX_COL_INDEX, createRandomStack(random));
         }
@@ -136,8 +130,8 @@ public final class BattleMap {
 
     public void fillTurnQueue() {
         turnQueue.clear();
-        for (int r = 0; r < ROWS; r++) {
-            for (int c = 0; c < COLS; c++) {
+        for (int r = 0; r < Constants.ROWS; r++) {
+            for (int c = 0; c < Constants.COLS; c++) {
                 Long id = map[r][c];
                 if (id != null) {
                     if (leftTurn && left.containsKey(id)) {
@@ -190,8 +184,8 @@ public final class BattleMap {
         if (id == null) {
             return new int[0];
         }
-        for (int r = 0; r < ROWS; r++) {
-            for (int c = 0; c < COLS; c++) {
+        for (int r = 0; r < Constants.ROWS; r++) {
+            for (int c = 0; c < Constants.COLS; c++) {
                 if (id.equals(map[r][c])) {
                     return new int[]{r, c};
                 }
@@ -303,15 +297,7 @@ public final class BattleMap {
 
     /** Видно ли цель: стрела летит по прямой и втыкается в первое же препятствие на пути. */
     private boolean visible(int sourceRow, int sourceColumn, int targetRow, int targetColumn) {
-        int steps = distance(sourceRow, sourceColumn, targetRow, targetColumn);
-        for (int step = 1; step < steps; step++) {
-            int row = sourceRow + (targetRow - sourceRow) * step / steps;
-            int column = sourceColumn + (targetColumn - sourceColumn) * step / steps;
-            if (isObstacle(row, column)) {
-                return false;
-            }
-        }
-        return true;
+        return field().visible(sourceRow, sourceColumn, targetRow, targetColumn);
     }
 
     /**
@@ -330,7 +316,18 @@ public final class BattleMap {
 
     /** Дальность выстрела: стрела летит по прямой, и шаг наискось стоит столько же, сколько прямой. */
     private int distance(int sourceRow, int sourceColumn, int targetRow, int targetColumn) {
-        return Math.max(Math.abs(targetRow - sourceRow), Math.abs(targetColumn - sourceColumn));
+        return Field.distance(sourceRow, sourceColumn, targetRow, targetColumn);
+    }
+
+    /** Геометрия поля на эту минуту: где камни и какие клетки заняты отрядами. */
+    private Field field() {
+        boolean[][] troops = new boolean[Constants.ROWS][Constants.COLS];
+        for (int row = 0; row < Constants.ROWS; row++) {
+            for (int column = 0; column < Constants.COLS; column++) {
+                troops[row][column] = map[row][column] != null;
+            }
+        }
+        return new Field(obstacles, troops);
     }
 
     /** Стоит ли рядом с отрядом противник. */
@@ -379,7 +376,7 @@ public final class BattleMap {
 
     /** Лежит ли клетка внутри поля боя. */
     public boolean isInside(int row, int column) {
-        return row >= 0 && row < ROWS && column >= 0 && column < COLS;
+        return Field.isInside(row, column);
     }
 
     public void move(int sourceRow, int sourceColumn, int targetRow, int targetColumn) {
@@ -535,85 +532,22 @@ public final class BattleMap {
     }
 
     public List<int[]> getPath(int sourceRow, int sourceColumn, int targetRow, int targetColumn, boolean flying) {
-        int[][] dists = getDistances(sourceRow, sourceColumn, flying, targetRow, targetColumn);
-        if (dists[targetRow][targetColumn] == Integer.MAX_VALUE) {
-            return new ArrayList<>();
-        }
-        List<int[]> path = new ArrayList<>();
-        int currentRow = targetRow;
-        int currentColumn = targetColumn;
-        path.add(new int[]{currentRow, currentColumn});
-        int[] drs = {0, 0, 1, -1};
-        int[] dcs = {1, -1, 0, 0};
-        while (currentRow != sourceRow || currentColumn != sourceColumn) {
-            boolean stepped = false;
-            for (int i = 0; i < 4; i++) {
-                int nextRow = currentRow + drs[i];
-                int nextColumn = currentColumn + dcs[i];
-                if (nextRow >= 0 && nextRow < ROWS && nextColumn >= 0 && nextColumn < COLS &&
-                    dists[nextRow][nextColumn] == dists[currentRow][currentColumn] - 1) {
-                    currentRow = nextRow;
-                    currentColumn = nextColumn;
-                    path.add(0, new int[]{currentRow, currentColumn});
-                    stepped = true;
-                    break;
-                }
-            }
-            if (!stepped) {
-                return List.of();
-            }
-        }
-        return path;
+        return field().path(sourceRow, sourceColumn, targetRow, targetColumn, flying);
     }
 
     public int[][] getDistances(int row, int col, boolean flying) {
-        return getDistances(row, col, flying, -1, -1);
+        return field().distances(row, col, flying);
     }
 
     public int[][] getDistances(int row, int col, boolean flying, int targetRow, int targetColumn) {
-        int[][] dist = new int[ROWS][COLS];
-        for (int[] r : dist) {
-            Arrays.fill(r, Integer.MAX_VALUE);
-        }
-        dist[row][col] = 0;
-        Queue<int[]> queue = new PriorityQueue<>(Comparator.comparingInt(cell -> cell[2]));
-        queue.add(new int[]{row, col, 0});
-        int[] drs = {0, 0, 1, -1};
-        int[] dcs = {1, -1, 0, 0};
-        while (!queue.isEmpty()) {
-            int[] curr = queue.poll();
-            int r = curr[0];
-            int c = curr[1];
-            int d = curr[2];
-            if (d > dist[r][c]) {
-                continue;
-            }
-            for (int i = 0; i < 4; i++) {
-                int nextRow = r + drs[i];
-                int nextColumn = c + dcs[i];
-                if (nextRow >= 0 && nextRow < ROWS && nextColumn >= 0 && nextColumn < COLS) {
-                    if (map[nextRow][nextColumn] != null && (nextRow != targetRow || nextColumn != targetColumn)) {
-                        continue;
-                    }
-                    if (!flying && obstacles[nextRow][nextColumn]) {
-                        continue;
-                    }
-                    int nd = d + 1;
-                    if (nd < dist[nextRow][nextColumn]) {
-                        dist[nextRow][nextColumn] = nd;
-                        queue.add(new int[]{nextRow, nextColumn, nd});
-                    }
-                }
-            }
-        }
-        return dist;
+        return field().distances(row, col, flying, targetRow, targetColumn);
     }
 
     private void generateObstacles(Random random) {
         int count = OBSTACLES_COUNT_BASE + random.nextInt(OBSTACLES_COUNT_RANDOM);
         int placed = 0;
         while (placed < count) {
-            int r = random.nextInt(ROWS);
+            int r = random.nextInt(Constants.ROWS);
             int c = OBSTACLES_COL_MIN + random.nextInt(OBSTACLES_COL_RANDOM);
             if (map[r][c] == null && !obstacles[r][c]) {
                 obstacles[r][c] = true;
