@@ -3,7 +3,9 @@ package ru.mifi.practice.voln.heroes;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.concurrent.ThreadLocalRandom;
@@ -43,6 +45,28 @@ public final class Unit {
         this.health -= damage;
     }
 
+    /** Снимок бойца: те же числа, но менять их уже некому. */
+    Fighter snapshot() {
+        return new Fighter(attack, defense, health, speed);
+    }
+
+    /**
+     * Боец в снимке отряда. Перебор вариантов считает по снимкам, поэтому удар в уме никого не
+     * ранит: раненый боец — это новый боец, а не тот же самый с другим здоровьем.
+     */
+    public record Fighter(int power, int defense, int health, int speed) {
+
+        /** Урон бойца: раненый бьёт слабее ровно в долю оставшегося здоровья. */
+        public int attack() {
+            return power * health / ATTACK_DIVIDER;
+        }
+
+        /** Тот же боец после раны. */
+        Fighter wounded(int damage) {
+            return new Fighter(power, defense, health - damage, speed);
+        }
+    }
+
     @Getter
     public enum Type {
         SHOOTER("Стрелок"),
@@ -57,10 +81,138 @@ public final class Unit {
 
     }
 
-    public static final class Stack {
-        private static final int ATTACK_SPREAD = 20;
+    /**
+     * Неизменяемый снимок отряда: считает те же удары и потери, что и живой отряд, но ничего в
+     * нём не меняет.
+     *
+     * <p>По снимкам ходит перебор вариантов: удар возвращает новый отряд, а не калечит прежний,
+     * поэтому откатывать ничего не нужно. Разброс броска в снимке заменён верхней границей —
+     * иначе одна и та же позиция оценивалась бы каждый раз по-новому.
+     */
+    public record Squad(Type type, List<Fighter> fighters, int shots) {
         private static final int MELEE_SHARE = 70;
         private static final int WHOLE_SHARE = 100;
+
+        public Squad(Type type, List<Fighter> fighters, int shots) {
+            this.type = type;
+            this.fighters = List.copyOf(fighters);
+            this.shots = shots;
+        }
+
+        public int size() {
+            return fighters.size();
+        }
+
+        public boolean isEmpty() {
+            return fighters.isEmpty();
+        }
+
+        public int totalHealth() {
+            return fighters.stream().mapToInt(Fighter::health).sum();
+        }
+
+        public int speed() {
+            return fighters.stream().mapToInt(Fighter::speed).min().orElse(1);
+        }
+
+        public int maximumAttack() {
+            return fighters.stream().mapToInt(Fighter::attack).sum();
+        }
+
+        /** Наибольший удар вплотную: тактике нужно сравнить исходы до броска. */
+        public int maximumMelee() {
+            return hand(maximumAttack());
+        }
+
+        /** Наибольшая сила выстрела на расстоянии. */
+        public int maximumShot(int distance) {
+            return volley(maximumAttack(), distance);
+        }
+
+        /**
+         * Удар вплотную: стрелок отбивается руками, и выходит у него семь десятых от самого
+         * сильного своего выстрела, — а пехота и летуны бьют в полную силу. Запас стрел на удар
+         * не влияет: без стрел стрелок остаётся той же пехотой, что и с ними.
+         */
+        int hand(int force) {
+            if (type != Type.SHOOTER) {
+                return force;
+            }
+            return bolt(force, 1) * MELEE_SHARE / WHOLE_SHARE;
+        }
+
+        /**
+         * Выстрел такой силы на такое расстояние, а ноль означает, что стрелять нельзя: не тот
+         * род войск, кончились стрелы или цель дальше самого длинного выстрела.
+         */
+        int volley(int force, int distance) {
+            if (type != Type.SHOOTER || shots <= 0 || distance > Constants.SPAN) {
+                return 0;
+            }
+            return bolt(force, distance);
+        }
+
+        /** Урон падает с дальностью: вплотную стрела бьёт в полную силу, с края в край вполовину. */
+        private int bolt(int force, int distance) {
+            return force * (2 * Constants.SPAN - distance) / (2 * Constants.SPAN);
+        }
+
+        /**
+         * Сколько бойцов погибнет от удара такой силы. Удар разбирают самые слабые: он добивает
+         * их одного за другим, пока хватает силы.
+         */
+        public int casualties(int amount) {
+            int remaining = amount;
+            int killed = 0;
+            for (Fighter fighter : weakest()) {
+                int kick = Math.max(0, remaining - fighter.defense());
+                if (kick < fighter.health()) {
+                    break;
+                }
+                remaining = kick - fighter.health();
+                ++killed;
+            }
+            return killed;
+        }
+
+        /**
+         * Отряд после удара такой силы: погибшие пропадают, а последний задетый остаётся в строю
+         * раненым и гасит собой остаток удара.
+         */
+        public Squad damaged(int amount) {
+            List<Fighter> survivors = new ArrayList<>();
+            List<Fighter> order = weakest();
+            int remaining = amount;
+            for (int i = 0; i < order.size(); i++) {
+                Fighter fighter = order.get(i);
+                int kick = Math.max(0, remaining - fighter.defense());
+                if (remaining <= 0 || kick <= 0) {
+                    survivors.addAll(order.subList(i, order.size()));
+                    break;
+                }
+                if (fighter.health() <= kick) {
+                    remaining = kick - fighter.health();
+                } else {
+                    survivors.add(fighter.wounded(kick));
+                    remaining = 0;
+                }
+            }
+            return new Squad(type, survivors, shots);
+        }
+
+        /** Тот же отряд одной стрелой беднее. */
+        public Squad spent() {
+            return new Squad(type, fighters, shots - 1);
+        }
+
+        /** Бойцы от самого слабого к самому крепкому: удар достаётся им в этом порядке. */
+        private List<Fighter> weakest() {
+            return fighters.stream().sorted(Comparator.comparingInt(Fighter::health)).toList();
+        }
+    }
+
+    public static final class Stack {
+        private static final int ATTACK_SPREAD = 20;
         private static final int BOLTS = 15;
         @Getter
         private final Type type;
@@ -95,9 +247,14 @@ public final class Unit {
             return units.stream().mapToInt(Unit::attack).sum();
         }
 
+        /** Снимок отряда: по нему считает тактика, не трогая живых бойцов. */
+        public Squad snapshot() {
+            return new Squad(type, units.stream().map(Unit::snapshot).toList(), shots);
+        }
+
         public int counterAttack() {
             int maximum = units.stream().mapToInt(Unit::attack).sum();
-            return hand(between(maximum / 2, maximum));
+            return snapshot().hand(between(maximum / 2, maximum));
         }
 
         /**
@@ -106,19 +263,12 @@ public final class Unit {
          * не влияет: без стрел стрелок остаётся той же пехотой, что и с ними.
          */
         public int melee() {
-            return hand(attack());
+            return snapshot().hand(attack());
         }
 
         /** Наибольший удар вплотную: тактике нужно сравнить исходы до броска. */
         public int maximumMelee() {
-            return hand(maximumAttack());
-        }
-
-        private int hand(int force) {
-            if (type != Type.SHOOTER) {
-                return force;
-            }
-            return bolt(force, 1) * MELEE_SHARE / WHOLE_SHARE;
+            return snapshot().maximumMelee();
         }
 
         public int attack() {
@@ -144,10 +294,7 @@ public final class Unit {
          * пропорционально дальности — вплотную в полную силу, с края в край вполовину.
          */
         public int shot(int distance) {
-            if (type != Type.SHOOTER || shots <= 0 || distance > Constants.SPAN) {
-                return 0;
-            }
-            return bolt(attack(), distance);
+            return snapshot().volley(attack(), distance);
         }
 
         /**
@@ -155,10 +302,7 @@ public final class Unit {
          * случайное значение из разброса.
          */
         public int maximumShot(int distance) {
-            if (type != Type.SHOOTER || shots <= 0 || distance > Constants.SPAN) {
-                return 0;
-            }
-            return bolt(maximumAttack(), distance);
+            return snapshot().maximumShot(distance);
         }
 
         /** Сколько выстрелов осталось: запас конечен, и с последней стрелой стрелок — пехота. */
@@ -169,10 +313,6 @@ public final class Unit {
         /** Потратить стрелу. */
         public void spend() {
             shots--;
-        }
-
-        private int bolt(int force, int distance) {
-            return force * (2 * Constants.SPAN - distance) / (2 * Constants.SPAN);
         }
 
         public int totalHealth() {
@@ -192,17 +332,7 @@ public final class Unit {
          * сравнить исходы до того, как удар нанесён, а damage считает потери разрушительно.
          */
         public int casualties(int attackAmount) {
-            int remaining = attackAmount;
-            int killed = 0;
-            for (Unit unit : units.stream().sorted(Comparator.comparing(Unit::health)).toList()) {
-                int kick = Math.max(0, remaining - unit.defense());
-                if (kick < unit.health()) {
-                    break;
-                }
-                remaining = kick - unit.health();
-                ++killed;
-            }
-            return killed;
+            return snapshot().casualties(attackAmount);
         }
 
         public void damage(int attackAmount) {
