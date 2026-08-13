@@ -41,6 +41,24 @@ final class OTPMachineTest {
             context.get(OTPMachine.PERSISTENCE_CODE, String.class).orElseThrow(), matchesRegex("\\d{4}"));
     }
 
+    /** Одной выдачи мало: пятизначный код выпадал в одном случае из десяти и тест не ловил его. */
+    @DisplayName("Код всегда четырёхзначный")
+    @Test
+    @Timeout(5)
+    void keepsTheCodeFourDigitsLong() {
+        StringBuilder codes = new StringBuilder();
+        for (int draw = 0; draw < 1000; draw++) {
+            Machine.Context context = new Machine.Context.Standard();
+            new OTPMachine.OTPHandler().sendNextCode(context);
+            String code = context.get(OTPMachine.PERSISTENCE_CODE, String.class).orElseThrow();
+            if (code.length() != 4) {
+                codes.append(code).append(' ');
+            }
+        }
+        assertThat("the machine sends a code of a length other than four digits",
+            codes.toString(), is(""));
+    }
+
     @DisplayName("Свежий код совпадает сам с собой")
     @Test
     @Timeout(1)

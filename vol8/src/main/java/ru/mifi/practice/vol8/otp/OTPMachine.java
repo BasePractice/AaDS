@@ -20,6 +20,10 @@ public final class OTPMachine extends Machine {
     }
 
     static final class OTPHandler implements Handler {
+        /** Первый четырёхзначный код и сколько их всего: код короче четырёх цифр не бывает. */
+        private static final int FIRST_CODE = 1000;
+        private static final int CODES = 9000;
+
         private String code;
         @SuppressWarnings({"unused", "PMD.UnusedPrivateField"})
         private Context context;
@@ -31,7 +35,7 @@ public final class OTPMachine extends Machine {
 
         @Override
         public boolean sendNextCode(Context context) {
-            code = String.valueOf(new Random().nextInt(9999) + 1000);
+            code = String.valueOf(new Random().nextInt(CODES) + FIRST_CODE);
             context.set(PERSISTENCE_CODE, code);
             debugf("[%15s] %s%n", "Код", code);
             return true;
