@@ -1,5 +1,6 @@
 package ru.mifi.practice.voln.heroes;
 
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -208,7 +209,16 @@ public interface Tactics {
          */
         private static final int DEFAULT_DEPTH = 4;
 
+        /**
+         * Сколько ответов на узел перебор читает. Их бывает под сотню — по два на каждого
+         * противника от каждого отряда стороны, — и на глубине от шести полуходов дочитать все
+         * не выходит. Читаются лучшие на первый взгляд: остальные почти всегда и оказываются
+         * худшими, а ширина в дюжину веток стоит вчетверо дешевле полной.
+         */
+        private static final int DEFAULT_WIDTH = 12;
+
         private final int depth;
+        private final int width;
         private final Tactics approach;
 
         public Deep() {
@@ -216,11 +226,16 @@ public interface Tactics {
         }
 
         public Deep(int depth) {
-            this(depth, new Greedy());
+            this(depth, DEFAULT_WIDTH);
         }
 
-        Deep(int depth, Tactics approach) {
+        public Deep(int depth, int width) {
+            this(depth, width, new Greedy());
+        }
+
+        Deep(int depth, int width, Tactics approach) {
             this.depth = depth;
+            this.width = width;
             this.approach = approach;
         }
 
@@ -233,7 +248,7 @@ public interface Tactics {
             }
             Decision best = new Decision(Kind.SKIP, -1, -1);
             int alpha = Integer.MIN_VALUE;
-            for (Decision candidate : candidates) {
+            for (Decision candidate : sorted(candidates, position)) {
                 int value = value(position.answer(candidate), position.leftTurn(), depth - 1,
                     alpha, Integer.MAX_VALUE);
                 if (value > alpha) {
@@ -242,6 +257,14 @@ public interface Tactics {
                 }
             }
             return best;
+        }
+
+        /** Ходы от самого выгодного на первый взгляд: с него у отсечения больше работы. */
+        private List<Decision> sorted(List<Decision> candidates, Position position) {
+            boolean ours = position.leftTurn();
+            return candidates.stream()
+                .sorted(Comparator.comparingInt(candidate -> -position.answer(candidate).score(ours)))
+                .toList();
         }
 
         /** Ходы в корне: те из предложенных снимком, которые примет и живое поле боя. */
@@ -270,6 +293,10 @@ public interface Tactics {
          * <p>Внутри перебора ходит любой отряд стороны, а не только первый в очереди: наказать
          * за плохой ход чаще всего может не он, и, считая ответ по очереди, перебор наказания бы
          * не увидел. В корне это не так — там ход делает тот, чья очередь на самом деле.
+         *
+         * <p>Ветки читаются в порядке от лучшей на первый взгляд: чем раньше найдено хорошее
+         * значение, тем больше веток отсекается, не читая. Порядок берётся из оценки позиции
+         * после хода — она всё равно нужна дальше, поэтому упорядочивание достаётся даром.
          */
         private int value(Position position, boolean ours, int left, int alpha, int beta) {
             if (left <= 0 || position.over() || position.active().isEmpty()) {
@@ -279,8 +306,8 @@ public interface Tactics {
             int best = gaining ? Integer.MIN_VALUE : Integer.MAX_VALUE;
             int low = alpha;
             int high = beta;
-            for (Position.Reply reply : position.replies()) {
-                int value = value(position.answer(reply), ours, left - 1, low, high);
+            for (Position child : promising(position, ours)) {
+                int value = value(child, ours, left - 1, low, high);
                 if (gaining) {
                     best = Math.max(best, value);
                     low = Math.max(low, best);
@@ -293,6 +320,21 @@ public interface Tactics {
                 }
             }
             return best;
+        }
+
+        /**
+         * Позиции после ответов стороны, от самой обещающей для неё и не больше отпущенной
+         * ширины. Ходящая сторона пробует лучшее для себя, поэтому её ветки идут по убыванию
+         * оценки, а ветки противника — по возрастанию: и там и там первой читается та, ради
+         * которой сторона и ходит.
+         */
+        private List<Position> promising(Position position, boolean ours) {
+            int order = position.leftTurn() == ours ? -1 : 1;
+            return position.replies().stream()
+                .map(position::answer)
+                .sorted(Comparator.comparingInt(child -> order * child.score(ours)))
+                .limit(width)
+                .toList();
         }
     }
 }

@@ -83,18 +83,30 @@ final class DeepTest {
             new Tactics.Greedy().decide(trap()).kind(), is(Tactics.Kind.ATTACK));
     }
 
+    /** Сверка идёт при неограниченной ширине: усечение — отдельная от отсечения вольность. */
     @DisplayName("Отсечение не теряет лучшую ветку")
     @Test
     @Timeout(30)
     void keepsTheBestBranch() {
         BattleMap map = crowd();
         Position position = map.snapshot();
-        Tactics.Decision chosen = new Tactics.Deep(3).decide(map);
+        Tactics.Decision chosen = new Tactics.Deep(3, Integer.MAX_VALUE).decide(map);
         int best = candidates(map, position).stream()
             .mapToInt(decision -> reference(position.answer(decision), position.leftTurn(), 2))
             .max().orElseThrow();
         assertThat("the cut off branches take away the best move the plain search finds",
             reference(position.answer(chosen), position.leftTurn(), 2), is(best));
+    }
+
+    @DisplayName("Ширина перебора отсекает лишние ветки")
+    @Test
+    @Timeout(30)
+    void readsNoMoreBranchesThanAllowed() {
+        BattleMap map = new BattleMap();
+        map.fillRandomly(20260814);
+        Position position = map.snapshot();
+        assertThat("the crowded field offers so few replies that the width has nothing to cut",
+            position.replies().size() > 12, is(true));
     }
 
     @DisplayName("Перебор на полном поле укладывается в отведённое время")

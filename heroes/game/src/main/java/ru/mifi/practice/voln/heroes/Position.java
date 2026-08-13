@@ -58,7 +58,7 @@ record Position(Field terrain, List<Troop> troops, boolean leftTurn) {
         if (active.isEmpty()) {
             return List.of();
         }
-        List<Tactics.Decision> moves = new ArrayList<>(actions(active.get()));
+        List<Tactics.Decision> moves = new ArrayList<>(actions(active.get(), field()));
         moves.add(new Tactics.Decision(Tactics.Kind.SKIP, -1, -1));
         return moves;
     }
@@ -76,9 +76,10 @@ record Position(Field terrain, List<Troop> troops, boolean leftTurn) {
      */
     List<Reply> replies() {
         List<Reply> replies = new ArrayList<>();
+        Field field = field();
         for (Troop troop : troops) {
             if (troop.left() == leftTurn && !troop.acted()) {
-                actions(troop).forEach(decision -> replies.add(new Reply(troop.id(), decision)));
+                actions(troop, field).forEach(decision -> replies.add(new Reply(troop.id(), decision)));
             }
         }
         active().ifPresent(troop ->
@@ -94,8 +95,7 @@ record Position(Field terrain, List<Troop> troops, boolean leftTurn) {
      * перебора только удлиняет. Достижимость берётся из одного обхода поля на отряд — противник
      * достаётся, если хоть одна свободная клетка рядом с ним отстоит не дальше скорости.
      */
-    private List<Tactics.Decision> actions(Troop troop) {
-        Field field = field();
+    private List<Tactics.Decision> actions(Troop troop, Field field) {
         int[][] distances = field.distances(troop.cell().row(), troop.cell().column(), troop.flying());
         List<Tactics.Decision> actions = new ArrayList<>();
         for (Troop enemy : troops) {
@@ -206,6 +206,19 @@ record Position(Field terrain, List<Troop> troops, boolean leftTurn) {
         return found;
     }
 
+    /**
+     * Откуда отряд ударит противника: с той клетки, где стоит, если уже стоит вплотную, иначе с
+     * ближайшей свободной рядом с целью. Стоящему вплотную обход поля считать незачем, а в
+     * переборе таких ударов больше всего.
+     */
+    private Optional<Cell> closed(Troop troop, Troop enemy) {
+        if (troop.cell().walk(enemy.cell()) == 1) {
+            return Optional.of(troop.cell());
+        }
+        return melee(troop, enemy,
+            field().distances(troop.cell().row(), troop.cell().column(), troop.flying()));
+    }
+
     /** Отряды после удара вплотную: подход к цели, урон и ответ уцелевших. */
     private List<Troop> attacked(Troop troop, Tactics.Decision decision) {
         Optional<Troop> aim = at(decision.row(), decision.column());
@@ -213,9 +226,7 @@ record Position(Field terrain, List<Troop> troops, boolean leftTurn) {
             return replaced(troop.done());
         }
         Troop enemy = aim.get();
-        Optional<Cell> cell = melee(troop, enemy,
-            field().distances(troop.cell().row(), troop.cell().column(), troop.flying()));
-        Troop striker = cell.map(troop::moved).orElse(troop).done();
+        Troop striker = closed(troop, enemy).map(troop::moved).orElse(troop).done();
         Unit.Squad hit = enemy.squad().damaged(striker.squad().maximumMelee());
         if (hit.isEmpty()) {
             return without(enemy, replaced(striker));
@@ -352,9 +363,14 @@ record Position(Field terrain, List<Troop> troops, boolean leftTurn) {
     /** Клетка поля. */
     record Cell(int row, int column) {
 
-        /** Насколько клетка далека: шаг наискось стоит столько же, сколько прямой. */
+        /** Насколько клетка далека для стрелы: шаг наискось стоит столько же, сколько прямой. */
         int away(Cell other) {
             return Field.distance(row, column, other.row(), other.column());
+        }
+
+        /** Насколько клетка далека для пешего: наискось он не ходит, поэтому идёт в два шага. */
+        int walk(Cell other) {
+            return Math.abs(row - other.row()) + Math.abs(column - other.column());
         }
 
         /** Что размечено на этой клетке обходом поля. */
