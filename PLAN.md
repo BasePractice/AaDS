@@ -1,237 +1,221 @@
-# План приведения кода к RULE.md
-
-> Черновик для ревью. Без явного утверждения пользователем модификация кода не производится.
-> Файл в `.gitignore`-логику не входит — **не коммитить**.
-
-## 1. Что сделано и как
-
-Проверено соответствие всех **281** `.java`-файлов (23 388 строк, кроме `target/`) правилу `RULE.md`
-пятью параллельными ревью по группам модулей: `vol1–vol3`, `vol4–vol7`, `vol8–vol13+commons`, `heroes`,
-`vol_`. Для каждого нарушения зафиксированы `файл:строка` и нарушенный пункт RULE.
-
-**Базовая картина.** Механический стиль в целом уже держится: `mvn validate` гоняет checkstyle
-(Indentation, LineLength, EmptyLineSeparator, ModifierOrder и др.) и PMD `quickstart`, сборка фиксируется
-на JDK 17 через enforcer. Mockito в проекте нет (0 файлов) — это соответствует «фейки/стабы вместо моков».
-Реальные расхождения с RULE.md там, **где checkstyle бессилен**: принципы Elegant Objects
-(иммутабельность, отказ от геттеров/сеттеров/статики/`null`, композиция вместо наследования), «Злые тесты»,
-отсутствие пустых строк в теле метода, пунктуация сообщений, семантика «Парных скобок» и «Монотонного
-отступа», Puzzle Driven Development.
-
-**Градиент качества по модулям.**
-
-| Уровень | Модули | Комментарий |
-|---|---|---|
-| Высокое соответствие | `commons`, `vol9`–`vol13`, `vol5`, `vol1` | Единичные замечания, в основном `@Timeout` |
-| Среднее | `vol3`, `vol4`, `vol7`, `heroes/game` | Точечные нарушения EO + тесты |
-| Низкое (легаси-слой) | `vol2/yasymb`, `vol6`, `vol8`, `vol_`, `heroes/web` | Системные нарушения, требуют рефакторинга |
-
-## 2. Границы работ — что НЕ трогаем
-
-Эти категории исключены из плана осознанно; RULE это прямо допускает («терпи баги в upstream»,
-«оставляй загадки на потом», «предлагай issue, а не исправляй молча»).
-
-1. **Учебные пазлы.** JavaDoc-маркеры «В коде есть ошибка / Найдите здесь ошибку / Почему реализация не
-   оптимальна» + рядом `@Disabled`-тест — это фичи курса (`QuickSort`, `HashTable.resize`,
-   `Search.PolynomialSearchCached`, `Center` и т.п.). Не исправляем, но см. §6 про оформление по PDD.
-2. **Ограничения фреймворков** (чистое соответствие RULE недостижимо):
-   - Spring: бины не могут быть `final`; `*Controller/*Service`; field-injection через `@Value`;
-     `instanceof UserDetails`; `UserMapper.MAPPER` (MapStruct).
-   - JPA/Hibernate: `UserEntity/AuthorityEntity/MessageEntity` — не-final, no-args ctor, `@Getter`.
-   - Swing: `BattleGui extends JFrame`, `BattlePanel extends JPanel`, мутабельное состояние перерисовки.
-   - ByteBuddy/`sun.reflect` в `vol_/object/ObjectPool` — рефлексия неизбежна по сути задачи (прокси-пул).
-3. **Демо-точки входа** (`Main`, `GameGui`): статика/утилитарность — низкий приоритет, не в основной работе.
-
-## 3. Решения, которые нужны до старта (отметьте в ревью)
-
-План разветвляется в зависимости от ваших ответов:
-
-- **Р1. Иммутабельность структур данных.** Массивы, списки, кучи, деревья, автоматы по сути мутабельны, а
-  RULE требует «только неизменяемые объекты». Варианты: **(a)** признать осознанным отклонением и не трогать
-  не-final поля структур данных; **(b)** заморозить всё, что мутируется алгоритмически неоправданно, а сами
-  структуры оставить; **(c)** заворачивать мутацию в новые объекты. → *Рекомендация: (b).*
-- **Р2. Статические фабрики в интерфейсах** (`Counter.create`, `Node.root`, `PathTree.create`,
-  `Machine.of`, `Weight.ofInteger`, `BytesMatrix.defaults`…). EO запрещает статику вообще, но это
-  распространённая идиома «умного интерфейса». Убирать (заменить на публичные классы-реализации) или принять?
-  → *Рекомендация: принять как отклонение, статику вне интерфейсов — убирать.*
-- **Р3. Lombok.** `@Getter/@Setter/@Data/@Builder` порождают аксессоры (нарушение п.4). Убирать полностью
-  (кроме вынужденного в JPA/DTO) или оставить? → *Рекомендация: убрать из доменных классов
-  (`vol8`, `vol_/games`, `vol_/prime`), оставить в JPA/Jackson-DTO.*
-- **Р4. Глубина рефакторинга легаси (`vol8`, `vol2/yasymb`).** Делать сейчас в рамках этой работы или
-  оформить пачкой GitHub-issue и приводить постепенно? → *Рекомендация: issues (Фаза 4).*
-
-## 4. Приоритизация
-
-Работа разбита на фазы по возрастанию риска/стоимости. Внутри фаз — от массового и дешёвого к точечному.
-После каждой фазы — зелёная сборка `mvn -B clean package` (включая checkstyle/PMD).
+Вот дополненный список из 40 алгоритмов с описанием, ссылками и примерной оценкой сложности реализации для студента.
 
 ---
 
-### Фаза 1 — Тесты («Злые тесты», п.15/16). Массово, механически, низкий риск
+### Неочевидные структуры данных
 
-Самое массовое нарушение проекта: **`@Timeout` есть лишь в 7 из 55 тест-файлов**.
+**1. Декартово дерево (Treap)**
+* **Описание:** Сочетает свойства бинарного дерева поиска и кучи на основе случайных приоритетов, обеспечивая сбалансированность.
+* **Сложность реализации:** 4/10 (очень лаконичная реализация, ~40 строк).
+* **Ресурсы:** [Википедия](https://ru.wikipedia.org/wiki/Декартово_дерево), [Викиконспекты ИТМО](https://nerc.itmo.ru)
 
-1. **`@Timeout` на каждый тест-метод** (RULE «Рантайм»). Затронуто ~48 файлов практически во всех модулях
-   (`vol2`, `vol3`, `vol4`, `vol6`, `vol7`, `vol8` частично, `vol9`–`vol13`, `heroes/game`, весь `vol_`).
-2. **Один assert на тест, последним оператором.** Разбить множественные проверки на отдельные тесты:
-   `heroes/game/TurnQueueTest` (~8 assert), `BattleMapTest`, `FlyerTest`, `vol6/RBTTest.testAdd` (7),
-   `vol8/StateTest`, `vol_/PatternTest`, `vol_/RaptorCodesTest`, `vol_/prime/*Test`,
-   `vol_/ObjectPoolTest`, `vol2/BytecodeTest`. Убрать условные assert (`if (mobIndex!=-1)`) в `PatternTest`.
-3. **Негативные сообщения без апострофов.** Позитивные формулировки → негативные: `RBTTest`
-   («Root must be black»), `heroes/game/*`, `vol_/RaptorCodesTest`, `MersenneNumbersTest`. Проверить
-   `dont/cannot` без апострофов (в большинстве уже соблюдено).
-4. **Имена-предложения + `@DisplayName`.** `testAdd/testDelete/testGameInitialization/parse/match` → фразы.
-5. **Изоляция: убрать общий `@BeforeEach`/константы/статические хелперы** (RULE: тест автономен). Точки:
-   `vol8/HippopotamusTest` (`@BeforeEach`, поле `mapper`, константы `A/B/C`), `vol8/AbstractPatternTest`
-   (абстрактный базовый тест), `vol_/CacheableValueRangeTest` (`setUp`, `USER_ID`), `vol6/RBTTest`
-   (общие `verifyRBTProps/checkNode`), `vol_/JohnsonTrotterTest` (6 static-хелперов),
-   `vol_/machine/post/ProgramTest` (общие константы), `vol3/SortTest.Marked`, `vol2/*Test` хелперы.
-6. **Соответствие 1:1 «тест ↔ файл фичи».** Разбить `vol3/SortTest` на 5 файлов (`MergeSort`, `CountSort`,
-   `QuickSort`, `HeapSort`, `RadixSort`); переименовать/перепривязать `vol2/SudokuBlocksTest`,
-   `vol2/BytecodeTest`; `heroes/game/BattlePatternTest`; `vol_/PatternTest`. Добавить недостающие тесты:
-   `vol3/BinaryNaturalSearch`, `vol3/BinaryRealSearch`.
-7. **Убрать побочные эффекты и работу с ФС/потоками в тестах:** `vol8/MachineTest`/`TreeTest` (запись
-   `.puml`/файлов), `vol_/games/transmit/TransmitTest` (мутация `System.in`/`System.out`).
-8. **`heroes/web` — тестов нет вообще.** Крупный объём (auth, JWT, presence, chat). → **Отдельный issue**,
-   не в основной пачке (см. Фаза 4).
+**2. Список с пропусками (Skip List)**
+* **Описание:** Вероятностная структура данных на основе многоуровневых связных списков для быстрого поиска.
+* **Сложность реализации:** 5/10 (требует аккуратной работы с указателями).
+* **Ресурсы:** [Описание (PDF)](https://www.cse.unt.edu), [Википедия](https://en.wikipedia.org/wiki/Skip_list)
 
----
+**3. Разреженная таблица (Sparse Table)**
+* **Описание:** Статическая структура для ответов на запросы минимума на отрезке за O(1) после предобработки.
+* **Сложность реализации:** 3/10 (реализуется как двумерный массив).
+* **Ресурсы:** [Algorithmica](https://github.com/algorithmica-org/ru), [Викиконспекты ИТМО](https://neerc.ifmo.ru)
 
-### Фаза 2 — Механический стиль в `main`. Низкий риск
+**4. Биномиальная куча (Binomial Heap)**
+* **Описание:** Очередь с приоритетом, поддерживающая эффективное слияние (merge) двух куч.
+* **Сложность реализации:** 6/10 (требует понимания списка биномиальных деревьев).
+* **Ресурсы:** [neerc.ifmo.ru](https://neerc.ifmo.ru), [Princeton](https://algs4.cs.princeton.edu)
 
-1. **Пустые строки внутри тел методов** (RULE «Пакуй тела без пустых строк»). Точки: `vol1/rpn`,
-   `vol2/yasymb/*`, `vol5/AntShortestPath`, `vol6/AVL·BSТ·RBT·huffman`, `vol7/Levenshtein·Match`,
-   `vol_/object/ObjectPool`, `vol_/games/logic/GameAuto`, `heroes/game/BattlePanel`,
-   `heroes/web/ChatController`.
-2. **Инлайн-комментарии и закомментированный (мёртвый) код** (RULE «Пропускай инлайн-комментарии»):
-   `vol2/vm·yasymb`, `vol3/RadixSort`, `vol6/AVL` (`//LL //RR`), `vol7/backpack` (`//NOTICE`),
-   `vol8/*` (россыпь `//Nothing/…`), весь `vol_/codes·mazes·prime`, `heroes/web/*Configuration`
-   (`//.setCachePeriod`). `//FIXME/TODO` без ссылки на issue — переоформить по PDD (§6).
-3. **Сообщения об ошибках/логов: одно предложение с контекстом, без точки в конце** (RULE «Стиль»):
-   - Точки в конце: `vol_/fsm/BytesMatrix` («Not supported yet.»), `vol_/fsm/BytesMatrixFormatter`.
-   - Пустой/безконтекстный `throw`: `vol2/VirtualMachine:203`, `vol2/MathCalculator:102`,
-     `vol_/machine/post/Compiler`, `vol_/fsm/BytesMatrix`, `vol5/Graph:146`, `vol6/Tree:68`,
-     `heroes/game/BattleMap:62,74`.
-   - Проглатывание исключений: `vol8/Statistics` (`printStackTrace`), `heroes/web/Telegram…` (`log.error("",e)`),
-     `heroes/web/SecurityConfiguration` (`System.out::println` вместо логгера).
-   - Двухчастные/оборванные: `vol5/PathTree:81`, `vol_/games/logic/Person:187`, `vol_/otp/OTP:57`.
-4. **Имена переменных — одиночные существительные** (дешёвые случаи): `tmp/temp`, `l/r`, `cs/k/v`,
-   `toArge`-опечатка (`vol_/games/logic/Person`), `nd/mtr/drs` (`heroes/game/BattleMap`),
-   составные `summaryPheromones/finalNext` (`vol5`). Массив односимвольных в `vol2/yasymb` и `vol6/RBT`
-   переносится в Фазу 4 (вместе с декомпозицией методов).
-5. **Docblock «о назначении» перед классами**, где его нет (RULE «Код»). Массово в `vol6`, `vol7`, `vol_`.
-   Заменить `//`-строки-описания на `/** … */` (`vol7/Levenshtein`, `LongestCommonSubsequence`).
+**5. X-быстрое дерево (X-fast Trie)**
+* **Описание:** Цифровой бор для целых чисел, использующий хеш-таблицы для операций поиска соседей за O(log w).
+* **Сложность реализации:** 7/10 (сочетание битовых операций и хеш-таблиц).
+* **Ресурсы:** [neerc.ifmo.ru](https://neerc.ifmo.ru), [GitHub (пример)](https://github.com/mtuann/competitive-programming-cpp)
 
----
+### Строки и текст
 
-### Фаза 3 — Elegant Objects, «лёгкий слой». Средний риск
+**6. Алгоритм Рабина-Карпа (Rabin-Karp)**
+* **Описание:** Поиск подстроки через скользящее хеширование.
+* **Сложность реализации:** 3/10 (ключевая часть — правильное хеширование).
+* **Ресурсы:** [e-maxx.ru](https://e-maxx.ru), [neerc.ifmo.ru](https://neerc.ifmo.ru)
 
-Локальные изменения без смены архитектуры.
+**7. Преобразование Барроуза-Уилера (BWT)**
+* **Описание:** Преобразование, группирующее одинаковые символы для улучшения сжатия.
+* **Сложность реализации:** 4/10 (основано на циклических сдвигах и сортировке).
+* **Ресурсы:** [Princeton](https://www.cs.princeton.edu), [pkg.go.dev](https://pkg.go.dev)
 
-1. **`final` у классов, где ничего не мешает:** `vol4/CachedPolynomial`, `vol_/cache/SimpleCacheableValue`,
-   `vol_/games/logic/Item.DamageItem`, `vol_/images/Gif`, `vol_/fsm/BytesMatrixImage` (сейчас `@UtilityClass`
-   без `final`), `vol8/State.Parallel`, тесты-классы (`vol6/RBTTest`, `heroes/game/*Test`).
-2. **Приватизировать публичные статические литералы** (п.4): `vol6/Heap.FORMAT`, `vol_/codes/RaptorConfiguration`
-   (`DEFAULT_C/DELTA/PARITIES`), `heroes/web/SecurityConfiguration` (`BEARER_PREFIX/HEADER_NAME`),
-   `vol8/Machine.MACHINE_*`, `vol8/otp/OTPMachine.PERSISTENCE_CODE`, `vol2/YaSymbol.START_DIGIT` (не используется —
-   удалить), `heroes/game/Constants` (см. п.5). Литералы в интерфейсах (`vol4/Hash`, `vol2/Value.DIGITS`)
-   пересмотреть отдельно; `Value.DIGITS` — ещё и публичный изменяемый массив, минимум сделать неизменяемым.
-3. **Заморозить поля, мутируемые без нужды** (не структуры данных — см. Р1): `vol2/Recursion3.step`,
-   `vol2/YaSymbol.Metrics.operations`, `vol_/prime/DiffieHellman.sharedSecret`, `vol_/fsm/GoL.matrix`.
-4. **Делегирующие вторичные конструкторы** (п.9): `vol_/prime/DiffieHellman` (3 ctor),
-   `vol2/YaSymbol.Metrics·Context`, `vol2/VirtualMachine.Binary`, `vol8/otp/OTPMachine`.
-5. **Публичные методы — объявить в интерфейсе или скрыть** (п.8): `vol3/BinaryIndexSearch.search(Integer,…)`,
-   `vol5/Graph.indexOf`, `vol5·vol6/ParserText.parse(String,…)`, `vol6/Tree.Standard.add(3 арг)`,
-   `vol_/codes/RaptorDecoder`, `vol_/codes/RobustSolitonDistribution.sampleDegree`, `vol_/fsm/GoL.tick`,
-   `vol_/features/CountRange.addCount`, `vol2/recurs/Factorial·Fibonacci`.
-6. **Убрать одиночные статические методы вне интерфейсов** (Р2): `vol1/Sortable.swap`, `vol3/MergeSort.merge`,
-   `vol3/NumberGenerator`, `vol2/Generator.exchange`, `vol_/prime/*` (`toHex/fromHex/…`),
-   `vol_/fsm/BytesMatrixFormatter`, `vol13/Substring.prefixes`. Переоформить как методы объектов.
+**8. Алгоритм Касаи (LCP array)**
+* **Описание:** Построение массива наибольших общих префиксов (LCP) из суффиксного массива за линейное время.
+* **Сложность реализации:** 5/10 (требует понимания инвертированного суффиксного массива).
+* **Ресурсы:** [GeeksforGeeks](https://www.geeksforgeeks.org), [Википедия](https://en.wikipedia.org/wiki/LCP_array)
 
----
+**9. Soundex / Metaphone**
+* **Описание:** Фонетический алгоритм для индексации слов по звучанию (поиск по фамилиям).
+* **Сложность реализации:** 2/10 (табличное преобразование букв в цифры).
+* **Ресурсы:** [Stanford NLP](https://nlp.stanford.edu), [Debian manpages](https://manpages.debian.org)
 
-### Фаза 4 — Крупные рефакторинги. Высокий риск → GitHub-issue (PDD)
+**10. Алгоритм Ахо-Корасик (Aho-Corasick)**
+* **Описание:** Автомат для одновременного поиска множества паттернов в тексте.
+* **Сложность реализации:** 6/10 (построение бора и суффиксных ссылок).
+* **Ресурсы:** [Algorithmica](https://github.com/algorithmica-org/ru), [neerc.ifmo.ru](https://neerc.ifmo.ru)
 
-RULE прямо требует «предлагай issue, а не исправляй молча» и «держи изменения минимальными». Поэтому каждый
-пункт — отдельная ветка по номеру issue, приводится постепенно, с TDD. Предлагаемый список issue:
+**11. Алгоритм Манакера (Manacher)**
+* **Описание:** Находит все палиндромы в строке за линейное время.
+* **Сложность реализации:** 5/10 (требует аккуратной индексации).
+* **Ресурсы:** [neerc.ifmo.ru](https://nerc.itmo.ru), [Algorithmica](https://github.com/algorithmica-org/algorithmica)
 
-1. **Устранить рефлексию и `instanceof`/касты в `vol8`** → полиморфизм/visitor: `Machine.of`
-   (`Class.forName/newInstance`), `machine/Manager`, `machine/MachineGenerator`, `machine/PlantUmlTextGenerator`,
-   `otp/OTPKey`, `process/Duplicate`. Аналогично: `vol_/games/AdventureGame·GameAuto` (россыпь `instanceof`).
-2. **Композиция вместо наследования реализации** (п.7): деревья `vol6` (AVL/BST/RBT над `AbstractBinaryTree`,
-   `Standard` над `AbstractTree`); `vol8/State`-иерархия и `AbstractVisitor`/`AbstractStringVisitor`;
-   `vol7/Levenshtein`; `vol_/games/logic` (`Hummer`←`DamageItem`, `Mob`/`Player`←`AbstractPerson`);
-   `vol2/RecursionFallback`.
-3. **Декомпозиция «god-методов»** (п.14, «Монотонный отступ»): `vol2/SimpleGen1.process` (~185 строк),
-   `vol2/Stage2.Step.step` (~180), `vol2/Stage.Generation.permutation`, `vol_/codes/RaptorDecoder.decode`,
-   `vol_/mazes/NodeFinder.findPath`, `vol_/mazes/NodeGenerator.generate`, `vol_/object/ObjectPool.getObject`,
-   `vol8/otp/OTP.next` (гигантский switch), `vol6/RBT.fixInsert·fixDelete`, `heroes/game/BattleMap.attack`,
-   `heroes/web/Telegram…processing`.
-4. **Разукрупнить классы > 4 полей** (п.2): `vol2/Stage2.Step` (13 полей), `vol2/Stage.Generation` (14),
-   `heroes/game/BattleMap`·`BattlePanel` (по 10), `vol_/object/ObjectPool.Generic` (9),
-   `vol_/games/AdventureGame` (8), `vol5/AntShortestPath.Ant` (8), `vol_/cache/SimpleCacheableValue` (7),
-   `vol_/codes/RaptorEncoder` (record 9), `vol6/Node.Default` (6).
-5. **Утилитарные классы → объекты** (п.5): `vol_/codes/BytesXor·Precode`, `vol_/prime/MersenneNumbers·
-   SieveOfEratosthenes`, `vol6/huffman/Tree`, `vol3/NumberGenerator`, `vol9/Combinatorics` (интерфейс из
-   одной статики), `vol8/process/Information·Questions`, `vol1/bigo/Main` (низкий приоритет).
-6. **Переименовать классы на «-er/-or» и `Pool`** (п.5): `vol8/Manager·Matcher·*Generator`, `vol2/Parser·
-   Lexer·Stepper·Generator`, `vol_/machine/post/Compiler`, `vol_/mazes/NodeFinder·NodeGenerator`,
-   `vol_/object/ObjectPool.Wrapper`, `vol_/codes/BytesXor`. (`*Controller/*Service` — исключены, §2.)
-7. **Устранить возврат/приём `null` → fail-fast/`Optional`** (п.6): `vol6/Node.search·Tree.find`,
-   `vol2/Stage.up`, `vol8/Machine.get`, `vol_/cache/SimpleCacheableValue·CacheableMap*`,
-   `vol_/mazes/NodeFinder`, `heroes/game/BattleMap.getStack*`.
-8. **Убрать Lombok-аксессоры из доменных классов** (Р3): `vol8/Machine·State·Duplicate`,
-   `vol_/games/AdventureGame·Person`, `vol_/prime/DiffieHellman`, `heroes/game/Unit·BattleMap`.
-9. **`heroes/web` — покрыть тестами** (Фаза 1.8): auth, JWT, presence, chat, telegram.
+### Графы
 
----
+**12. Алгоритм Борувки (Borůvka's algorithm)**
+* **Описание:** Поиск минимального остовного дерева (MST) через параллельное добавление минимальных ребер от компонент.
+* **Сложность реализации:** 5/10 (итеративное слияние компонент с DSU).
+* **Ресурсы:** [neerc.ifmo.ru](https://neerc.ifmo.ru), [Википедия](https://en.wikipedia.org/wiki/Bor%C5%AFvka%27s_algorithm)
 
-### Фаза 5 — Инфраструктура проверок. Замыкающая
+**13. Двунаправленный BFS (Bidirectional BFS)**
+* **Описание:** Два поиска в ширину одновременно от старта и цели.
+* **Сложность реализации:** 3/10 (модификация обычного BFS с двумя очередями).
+* **Ресурсы:** [Пример на GitHub](https://github.com/evenfurther/pathfinding), [Neo4j реализация](https://github.com/neo4j/neo4j)
 
-RULE: «доверяй проверяльщикам, а не подавляй их». После того как код приведён в норму, **закрепить
-достигнутое машинно**, чтобы регресс ловился автоматически:
+**14. Алгоритм Хирхольцера (Hierholzer)**
+* **Описание:** Нахождение Эйлерова цикла/пути в графе.
+* **Сложность реализации:** 4/10 (элегантный алгоритм со стеком).
+* **Ресурсы:** [docs.rs](https://docs.rs), [jgrapht](https://jgrapht.org)
 
-- Добавить в `checkstyle.xml` то, что checkstyle умеет: `FinalClass`, `VisibilityModifier`,
-  `HideUtilityClassConstructor`/запрет утилит, `MagicNumber` (по вкусу), правило на отсутствие пустых строк
-  в теле метода (`RegexpSinglelineJava`/`SeparatorWrap`), запрет trailing-period в сообщениях
-  (`RegexpSinglelineJava`).
-- Проверить, не подавлены ли где-то предупреждения (`@SuppressWarnings`, PMD-`suppress` в `vol6/huffman/Tree`,
-  `//noinspection` в `heroes/game/BattleGui`) — снять там, где нарушение теперь исправлено.
+**15. Алгоритм Катхилла-Макки (Cuthill–McKee)**
+* **Описание:** Перестановка вершин графа для уменьшения ширины ленты матрицы.
+* **Сложность реализации:** 5/10 (похож на BFS, но с сортировкой соседей по степени).
+* **Ресурсы:** [Boost C++](https://www.boost.org), [deal.II](https://git.ustc.edu.cn)
 
-## 5. Порядок исполнения (по RULE «Рабочий процесс»)
+**16. Алгоритм Тарьяна для LCA (офлайн)**
+* **Описание:** Находит наименьшего общего предка для всех запросов за один DFS с DSU.
+* **Сложность реализации:** 6/10 (требует хорошего понимания DSU и DFS).
+* **Ресурсы:** [neerc.ifmo.ru](https://neerc.ifmo.ru), [cp-algorithms](https://github.com/cp-algorithms)
 
-1. `git pull` перед началом; ветка **по номеру GitHub-issue** на каждую единицу работы.
-2. TDD: сначала тест (для Фазы 1 — приведение самих тестов), затем изменение; баг воспроизводится тестом.
-3. `mvn -B clean package` зелёный после каждой фазы (checkstyle + PMD + JUnit на JDK 17).
-4. `git push` — **только с вашего явного разрешения**; PR через `gh pr create`.
-5. Коммиты — осмысленным одним предложением, в стиле истории репозитория (русский, повелительное наклонение).
+**17. Алгоритм Джонсона (Johnson's algorithm)**
+* **Описание:** Поиск кратчайших путей между всеми парами для разреженных графов с отрицательными весами.
+* **Сложность реализации:** 7/10 (комбинация Беллмана-Форда и Дейкстры).
+* **Ресурсы:** [neerc.ifmo.ru](https://neerc.ifmo.ru), [jgrapht](https://jgrapht.org)
 
-Рекомендуемая последовательность веток: Фаза 1 (тесты) → Фаза 2 (стиль) → Фаза 3 (лёгкий EO) →
-issue-пачка Фазы 4 по одному → Фаза 5 (проверяльщики).
+**18. Алгоритм Диница (Dinic)**
+* **Описание:** Эффективный алгоритм поиска максимального потока с послойной сетью.
+* **Сложность реализации:** 6/10 (BFS для уровней и DFS для блокирующего потока).
+* **Ресурсы:** [GitHub (пример)](https://github.com/nadiaroschina/dinica_algorithm), [MIT](https://courses.csail.mit.edu)
 
-## 6. Оформление отложенного по Puzzle Driven Development
+**19. Поиск мостов и точек сочленения (Low-link)**
+* **Описание:** Алгоритм Тарьяна для поиска критических ребер и вершин в графе.
+* **Сложность реализации:** 5/10 (стандартный DFS с поддержанием `tin` и `low`).
+* **Ресурсы:** [GitHub (пример)](https://github.com/mtuann/competitive-programming-cpp), [docs.rs](https://docs.rs)
 
-Все существующие `//FIXME`/`//TODO` без ссылки на issue привести к формату PDD (что, почему не сейчас,
-ссылка на issue): `vol2/Stage2:279` («Грязный хак»), `vol8/Machine:122`, `vol8/State:283`,
-`heroes/web/UserRegistrationRequest:7`, `vol_/cache/NotifiableRedis:74`, `vol_/object/ObjectPoolTest`.
-Учебные пазлы (§2.1) в JavaDoc желательно сопроводить ссылкой на issue, не меняя сам код-загадку.
+### Вычислительная геометрия
 
-## 7. Оценка охвата
+**20. Монотонная цепочка Эндрю (Andrew's Convex Hull)**
+* **Описание:** Построение выпуклой оболочки сортировкой точек и двумя сканами.
+* **Сложность реализации:** 4/10 (проще алгоритма Грэхема).
+* **Ресурсы:** [Apache Commons](https://svn.apache.org), [Perl модуль](https://manpages.debian.org)
 
-| Модуль | Файлов | С нарушениями (без пазлов/демо) | Тяжесть |
-|---|---|---|---|
-| `vol1` | 21 | ~6 | лёгкая (в осн. `@Timeout`) |
-| `vol2` | 25 | ~18 | тяжёлая (`yasymb`) |
-| `vol3` | 15 | ~8 | средняя |
-| `vol4` | 10 | ~5 | лёгкая |
-| `vol5` | 11 | ~5 | лёгкая |
-| `vol6` | 30 | ~20 | тяжёлая (деревья, `RBTTest`) |
-| `vol7` | 10 | ~7 | средняя |
-| `vol8` | 30 | ~23 | тяжёлая (легаси) |
-| `vol9`–`vol13` | 10 | ~5 | лёгкая (в осн. `@Timeout`) |
-| `commons` | 1 | 1 | лёгкая (`create`) |
-| `heroes` | 49 | ~30 | тяжёлая (web без тестов) |
-| `vol_` | 69 | ~45 | тяжёлая (`games`, `object`, `codes`) |
+**21. Ближайшая пара точек (Divide and Conquer)**
+* **Описание:** Нахождение двух ближайших точек на плоскости за O(n log n).
+* **Сложность реализации:** 6/10 (сложная часть — проверка полосы около средней линии).
+* **Ресурсы:** [CMU](https://www.cs.cmu.edu), [Dev.to](https://dev.to)
 
-Сквозные проблемы всего проекта: **(1)** нет `@Timeout` (48/55 тестов); **(2)** мутабельность и Lombok-
-аксессоры; **(3)** утилитарные/статические классы и `-er/-or`-имена; **(4)** `instanceof`/касты/`null`;
-**(5)** длинные методы с глубокой вложенностью и инлайн-комментарии.
+**22. Алгоритм Брезенхема (Bresenham)**
+* **Описание:** Рисование отрезка на целочисленной сетке пикселей.
+* **Сложность реализации:** 3/10 (использует только целочисленные операции).
+* **Ресурсы:** [Википедия](https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm), [cs.helsinki.fi](https://www.cs.helsinki.fi)
+
+**23. Формула шнурка (Shoelace formula)**
+* **Описание:** Вычисление площади простого многоугольника по координатам вершин.
+* **Сложность реализации:** 1/10 (один цикл с суммированием).
+* **Ресурсы:** [Википедия](https://en.wikipedia.org/wiki/Shoelace_formula), [101computing.net](https://www.101computing.net)
+
+**24. Поворот Кэли (Rotating Calipers)**
+* **Описание:** Техника для решения задач на выпуклых многоугольниках (диаметр, ширина).
+* **Сложность реализации:** 6/10 (требует аккуратного движения двух указателей).
+* **Ресурсы:** Нет прямых ссылок в выдаче; рекомендуется искать "Rotating Calipers" на [cp-algorithms.com](https://cp-algorithms.com).
+
+### Теория чисел и крипто-матчасть
+
+**25. Тест Миллера–Рабина (Miller-Rabin)**
+* **Описание:** Вероятностный тест на простоту, основанный на возведении в степень по модулю.
+* **Сложность реализации:** 4/10 (ключевая часть — быстрое возведение в степень).
+* **Ресурсы:** [GitHub (C#)](https://github.com/TheAlgorithms/C-Sharp), [pkg.go.dev](https://pkg.go.dev)
+
+**26. Ро-алгоритм Полларда (Pollard's rho)**
+* **Описание:** Алгоритм факторизации больших чисел на основе парадокса дней рождений.
+* **Сложность реализации:** 5/10 (использует алгоритм Флойда для поиска цикла).
+* **Ресурсы:** [Википедия](https://en.wikipedia.org/wiki/Pollard%27s_rho_algorithm), [Rosetta Code](https://rosettacode.org)
+
+**27. Алгоритм Гарнера (Garner's algorithm)**
+* **Описание:** Эффективная реализация Китайской теоремы об остатках (CRT).
+* **Сложность реализации:** 5/10 (требует вычисления обратных элементов по модулю).
+* **Ресурсы:** [cp-algorithms.com](https://cp-algorithms.com), [GitHub](https://github.com)
+
+**28. Алгоритм Карацубы (Karatsuba)**
+* **Описание:** Быстрое умножение больших чисел методом "разделяй и властвуй".
+* **Сложность реализации:** 5/10 (рекурсивное разбиение и 3 умножения).
+* **Ресурсы:** [GitHub (пример)](https://github.com/platonin/karatsuba-strassen-algorithms), [CMU](https://www.cs.cmu.edu)
+
+**29. Алгоритм Штрассена (Strassen)**
+* **Описание:** Быстрое умножение матриц с 7 произведениями вместо 8.
+* **Сложность реализации:** 6/10 (рекурсивное разбиение на блоки и сложение матриц).
+* **Ресурсы:** [TheAlgorithms (C++)](https://github.com/code-monkeys/TheAlgorithms-Cpp), [docs.rs](https://docs.rs)
+
+### Динамическое программирование
+
+**30. Алгоритм Витерби (Viterbi)**
+* **Описание:** Поиск наиболее вероятной последовательности скрытых состояний в HMM.
+* **Сложность реализации:** 6/10 (требует понимания HMM и DP по времени).
+* **Ресурсы:** [Википедия](https://ru.wikipedia.org), [neerc.ifmo.ru](https://neerc.ifmo.ru)
+
+**31. Алгоритм Хиршберга (Hirschberg)**
+* **Описание:** LCS с использованием O(min(n,m)) памяти (разделяй и властвуй).
+* **Сложность реализации:** 7/10 (комбинация DP и рекурсии).
+* **Ресурсы:** Поиск "Hirschberg algorithm" на [Wikipedia](https://en.wikipedia.org) или [GeeksforGeeks](https://www.geeksforgeeks.org).
+
+**32. Венгерский алгоритм (Hungarian)**
+* **Описание:** Решение задачи о назначениях для матрицы n×n.
+* **Сложность реализации:** 7/10 (сложная логика поиска увеличивающих цепочек).
+* **Ресурсы:** [neerc.ifmo.ru](https://neerc.ifmo.ru), [Princeton](https://algs4.cs.princeton.edu)
+
+### Параллелизм и цифровая обработка
+
+**33. Итеративное БПФ Кули–Тьюки (Cooley-Tukey FFT)**
+* **Описание:** Быстрое преобразование Фурье с битовой инверсией и "бабочками".
+* **Сложность реализации:** 6/10 (требует понимания комплексных чисел и рекурсии).
+* **Ресурсы:** [GitHub (пример)](https://github.com/EminAliev/Cooley-Tukey-Algorithm), [Princeton](https://introcs.cs.princeton.edu)
+
+**34. Битонная сортировка (Bitonic Sort)**
+* **Описание:** Параллельный алгоритм сортировки на основе сортирующих сетей.
+* **Сложность реализации:** 5/10 (рекурсивное построение битонной последовательности).
+* **Ресурсы:** [Википедия](https://en.wikipedia.org/wiki/Bitonic_sorter), [cs.rutgers.edu](https://www.cs.rutgers.edu)
+
+### Сортировки (экзотические)
+
+**35. Сортировка Шелла (Shell sort)**
+* **Описание:** Улучшение сортировки вставками с использованием убывающих промежутков.
+* **Сложность реализации:** 2/10 (всего несколько вложенных циклов).
+* **Ресурсы:** [neerc.ifmo.ru](https://neerc.ifmo.ru), [EPAM Campus](https://campus.epam.kz)
+
+**36. Сортировка расческой (Comb sort)**
+* **Описание:** Улучшение пузырьковой сортировки с удалением "черепах".
+* **Сложность реализации:** 2/10 (модификация пузырька с переменным шагом).
+* **Ресурсы:** [neerc.ifmo.ru](https://neerc.ifmo.ru), [docs.rs](https://docs.rs)
+
+**37. Поразрядная сортировка (Radix sort)**
+* **Описание:** Сортировка целых чисел по разрядам без сравнений.
+* **Сложность реализации:** 4/10 (использует устойчивую сортировку по разрядам).
+* **Ресурсы:** [Wikipedia](https://en.wikipedia.org/wiki/Radix_sort), [GitHub (Python)](https://archive.softwareheritage.org)
+
+### Разное (ОС, ИИ, сжатие)
+
+**38. Алгоритм банкира (Banker's algorithm)**
+* **Описание:** Алгоритм предотвращения взаимоблокировок в ОС.
+* **Сложность реализации:** 4/10 (симуляция распределения ресурсов).
+* **Ресурсы:** [GitHub (C++)](https://github.com/101rror/OS_Algorithm), [TheAlgorithms (Java)](https://github.com/TheAlgorithms/Java)
+
+**39. Алгоритм ID3**
+* **Описание:** Построение дерева решений на основе энтропии Шеннона.
+* **Сложность реализации:** 5/10 (рекурсивное построение с вычислением энтропии).
+* **Ресурсы:** [neerc.ifmo.ru](https://nerc.itmo.ru), [GitHub](https://github.com/dutch-police/ID3)
+
+**40. Алгоритм Шеннона–Фано (Shannon-Fano)**
+* **Описание:** Построение префиксного кода на основе вероятностей символов.
+* **Сложность реализации:** 3/10 (рекурсивное деление символов на две группы).
+* **Ресурсы:** [Википедия](https://en.wikipedia.org/wiki/Shannon–Fano_coding), [GitHub](https://github.com)
