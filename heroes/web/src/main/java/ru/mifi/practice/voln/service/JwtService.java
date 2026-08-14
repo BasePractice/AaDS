@@ -4,7 +4,6 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -20,17 +19,20 @@ import java.util.function.Function;
 
 /** Сервис выпуска и проверки JWT-токенов. */
 @Service
-@RequiredArgsConstructor
 public class JwtService {
     private static final long TOKEN_LIFETIME_MS = 1000L * 60 * 60 * 24;
 
     /**
      * Ключ подписи берётся из окружения и никогда не попадает в репозиторий. Прежний ключ был
      * зашит в исходник, а значит скомпрометирован: подписать токен за любого пользователя мог
-     * каждый, у кого есть доступ к коду.
+     * каждый, у кого есть доступ к коду. Приходит он через конструктор, а не в поле: так сервис
+     * собирается и без Spring — например, в тесте.
      */
-    @Value("${app.jwt.secret}")
-    private String jwtSecret;
+    private final String jwtSecret;
+
+    public JwtService(@Value("${app.jwt.secret}") String jwtSecret) {
+        this.jwtSecret = jwtSecret;
+    }
 
     public String extractUserName(String token) {
         return extractClaim(token, Claims::getSubject);

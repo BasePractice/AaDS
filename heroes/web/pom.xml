@@ -106,6 +106,20 @@
             <artifactId>mapstruct</artifactId>
             <version>1.6.2</version>
         </dependency>
+        <!-- Без процессора реализация маппера не генерируется, и Mappers.getMapper падает в рантайме -->
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct-processor</artifactId>
+            <version>1.6.2</version>
+            <scope>provided</scope>
+        </dependency>
+        <!-- Связка нужна, чтобы маппер видел аксессоры, сгенерированные Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok-mapstruct-binding</artifactId>
+            <version>0.2.0</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-api</artifactId>
