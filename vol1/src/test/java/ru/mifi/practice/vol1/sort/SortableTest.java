@@ -13,27 +13,11 @@ import static org.hamcrest.Matchers.is;
 /**
  * Сверка всех стратегий сортировки со штатной на случайных входах.
  *
- * <p>Диапазон значений узкий, чтобы повторы попадались часто: на равных элементах ломается
- * выбор минимума, если сравнение перепутано со строгим.
+ * <p>Диапазон значений узкий, чтобы повторы попадались часто: именно на равных элементах ломается
+ * слияние, если сравнение перепутано со строгим.
  */
 @DisplayName("Стратегии сортировки")
 final class SortableTest {
-
-    @DisplayName("Пузырьковая сортировка упорядочивает как штатная")
-    @Test
-    @Timeout(10)
-    void bubbleAgreesWithTheStandardOne() {
-        assertThat("bubble sorting disagrees with the standard one",
-            disagreements(Sortable.Type.BUBBLE), is(0));
-    }
-
-    @DisplayName("Сортировка выбором упорядочивает как штатная")
-    @Test
-    @Timeout(10)
-    void selectionAgreesWithTheStandardOne() {
-        assertThat("selection sorting disagrees with the standard one",
-            disagreements(Sortable.Type.SELECTION), is(0));
-    }
 
     @DisplayName("Сортировка слиянием упорядочивает как штатная")
     @Test
@@ -64,7 +48,7 @@ final class SortableTest {
     @Timeout(10)
     void sortsAnEmptyArray() {
         Integer[] data = new Integer[0];
-        Sortable.Type.BUBBLE.<Integer>newSorting().sort(data);
+        Sortable.Type.MERGE.<Integer>newSorting().sort(data);
         assertThat("an empty array breaks the sorting", data.length, is(0));
     }
 

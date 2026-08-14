@@ -19,7 +19,7 @@ public abstract class MainSort {
         for (Algorithms algorithm : Algorithms.values()) {
             Counter counter = new Counter.Default();
             List<Integer> sorted = algorithm.sort(slice, counter, debug);
-            System.out.printf("%7s: %s%s%n", algorithm, counter, ordered(sorted) ? "" : " — НЕ ОТСОРТИРОВАНО");
+            System.out.printf("%9s: %s%s%n", algorithm, counter, ordered(sorted) ? "" : " — НЕ ОТСОРТИРОВАНО");
         }
     }
 
@@ -33,6 +33,9 @@ public abstract class MainSort {
     }
 
     enum Algorithms implements Sort<Integer> {
+        BUBBLE(new BubbleSort<>()),
+        INSERTION(new InsertionSort<>()),
+        SELECTION(new SelectionSort<>()),
         MERGE(new MergeSort<>()),
         QUICK_H(new QuickSort<>()),
         QUICK_R(new QuickSort<>(new QuickSort.Strategy.Randomly<Integer>())),

@@ -63,6 +63,30 @@ final class SortRandomTest {
             disagreements(new QuickSort<Integer>(new QuickSort.Strategy.Randomly<>())), is(0));
     }
 
+    @DisplayName("Пузырьковая сортировка упорядочивает как штатная")
+    @Test
+    @Timeout(10)
+    void bubbleSortAgreesWithTheStandardOne() {
+        assertThat("bubble sort disagrees with the standard sorting",
+            disagreements(new BubbleSort<>()), is(0));
+    }
+
+    @DisplayName("Сортировка вставками упорядочивает как штатная")
+    @Test
+    @Timeout(10)
+    void insertionSortAgreesWithTheStandardOne() {
+        assertThat("insertion sort disagrees with the standard sorting",
+            disagreements(new InsertionSort<>()), is(0));
+    }
+
+    @DisplayName("Сортировка выбором упорядочивает как штатная")
+    @Test
+    @Timeout(10)
+    void selectionSortAgreesWithTheStandardOne() {
+        assertThat("selection sort disagrees with the standard sorting",
+            disagreements(new SelectionSort<>()), is(0));
+    }
+
     @DisplayName("Поразрядная сортировка разводит отрицательные и положительные")
     @Test
     @Timeout(10)
