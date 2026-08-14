@@ -12,4 +12,11 @@
     <name>vol1</name>
     <description>Модуль №1. Линейные структуры данных</description>
 
+    <dependencies>
+        <dependency>
+            <groupId>ru.mifi.practice</groupId>
+            <artifactId>commons</artifactId>
+            <version>${revision}</version>
+        </dependency>
+    </dependencies>
 </project>
