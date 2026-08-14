@@ -28,6 +28,12 @@ public interface Algorithms {
         Map<Graph.Vertex<T, W>, W> distances(Graph<T, W> graph, Graph.Vertex<T, W> source);
     }
 
+    /** Кратчайшие расстояния сразу между всеми парами вершин, а не от одной исходной. */
+    @FunctionalInterface
+    interface AllShortestDistances<T, W extends Number & Comparable<W>> {
+        Map<Graph.Vertex<T, W>, Map<Graph.Vertex<T, W>, W>> distances(Graph<T, W> graph);
+    }
+
     @FunctionalInterface
     interface ShortestPath<T, W extends Number & Comparable<W>> {
         List<Graph.Vertex<T, W>> shortestPath(Graph<T, W> graph, Graph.Vertex<T, W> source, Graph.Vertex<T, W> target);
