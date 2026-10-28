@@ -22,6 +22,54 @@ public interface Substring {
     List<Integer> all(String text, String pattern, Counter counter);
 
     /**
+     * Наивный поиск: образец прикладывается к каждому сдвигу текста и сравнивается посимвольно.
+     * При несовпадении образец сдвигается на один символ, а указатель по тексту откатывается
+     * назад, и всё прочитанное на этом сдвиге выбрасывается. Отсюда O(n · m) в худшем случае:
+     * текст «ААААААААААА» и образец «АААБ» почти совпадают на каждом сдвиге.
+     */
+    final class Naive implements Substring {
+
+        @Override
+        public OptionalInt first(String text, String pattern, Counter counter) {
+            List<Integer> found = search(text, pattern, counter, true);
+            if (found.isEmpty()) {
+                return OptionalInt.empty();
+            }
+            return OptionalInt.of(found.get(0));
+        }
+
+        @Override
+        public List<Integer> all(String text, String pattern, Counter counter) {
+            return search(text, pattern, counter, false);
+        }
+
+        private List<Integer> search(String text, String pattern, Counter counter, boolean stopAtFirst) {
+            List<Integer> found = new ArrayList<>();
+            if (pattern.isEmpty()) {
+                return found;
+            }
+            for (int i = 0; i + pattern.length() <= text.length(); i++) {
+                int j = 0;
+                while (j < pattern.length() && matches(text.charAt(i + j), pattern.charAt(j), counter)) {
+                    ++j;
+                }
+                if (j == pattern.length()) {
+                    found.add(i);
+                    if (stopAtFirst) {
+                        return found;
+                    }
+                }
+            }
+            return found;
+        }
+
+        private boolean matches(char left, char right, Counter counter) {
+            counter.increment();
+            return left == right;
+        }
+    }
+
+    /**
      * Алгоритм Кнута — Морриса — Пратта. Префикс-функция для каждой позиции образца хранит длину
      * наибольшего собственного префикса, который одновременно является суффиксом. При несовпадении
      * она позволяет сдвинуться сразу на нужную величину, не возвращаясь по тексту, поэтому весь

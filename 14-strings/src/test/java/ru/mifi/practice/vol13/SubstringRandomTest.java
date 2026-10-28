@@ -22,6 +22,14 @@ import static org.hamcrest.Matchers.is;
 @DisplayName("Поиск подстроки на случайных входах")
 final class SubstringRandomTest {
 
+    @DisplayName("Наивный поиск находит то же первое вхождение, что и indexOf")
+    @Test
+    @Timeout(10)
+    void agreesWithIndexOfOnTheFirstOccurrenceWhenNaive() {
+        assertThat("the naive scan disagrees with indexOf on the first occurrence",
+            disagreements(new Substring.Naive()), is(List.of()));
+    }
+
     @DisplayName("Кнут — Моррис — Пратт находит то же первое вхождение, что и indexOf")
     @Test
     @Timeout(10)
