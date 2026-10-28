@@ -72,7 +72,7 @@ Spring Data и в `AuthenticationManager`, а поднимать ради это
 
 1. ~~**Квадратичные сортировки в разделе** (`05-sorting-search`)~~ — сделано: `BubbleSort`, `InsertionSort`,
    `SelectionSort` реализуют `Sort` и считают сравнения, `MainSort` печатает их рядом с
-   O(n log n) на одних данных. Из `01-basics/sort/Sortable` дубликаты убраны.
+   O(n log n) на одних данных. Обёртки `01-basics/sort` и `01-basics/recurse` удалены как дубли.
 2. ~~**Стенд сложности** (`01-basics/bigo`)~~ — сделано: `Workload` даёт нагрузку каждого класса
    сложности, `Measurement` печатает таблицу «n → шагов», рост классов закреплён тестами.
 3. ~~**Детерминизация и минимизация автомата** (`15-automata`)~~ — сделано: пакет `15-automata/automaton`,
