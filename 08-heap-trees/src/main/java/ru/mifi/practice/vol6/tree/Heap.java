@@ -1,9 +1,14 @@
 package ru.mifi.practice.vol6.tree;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.NoSuchElementException;
 
-/** Двоичная куча, хранящая минимальный элемент в корне. */
+/**
+ * Двоичная куча, хранящая минимальный элемент в корне. «Минимальный» — по порядку, который
+ * задаёт Comparator: с обратным порядком та же куча без единой правки алгоритма становится
+ * max-heap. Без Comparator используется естественный порядок элементов.
+ */
 public interface Heap<T extends Comparable<T>> {
 
     T deleteRoot();
@@ -23,11 +28,17 @@ public interface Heap<T extends Comparable<T>> {
         private static final int TOP = 0;
         private final Object[] heap;
         private final int capacity;
+        private final Comparator<? super T> order;
         private int size;
 
         public Minimum(int capacity) {
+            this(capacity, Comparator.naturalOrder());
+        }
+
+        public Minimum(int capacity, Comparator<? super T> order) {
             this.heap = new Object[capacity];
             this.capacity = capacity;
+            this.order = order;
         }
 
         private static int positionParent(int position) {
@@ -149,7 +160,7 @@ public interface Heap<T extends Comparable<T>> {
             } else if (right == null) {
                 return -1;
             }
-            return ((T) left).compareTo((T) right);
+            return order.compare((T) left, (T) right);
         }
 
         @Override
