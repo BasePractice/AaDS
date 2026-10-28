@@ -17,7 +17,8 @@ public interface Workload {
         LOGARITHMIC(new Logarithmic()),
         LINEAR(new Linear()),
         LINEARITHMIC(new Linearithmic()),
-        QUADRATIC(new Quadratic());
+        QUADRATIC(new Quadratic()),
+        CUBIC(new Cubic());
 
         private final Workload workload;
 
@@ -95,6 +96,19 @@ public interface Workload {
             for (int i = 0; i < size; i++) {
                 for (int j = 0; j < size; j++) {
                     counter.increment();
+                }
+            }
+        }
+    }
+
+    final class Cubic implements Workload {
+        @Override
+        public void run(int size, Counter counter) {
+            for (int i = 0; i < size; i++) {
+                for (int j = 0; j < size; j++) {
+                    for (int k = 0; k < size; k++) {
+                        counter.increment();
+                    }
                 }
             }
         }
