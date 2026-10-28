@@ -24,7 +24,7 @@ mvn -B clean package
 | 1 | Асимптотика и сложность | `01-basics/bigo`, `90-sandbox/prime` (решето) |
 | 2 | Линейные структуры данных | `01-basics`, `90-sandbox/buffer` (кольцевой буфер) |
 | 3 | Рекурсия | `03-recursion`, `90-sandbox/trampoline` (рекурсия без роста стека) |
-| 4 | Комбинаторика | [04-combinatorics](04-combinatorics), `90-sandbox/jt` (Джонсон — Троттер) |
+| 4 | Комбинаторика | [04-combinatorics](04-combinatorics) с ребусом `yasymb`, `90-sandbox/jt` (Джонсон — Троттер) |
 | 5 | Сортировка | `05-sorting-search` |
 | 6 | Поиск | `05-sorting-search` |
 | 7 | Хеширование | `06-hashing` |
@@ -37,8 +37,8 @@ mvn -B clean package
 | 14 | Динамическое программирование | `13-dynamic-programming` |
 | 15 | Строки: КМП, Рабин–Карп | [14-strings](14-strings) |
 | 16 | Конечные автоматы | `15-automata` |
-| 17 | Лабиринт | `90-sandbox/mazes` |
-| 18 | Клеточный автомат | `90-sandbox/fsm` |
+| 17 | Лабиринт | [16-mazes-life](16-mazes-life), пакет `mazes` |
+| 18 | Клеточный автомат | [16-mazes-life](16-mazes-life), пакет `life` |
 
 Модуль `90-sandbox` — песочница вне программы курса: кэши, Raptor-коды, машина Поста, простые числа,
 пул объектов, slab-распределитель памяти (`voln.slab`), текстовый квест. В нём же пакет `ru.mifi.practice.boring` — сорок алгоритмов,
@@ -76,6 +76,7 @@ mvn -B clean package
 | `13-dynamic-programming` | `ru.mifi.practice.vol7` |
 | `14-strings` | `ru.mifi.practice.vol13` |
 | `15-automata` | `ru.mifi.practice.vol8` |
+| `16-mazes-life` | `ru.mifi.practice.vol14` |
 | `90-sandbox` | `ru.mifi.practice.voln`, `ru.mifi.practice.boring` |
 | `91-heroes/game` | `ru.mifi.practice.voln.heroes` |
 | `91-heroes/web` | `ru.mifi.practice.voln` |

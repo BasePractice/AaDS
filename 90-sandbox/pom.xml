@@ -28,11 +28,6 @@
             <version>1.16.0</version>
         </dependency>
         <dependency>
-            <groupId>com.squareup</groupId>
-            <artifactId>gifencoder</artifactId>
-            <version>0.10.1</version>
-        </dependency>
-        <dependency>
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy</artifactId>
             <version>1.17.8</version>

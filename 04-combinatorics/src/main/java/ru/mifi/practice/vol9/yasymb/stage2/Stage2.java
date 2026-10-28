@@ -1,0 +1,509 @@
+package ru.mifi.practice.vol9.yasymb.stage2;
+
+import java.util.ArrayDeque;
+import java.util.Deque;
+
+/** Решение ребуса сложения пошаговым перебором разрядов с откатом. */
+public interface Stage2 {
+
+    static boolean start(String x, String y, String z, boolean debug) {
+        Solution solution = new Solution(x, y, z);
+        solution.debug = debug;
+        System.out.println(solution);
+        boolean executed = solution.execute();
+        System.out.println("RES: " + (executed ? "SUCCESS" : "FAILURE"));
+        System.out.println("GEN: " + solution.generation);
+        if (executed) {
+            System.out.println(solution);
+        }
+        System.out.println("==================");
+        return executed;
+    }
+
+    static void simple(boolean debug) {
+        start("four", "seven", "eight", debug);
+    }
+
+    static void generated(boolean debug) {
+        Generator generator = new Generator(4, 4);
+        for (int i = 0; i < 1; i++) {
+            Generator.Result generated = generator.generate();
+            Generator.Equation letters = generated.letters();
+            boolean ok = start(letters.x(), letters.y(), letters.z(), debug);
+            if (!ok) {
+                System.out.println(generated.math().toString());
+            }
+        }
+    }
+
+    static void main(String[] args) {
+        boolean debug = false;
+        simple(debug);
+    }
+
+    final class Solution {
+        final Step[] steps;
+        int step;
+        int generation;
+        boolean debug;
+
+        public Solution(String x, String y, String z) {
+            Deque<Slice> pipe = new ArrayDeque<>();
+            Equation equation = new Equation(x, y, z);
+            int index = 1;
+            while (true) {
+                Slice slice = equation.of(index);
+                if (slice.isEmpty()) {
+                    break;
+                }
+                pipe.push(slice);
+                ++index;
+            }
+            steps = new Step[pipe.size()];
+            Step parent = null;
+            index = 0;
+            while (!pipe.isEmpty()) {
+                Slice slice = pipe.pollLast();
+                Step next = new Step(this, parent, slice);
+                if (parent != null) {
+                    parent.hasNext = true;
+                }
+                steps[index] = next;
+                ++index;
+                parent = next;
+            }
+        }
+
+        boolean execute() {
+            generation = 0;
+            while (step >= 0 && step < steps.length) {
+                Step current = steps[step];
+                if (current.up) {
+                    --step;
+                    current.up = false;
+                    continue;
+                }
+                boolean result = current.refresh().step();
+                if (result) {
+                    ++step;
+                } else {
+                    current.reset();
+                    --step;
+                }
+                ++generation;
+                if (generation > 10000) {
+                    return false;
+                }
+                if (debug) {
+                    System.out.println("GEN: " + generation);
+                    System.out.println(this);
+                }
+            }
+            return steps[steps.length - 1].isComplete() && hardValidate();
+        }
+
+        private boolean hardValidate() {
+            return Integer.parseInt(x().trim()) + Integer.parseInt(y().trim()) == Integer.parseInt(z().trim());
+        }
+
+        public boolean isComplete() {
+            for (Step step : steps) {
+                if (step.x.value == -1 || step.y.value == -1 || step.z.value == -1) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        @Override
+        public String toString() {
+            return x() + "\n" + y() + "\n" + z();
+        }
+
+        private String x() {
+            StringBuilder b = new StringBuilder();
+            for (int i = steps.length - 1; i >= 0; i--) {
+                b.append(steps[i].trX());
+            }
+            return b.toString();
+        }
+
+        private String y() {
+            StringBuilder b = new StringBuilder();
+            for (int i = steps.length - 1; i >= 0; i--) {
+                b.append(steps[i].trY());
+            }
+            return b.toString();
+        }
+
+        private String z() {
+            StringBuilder b = new StringBuilder();
+            for (int i = steps.length - 1; i >= 0; i--) {
+                b.append(steps[i].trZ());
+            }
+            return b.toString();
+        }
+    }
+
+    final class Step {
+        final Solution solution;
+        final Step parent;
+        final Slice slice;
+        final Digit x = new Digit();
+        final Digit y = new Digit();
+        final Digit z = new Digit();
+        boolean hasNext;
+        boolean carrier;
+        boolean needCarrier;
+        boolean up;
+
+        public Step(Solution solution, Step parent, Slice slice) {
+            this.solution = solution;
+            this.parent = parent;
+            this.slice = slice;
+            refresh();
+        }
+
+        private static char tr(char c, int n) {
+            if (c == 0) {
+                return ' ';
+            }
+            if (n == -1) {
+                return c;
+            }
+            return (char) (n + '0');
+        }
+
+        void reset() {
+            carrier = false;
+            needCarrier = false;
+            x.clear();
+            y.clear();
+            z.clear();
+        }
+
+        Step refresh() {
+            carrier = false;
+            needCarrier = false;
+            if (parent != null) {
+                int t = parent.numberOf(slice.x);
+                if (t >= 0) {
+                    x.set(t);
+                }
+                t = parent.numberOf(slice.y);
+                if (t >= 0) {
+                    y.set(t);
+                }
+                t = parent.numberOf(slice.z);
+                if (t >= 0) {
+                    z.set(t);
+                } else {
+                    z.value = -1;
+                }
+                carrier = parent.needCarrier;
+            }
+            return this;
+        }
+
+        private int numberOf(char ch) {
+            if (ch == 0) {
+                return -1;
+            }
+            if (slice.x == ch) {
+                return x.value;
+            } else if (slice.y == ch) {
+                return y.value;
+            } else if (slice.z == ch) {
+                return z.value;
+            }
+            if (parent != null) {
+                return parent.numberOf(ch);
+            }
+            return -1;
+        }
+
+        private char trX() {
+            return tr(slice.x, x.value);
+        }
+
+        private char trY() {
+            return tr(slice.y, y.value);
+        }
+
+        private char trZ() {
+            return tr(slice.z, z.value);
+        }
+
+        boolean isComplete() {
+            return (slice.x == 0 || x.value != -1)
+                && (slice.y == 0 || y.value != -1) && z.value != -1;
+        }
+
+        @Override
+        public String toString() {
+            return String.valueOf(trX()) + trY() + trZ();
+        }
+
+        @SuppressWarnings("SuspiciousNameCombination")
+        public boolean step() {
+            if (x.has && y.has && z.has) {
+                int sum = sum(x.value, y.value);
+                if (sum >= 10) {
+                    needCarrier = true;
+                }
+                if (needCarrier && !hasNext) {
+                    return false;
+                }
+                return sum % 10 == z.value;
+            }
+            boolean xChanged = false;
+            boolean nextGeneration = true;
+            while (true) {
+                //FIXME: Грязный хак
+                //FIXME: убрать досрочный выход по глобальному solution.isComplete(); отложено, так как меняет поток перебора
+                if (solution.isComplete()) {
+                    return true;
+                }
+                if (nextGeneration && !x.has && slice.x != 0 && (y.value == -1 || y.has)) {
+                    xChanged = true;
+                    nextGeneration = false;
+                    x.value = nextNumber(!hasNext && x.value == -1 ? 0 : x.value);
+                    if (x.value == -1) {
+                        break;
+                    }
+                }
+                if (xChanged) {
+                    xChanged = false;
+                    if (!y.has) {
+                        if (slice.y != 0 && slice.y == slice.x) {
+                            y.value = x.value;
+                        } else {
+                            y.value = nextNumber(hasNext ? y.value : 1);
+                        }
+                    }
+                } else {
+                    if (!y.has) {
+                        if (slice.y != 0 && slice.y == slice.x) {
+                            if (y.value == x.value) {
+                                y.value = -1;
+                                nextGeneration = true;
+                                needCarrier = false;
+                                continue;
+                            }
+                            y.value = x.value;
+                        } else if (slice.y == 0) {
+                            y.value = -1;
+                        } else {
+                            y.value = nextNumber(!hasNext && y.value == -1 ? 0 : y.value);
+                        }
+                    }
+                }
+                if (!z.has) {
+                    z.value = -1;
+                }
+                if (y.value == -1) {
+                    if (slice.x == 0 && slice.y != 0) {
+                        return false;
+                    } else if (x.has) {
+                        return false;
+                    } else if (slice.x == 0) {
+                        if (carrier) {
+                            z.value = 1;
+                            return true;
+                        }
+                        if (parent != null) {
+                            parent.up = true;
+                        }
+                        return false;
+                    }
+                    nextGeneration = true;
+                    continue;
+                }
+                int nX = x.value;
+                if (slice.x == 0) {
+                    nX = 0;
+                }
+                int nY = y.value;
+                if (slice.y == 0) {
+                    nY = 0;
+                }
+                int sum = sum(nX, nY);
+                if (!z.has) {
+                    if (slice.z == slice.x) {
+                        if (sum != x.value) {
+                            z.value = -1;
+                            y.value = -1;
+                            needCarrier = false;
+                            nextGeneration = true;
+                            continue;
+                        }
+                        z.value = x.value;
+                    } else if (slice.z == slice.y) {
+                        if (sum != y.value) {
+                            z.value = -1;
+                            needCarrier = false;
+                            if (!x.has) {
+                                y.value = -1;
+                                nextGeneration = true;
+                            }
+                            continue;
+                        }
+                        z.value = y.value;
+                    } else if (sum >= 10) {
+                        z.value = sum % 10;
+                        needCarrier = true;
+                    } else {
+                        z.value = sum;
+                    }
+                    if (z.value == x.value && slice.z != slice.x && !carrier) {
+                        if (slice.y == slice.x) {
+                            y.value = -1;
+                            nextGeneration = true;
+                        } else if (y.has) {
+                            nextGeneration = true;
+                        }
+                        continue;
+                    } else if (z.value == y.value && slice.z != slice.y) {
+                        if (y.has) {
+                            if (x.has) {
+                                return false;
+                            }
+                            nextGeneration = true;
+                        }
+                        continue;
+                    } else if (z.value == x.value && z.value == y.value) {
+                        y.value = -1;
+                        nextGeneration = true;
+                        continue;
+                    } else if (parent != null && parent.hasNumber(z.value)) {
+                        if (slice.x == slice.y || y.has) {
+                            y.value = -1;
+                            nextGeneration = true;
+                        }
+                        z.value = -1;
+                        needCarrier = false;
+                        continue;
+                    }
+                } else {
+                    needCarrier = sum >= 10;
+                }
+                if (sum % 10 == z.value) {
+                    if (slice.x == 0) {
+                        x.value = -1;
+                    }
+                    if (slice.y == 0) {
+                        y.value = -1;
+                    }
+                    if (needCarrier) {
+                        if (hasNext) {
+                            return true;
+                        } else if (z.has && slice.x == slice.y) {
+                            if (!y.has) {
+                                y.value = -1;
+                            }
+                            nextGeneration = true;
+                        } else if (x.has && y.has) {
+                            return false;
+                        }
+                        z.value = -1;
+                    } else {
+                        return true;
+                    }
+                } else if (slice.x == slice.y) {
+                    y.value = -1;
+                    nextGeneration = true;
+                } else if (y.has) {
+                    nextGeneration = true;
+                }
+                needCarrier = false;
+            }
+            return false;
+        }
+
+        private boolean hasNumber(int n) {
+            if (z.value == n || x.value == n || y.value == n) {
+                return true;
+            } else if (parent != null) {
+                return parent.hasNumber(n);
+            }
+            return false;
+        }
+
+        private int sum(int x, int y) {
+            return x + y + (carrier ? 1 : 0);
+        }
+
+        @SuppressWarnings("PMD.AvoidBranchingStatementAsLastInLoop")
+        private int nextNumber(int n) {
+            int search = n + 1;
+            while (search < 10) {
+                if (search == x.value || search == y.value || search == z.value) {
+                    ++search;
+                    continue;
+                } else {
+                    if (parent != null) {
+                        int last = search;
+                        search = parent.nextNumber(last - 1);
+                        if (last == search) {
+                            return search;
+                        } else if (search == -1) {
+                            return -1;
+                        }
+                        continue;
+                    }
+                }
+                return search;
+            }
+            return -1;
+        }
+
+        static final class Digit {
+            int value = -1;
+            boolean has;
+
+            void set(int number) {
+                value = number;
+                has = true;
+            }
+
+            void clear() {
+                value = -1;
+                has = false;
+            }
+        }
+    }
+
+    record Slice(char x, char y, char z) {
+        boolean isEmpty() {
+            return x() == 0 && y() == 0 && z() == 0;
+        }
+    }
+
+    final class Equation {
+        private final char[] x;
+        private final char[] y;
+        private final char[] z;
+
+        public Equation(String x, String y, String z) {
+            this.x = x.toCharArray();
+            this.y = y.toCharArray();
+            this.z = z.toCharArray();
+        }
+
+        public Slice of(int index) {
+            char x = 0;
+            if (this.x.length > index - 1) {
+                x = this.x[this.x.length - index];
+            }
+            char y = 0;
+            if (this.y.length > index - 1) {
+                y = this.y[this.y.length - index];
+            }
+            char z = 0;
+            if (this.z.length > index - 1) {
+                z = this.z[this.z.length - index];
+            }
+            return new Slice(x, y, z);
+        }
+    }
+}

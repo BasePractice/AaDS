@@ -44,6 +44,7 @@
         <module>13-dynamic-programming</module>
         <module>14-strings</module>
         <module>15-automata</module>
+        <module>16-mazes-life</module>
         <module>90-sandbox</module>
         <module>91-heroes</module>
     </modules>
