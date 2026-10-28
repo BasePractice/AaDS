@@ -30,22 +30,22 @@
     </scm>
 
     <modules>
-        <module>commons</module>
-        <module>vol1</module>
-        <module>vol2</module>
-        <module>vol3</module>
-        <module>vol4</module>
-        <module>vol5</module>
-        <module>vol6</module>
-        <module>vol7</module>
-        <module>vol8</module>
-        <module>vol9</module>
-        <module>vol10</module>
-        <module>vol11</module>
-        <module>vol12</module>
-        <module>vol13</module>
-        <module>vol_</module>
-        <module>heroes</module>
+        <module>00-commons</module>
+        <module>01-basics</module>
+        <module>03-recursion</module>
+        <module>04-combinatorics</module>
+        <module>05-sorting-search</module>
+        <module>06-hashing</module>
+        <module>07-graphs</module>
+        <module>08-heap-trees</module>
+        <module>09-disjoint-set</module>
+        <module>09-spanning-tree</module>
+        <module>10-topological-sort</module>
+        <module>13-dynamic-programming</module>
+        <module>14-strings</module>
+        <module>15-automata</module>
+        <module>90-sandbox</module>
+        <module>91-heroes</module>
     </modules>
 
     <dependencyManagement>
@@ -111,7 +111,7 @@
                                     <version>[17,18)</version>
                                     <message>
                                         Соберите на JDK 17: начиная с JDK 23 аннотационная обработка выключена
-                                        по умолчанию, Lombok молча не отрабатывает и vol8 не компилируется
+                                        по умолчанию, Lombok молча не отрабатывает и 15-automata не компилируется
                                     </message>
                                 </requireJavaVersion>
                             </rules>

@@ -5,7 +5,7 @@ target
 logs
 users.json
 sudoku.log
-vol8/*.puml
+15-automata/*.puml
 duplicate.csv
 .output
 questions.adoc
