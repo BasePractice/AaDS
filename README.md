@@ -3,7 +3,7 @@
 # Алгоритмы и структуры данных
 
 Практика к курсу «Алгоритмы и структуры данных».
-[Презентация](https://docs.google.com/presentation/d/1wnUpkpPjfUgslAAFgakvIRrrGXmNPuwz/edit?usp=sharing).
+[Презентация](https://docs.google.com/presentation/d/1TlAXM6sfDqQ1q7lRAd7AakCaWQfM4avy/edit?usp=sharing).
 
 ## Сборка
 
@@ -88,6 +88,6 @@ mvn -B clean package
 ошибку», «Почему реализация не оптимальна?»). Рядом с каждой лежит `@Disabled`-тест, описывающий
 ожидаемое поведение: снимите `@Disabled`, добейтесь зелёного теста.
 
-Задачи практики со слайдов 259, 437, 476, 515, 540 и 584 лежат заготовками: класс с пометкой
+Задачи практики со слайдов 264, 445, 484, 525, 569 и 603 лежат заготовками: класс с пометкой
 «Место для решения студента» бросает `UnsupportedOperationException`, а рядом — `@Disabled`-тесты.
 Список по занятиям — в [docs/LESSONS.md](docs/LESSONS.md).
