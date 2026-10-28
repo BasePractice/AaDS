@@ -1,14 +1,12 @@
-== Представление рекурсии
+## Представление рекурсии
 
-[source]
-----
+```text
 pastor@MacBook-Pro-Andrej-2 vol2 % javap -verbose Recursion.class
-----
+```
 
 Результат работы команды
 
-[source]
-----
+```text
 Classfile /Users/pastor/github/AaDS/vol2/target/classes/ru/mifi/practice/vol2/Recursion.class
   Last modified 8 нояб. 2024г.; size 700 bytes
   SHA-256 checksum b27c987284843d68d432006288677725556270a66bf44fd2b1522b88ed227229
@@ -123,8 +121,8 @@ Constant pool:
       StackMapTable: number_of_entries = 1
         frame_type = 13 /* same */
 }
-----
+```
 
-== BNF
+## BNF
 
-image::{docdir}/parser.png[]
+![BNF](parser.png)
