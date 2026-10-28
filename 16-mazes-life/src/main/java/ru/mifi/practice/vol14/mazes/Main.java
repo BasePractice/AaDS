@@ -65,10 +65,10 @@ public abstract class Main {
 
     private static FinderConfig[] finders() {
         return new FinderConfig[]{
-            new FinderConfig("bfs", Color.BLUE, FinderConfig.FinderFactory.of(NodeFinder::new)),
-            new FinderConfig("astar", Color.GREEN, FinderConfig.FinderFactory.of(AStarFinder::new)),
-            new FinderConfig("dfs", Color.ORANGE, FinderConfig.FinderFactory.of(DfsFinder::new)),
-            new FinderConfig("bidir", Color.MAGENTA, FinderConfig.FinderFactory.of(BidirectionalBfsFinder::new)),
+            new FinderConfig("bfs", Color.BLUE, FinderFactory.of(NodeFinder::new)),
+            new FinderConfig("astar", Color.GREEN, FinderFactory.of(AStarFinder::new)),
+            new FinderConfig("dfs", Color.ORANGE, FinderFactory.of(DfsFinder::new)),
+            new FinderConfig("bidir", Color.MAGENTA, FinderFactory.of(BidirectionalBfsFinder::new)),
         };
     }
 
