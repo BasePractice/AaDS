@@ -5,8 +5,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Random;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -113,5 +115,43 @@ final class HeapTest {
         heap.add(1).add(2).add(3);
         heap.refresh();
         assertThat("refresh breaks the heap property", heap.top(), is(1));
+    }
+
+    @DisplayName("С обратным порядком в корне лежит максимум")
+    @Test
+    @Timeout(1)
+    void keepsTheMaximumAtTheTopInReverseOrder() {
+        Heap<Integer> heap = new Heap.Minimum<Integer>(10, Comparator.reverseOrder());
+        heap.add(5).add(3).add(9).add(1);
+        assertThat("a reversed comparator dont turn the heap into a max-heap", heap.top(), is(9));
+    }
+
+    @DisplayName("С обратным порядком отдаёт элементы по убыванию")
+    @Test
+    @Timeout(1)
+    void drainsInDescendingOrderInReverseOrder() {
+        Random random = new Random();
+        Heap<Integer> heap = new Heap.Minimum<Integer>(1000, Comparator.reverseOrder());
+        List<Integer> expected = new ArrayList<>();
+        for (int i = 0; i < 1000; i++) {
+            int value = random.nextInt(10_000);
+            heap.add(value);
+            expected.add(value);
+        }
+        expected.sort(Comparator.reverseOrder());
+        List<Integer> drained = new ArrayList<>();
+        while (heap.size() > 0) {
+            drained.add(heap.deleteRoot());
+        }
+        assertThat("a max-heap dont drain in descending order", drained, is(expected));
+    }
+
+    @DisplayName("Порядок задаётся по полю элемента")
+    @Test
+    @Timeout(1)
+    void ordersByAKeyFromTheComparator() {
+        Heap<String> heap = new Heap.Minimum<>(10, Comparator.comparingInt(String::length));
+        heap.add("ccc").add("a").add("bb");
+        assertThat("a comparator by length dont put the shortest string on top", heap.top(), is("a"));
     }
 }

@@ -17,7 +17,7 @@ import static org.hamcrest.Matchers.is;
 final class SubstringTest {
 
     static Stream<Substring> implementations() {
-        return Stream.of(new Substring.Knuth(), new Substring.RabinKarp());
+        return Stream.of(new Substring.Naive(), new Substring.Knuth(), new Substring.RabinKarp());
     }
 
     @DisplayName("Находит образец в начале")
@@ -115,5 +115,16 @@ final class SubstringTest {
         Counter counter = Counter.create();
         new Substring.Knuth().first("а".repeat(1000) + "б", "а".repeat(10) + "б", counter);
         assertThat("the search degrades to a quadratic scan", counter.count() < 4000, is(true));
+    }
+
+    @DisplayName("Наивный поиск откатывается по тексту и сравнивает больше КМП")
+    @Test
+    @Timeout(1)
+    void comparesMoreThanKnuthBecauseItGoesBack() {
+        Counter naive = Counter.create();
+        Counter knuth = Counter.create();
+        new Substring.Naive().first("А".repeat(11), "АААБ", naive);
+        new Substring.Knuth().first("А".repeat(11), "АААБ", knuth);
+        assertThat("the naive scan dont pay for going back over the text", naive.count() > knuth.count(), is(true));
     }
 }
