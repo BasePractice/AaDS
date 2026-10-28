@@ -21,6 +21,18 @@ public interface TopologicalSort {
     Optional<List<Integer>> sort(Graph graph, Counter counter);
 
     /**
+     * Поиск самого цикла, который делает порядок невозможным, а не только факта, что он есть.
+     */
+    interface Cycle {
+
+        /**
+         * Вершины цикла в порядке обхода: из каждой есть ребро в следующую, из последней — в первую.
+         * Пустой список, если циклов нет.
+         */
+        List<Integer> cycle(Graph graph, Counter counter);
+    }
+
+    /**
      * Ориентированный граф списками смежности.
      */
     final class Graph {
@@ -93,8 +105,12 @@ public interface TopologicalSort {
      * Обход в глубину с трёхцветной покраской. Вершина добавляется в результат при выходе из неё,
      * то есть после всех потомков, поэтому итог нужно развернуть. Встреча серой вершины означает
      * обратное ребро, то есть цикл. Сложность O(V + E).
+     *
+     * <p>Чтобы показать сам цикл, обход запоминает, из какой вершины пришёл в каждую. Обратное
+     * ребро из vertex в серую target замыкает цикл: от vertex по этим ссылкам поднимаемся до target,
+     * и пройденные вершины в обратном порядке и есть цикл.
      */
-    final class DepthFirst implements TopologicalSort {
+    final class DepthFirst implements TopologicalSort, Cycle {
         private static final int WHITE = 0;
         private static final int GRAY = 1;
         private static final int BLACK = 2;
@@ -130,6 +146,49 @@ public interface TopologicalSort {
             colors[vertex] = BLACK;
             order.add(vertex);
             return true;
+        }
+
+        @Override
+        public List<Integer> cycle(Graph graph, Counter counter) {
+            int[] colors = new int[graph.size()];
+            int[] parents = new int[graph.size()];
+            for (int vertex = 0; vertex < graph.size(); vertex++) {
+                if (colors[vertex] == WHITE) {
+                    List<Integer> cycle = trace(graph, vertex, colors, parents, counter);
+                    if (!cycle.isEmpty()) {
+                        return cycle;
+                    }
+                }
+            }
+            return List.of();
+        }
+
+        private List<Integer> trace(Graph graph, int vertex, int[] colors, int[] parents, Counter counter) {
+            colors[vertex] = GRAY;
+            for (int target : graph.targets(vertex)) {
+                counter.increment();
+                if (colors[target] == GRAY) {
+                    return unwind(target, vertex, parents);
+                }
+                if (colors[target] == WHITE) {
+                    parents[target] = vertex;
+                    List<Integer> cycle = trace(graph, target, colors, parents, counter);
+                    if (!cycle.isEmpty()) {
+                        return cycle;
+                    }
+                }
+            }
+            colors[vertex] = BLACK;
+            return List.of();
+        }
+
+        private List<Integer> unwind(int start, int end, int[] parents) {
+            Deque<Integer> cycle = new ArrayDeque<>();
+            for (int vertex = end; vertex != start; vertex = parents[vertex]) {
+                cycle.addFirst(vertex);
+            }
+            cycle.addFirst(start);
+            return new ArrayList<>(cycle);
         }
     }
 }
