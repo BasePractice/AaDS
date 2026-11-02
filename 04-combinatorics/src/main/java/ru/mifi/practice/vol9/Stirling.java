@@ -1,6 +1,7 @@
 package ru.mifi.practice.vol9;
 
 import ru.mifi.practice.commons.Counter;
+import ru.mifi.practice.commons.ObjectCounter;
 
 import java.math.BigInteger;
 
@@ -18,12 +19,18 @@ public final class Stirling {
     }
 
     public static BigInteger second(int n, int k, Counter counter) {
+        return second(n, k, counter, ObjectCounter.create());
+    }
+
+    public static BigInteger second(int n, int k, Counter counter, ObjectCounter objects) {
         check(n, k);
+        objects.allocate(n + 2);
         BigInteger[][] table = new BigInteger[n + 1][k + 1];
         table[0][0] = BigInteger.ONE;
         for (int row = 1; row <= n; row++) {
             for (int column = 1; column <= Math.min(row, k); column++) {
                 counter.increment();
+                objects.allocate();
                 BigInteger same = BigInteger.valueOf(column).multiply(value(table, row - 1, column));
                 BigInteger previous = value(table, row - 1, column - 1);
                 table[row][column] = same.add(previous);
@@ -37,12 +44,18 @@ public final class Stirling {
     }
 
     public static BigInteger first(int n, int k, Counter counter) {
+        return first(n, k, counter, ObjectCounter.create());
+    }
+
+    public static BigInteger first(int n, int k, Counter counter, ObjectCounter objects) {
         check(n, k);
+        objects.allocate(n + 2);
         BigInteger[][] table = new BigInteger[n + 1][k + 1];
         table[0][0] = BigInteger.ONE;
         for (int row = 1; row <= n; row++) {
             for (int column = 1; column <= Math.min(row, k); column++) {
                 counter.increment();
+                objects.allocate();
                 BigInteger same = BigInteger.valueOf(row - 1L).multiply(value(table, row - 1, column));
                 BigInteger previous = value(table, row - 1, column - 1);
                 table[row][column] = same.add(previous);

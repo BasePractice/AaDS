@@ -1,6 +1,7 @@
 package ru.mifi.practice.vol9;
 
 import ru.mifi.practice.commons.Counter;
+import ru.mifi.practice.commons.ObjectCounter;
 
 import java.math.BigInteger;
 
@@ -18,6 +19,10 @@ public final class Derangements {
     }
 
     public static BigInteger number(int n, Counter counter) {
+        return number(n, counter, ObjectCounter.create());
+    }
+
+    public static BigInteger number(int n, Counter counter, ObjectCounter objects) {
         if (n < 0) {
             throw new IllegalArgumentException("Размер беспорядка не может быть отрицательным: " + n);
         }
@@ -28,6 +33,7 @@ public final class Derangements {
         BigInteger current = BigInteger.ZERO;
         for (int size = 2; size <= n; size++) {
             counter.increment();
+            objects.allocate(2);
             BigInteger next = BigInteger.valueOf(size - 1L).multiply(previous.add(current));
             previous = current;
             current = next;

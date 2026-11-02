@@ -1,6 +1,7 @@
 package ru.mifi.practice.vol9;
 
 import ru.mifi.practice.commons.Counter;
+import ru.mifi.practice.commons.ObjectCounter;
 
 import java.math.BigInteger;
 
@@ -18,11 +19,16 @@ public final class Catalan {
     }
 
     public static BigInteger number(int n, Counter counter) {
+        return number(n, counter, ObjectCounter.create());
+    }
+
+    public static BigInteger number(int n, Counter counter, ObjectCounter objects) {
         if (n < 0) {
             throw new IllegalArgumentException("Номер числа Каталана не может быть отрицательным: " + n);
         }
-        BigInteger result = Combinatorics.combinations(2 * n, n, counter);
+        BigInteger result = Combinatorics.combinations(2 * n, n, counter, objects);
         counter.increment();
+        objects.allocate(2);
         return result.divide(BigInteger.valueOf(n + 1L));
     }
 }

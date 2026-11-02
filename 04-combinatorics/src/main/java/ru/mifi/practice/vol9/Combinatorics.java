@@ -1,6 +1,7 @@
 package ru.mifi.practice.vol9;
 
 import ru.mifi.practice.commons.Counter;
+import ru.mifi.practice.commons.ObjectCounter;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -29,7 +30,14 @@ public interface Combinatorics {
      * Число перестановок n элементов: n! с подсчётом операций.
      */
     static BigInteger permutations(int n, Counter counter) {
-        return factorial(n, counter);
+        return permutations(n, counter, ObjectCounter.create());
+    }
+
+    /**
+     * Число перестановок n элементов: n! с подсчётом операций и выделенных объектов.
+     */
+    static BigInteger permutations(int n, Counter counter, ObjectCounter objects) {
+        return factorial(n, counter, objects);
     }
 
     /**
@@ -43,12 +51,20 @@ public interface Combinatorics {
      * Число размещений: A(n, k) = n! / (n − k)! с подсчётом операций.
      */
     static BigInteger arrangements(int n, int k, Counter counter) {
+        return arrangements(n, k, counter, ObjectCounter.create());
+    }
+
+    /**
+     * Число размещений: A(n, k) = n! / (n − k)! с подсчётом операций и выделенных объектов.
+     */
+    static BigInteger arrangements(int n, int k, Counter counter, ObjectCounter objects) {
         if (k < 0 || k > n) {
             return BigInteger.ZERO;
         }
-        BigInteger numerator = factorial(n, counter);
-        BigInteger denominator = factorial(n - k, counter);
+        BigInteger numerator = factorial(n, counter, objects);
+        BigInteger denominator = factorial(n - k, counter, objects);
         counter.increment();
+        objects.allocate();
         return numerator.divide(denominator);
     }
 
@@ -63,12 +79,20 @@ public interface Combinatorics {
      * Число сочетаний: C(n, k) = n! / (k! (n − k)!) с подсчётом операций.
      */
     static BigInteger combinations(int n, int k, Counter counter) {
+        return combinations(n, k, counter, ObjectCounter.create());
+    }
+
+    /**
+     * Число сочетаний: C(n, k) = n! / (k! (n − k)!) с подсчётом операций и выделенных объектов.
+     */
+    static BigInteger combinations(int n, int k, Counter counter, ObjectCounter objects) {
         if (k < 0 || k > n) {
             return BigInteger.ZERO;
         }
-        BigInteger result = arrangements(n, k, counter);
-        BigInteger divisor = factorial(k, counter);
+        BigInteger result = arrangements(n, k, counter, objects);
+        BigInteger divisor = factorial(k, counter, objects);
         counter.increment();
+        objects.allocate();
         return result.divide(divisor);
     }
 
@@ -84,13 +108,22 @@ public interface Combinatorics {
      * Число размещений с повторениями: A(n, k) = n^k с подсчётом операций.
      */
     static BigInteger arrangementsWithRepetition(int n, int k, Counter counter) {
+        return arrangementsWithRepetition(n, k, counter, ObjectCounter.create());
+    }
+
+    /**
+     * Число размещений с повторениями: A(n, k) = n^k с подсчётом операций и выделенных объектов.
+     */
+    static BigInteger arrangementsWithRepetition(int n, int k, Counter counter, ObjectCounter objects) {
         if (n < 0 || k < 0) {
             return BigInteger.ZERO;
         }
         BigInteger result = BigInteger.ONE;
         BigInteger base = BigInteger.valueOf(n);
+        objects.allocate();
         for (int i = 0; i < k; i++) {
             counter.increment();
+            objects.allocate();
             result = result.multiply(base);
         }
         return result;
@@ -108,22 +141,30 @@ public interface Combinatorics {
      * Число сочетаний с повторениями: C(n + k − 1, k) с подсчётом операций.
      */
     static BigInteger combinationsWithRepetition(int n, int k, Counter counter) {
+        return combinationsWithRepetition(n, k, counter, ObjectCounter.create());
+    }
+
+    /**
+     * Число сочетаний с повторениями: C(n + k − 1, k) с подсчётом операций и выделенных объектов.
+     */
+    static BigInteger combinationsWithRepetition(int n, int k, Counter counter, ObjectCounter objects) {
         if (n < 0 || k < 0 || (n == 0 && k > 0)) {
             return BigInteger.ZERO;
         }
         if (k == 0) {
             return BigInteger.ONE;
         }
-        return combinations(n + k - 1, k, counter);
+        return combinations(n + k - 1, k, counter, objects);
     }
 
-    private static BigInteger factorial(int n, Counter counter) {
+    private static BigInteger factorial(int n, Counter counter, ObjectCounter objects) {
         if (n < 0) {
             throw new IllegalArgumentException("Факториал отрицательного числа не определён: " + n);
         }
         BigInteger result = BigInteger.ONE;
         for (int i = 2; i <= n; i++) {
             counter.increment();
+            objects.allocate();
             result = result.multiply(BigInteger.valueOf(i));
         }
         return result;
@@ -135,27 +176,35 @@ public interface Combinatorics {
      * хвоста и разворачиваем хвост.
      */
     static Iterable<int[]> permutationsOf(int size, Counter counter) {
+        return permutationsOf(size, counter, ObjectCounter.create());
+    }
+
+    static Iterable<int[]> permutationsOf(int size, Counter counter, ObjectCounter objects) {
         if (size < 0) {
             throw new IllegalArgumentException("Размер не может быть отрицательным: " + size);
         }
-        return () -> new Iterator<>() {
-            private final int[] current = initial(size);
-            private boolean has = true;
+        return () -> {
+            objects.allocate();
+            return new Iterator<>() {
+                private final int[] current = initial(size);
+                private boolean has = true;
 
-            @Override
-            public boolean hasNext() {
-                return has;
-            }
-
-            @Override
-            public int[] next() {
-                if (!has) {
-                    throw new NoSuchElementException("Перестановки закончились");
+                @Override
+                public boolean hasNext() {
+                    return has;
                 }
-                int[] result = current.clone();
-                has = advance(current, counter);
-                return result;
-            }
+
+                @Override
+                public int[] next() {
+                    if (!has) {
+                        throw new NoSuchElementException("Перестановки закончились");
+                    }
+                    objects.allocate();
+                    int[] result = current.clone();
+                    has = advance(current, counter);
+                    return result;
+                }
+            };
         };
     }
 
@@ -163,27 +212,35 @@ public interface Combinatorics {
      * Сочетания по k из n в лексикографическом порядке индексов.
      */
     static Iterable<int[]> combinationsOf(int size, int taken, Counter counter) {
+        return combinationsOf(size, taken, counter, ObjectCounter.create());
+    }
+
+    static Iterable<int[]> combinationsOf(int size, int taken, Counter counter, ObjectCounter objects) {
         if (taken < 0 || taken > size) {
             return Collections::emptyIterator;
         }
-        return () -> new Iterator<>() {
-            private final int[] current = initial(taken);
-            private boolean has = true;
+        return () -> {
+            objects.allocate();
+            return new Iterator<>() {
+                private final int[] current = initial(taken);
+                private boolean has = true;
 
-            @Override
-            public boolean hasNext() {
-                return has;
-            }
-
-            @Override
-            public int[] next() {
-                if (!has) {
-                    throw new NoSuchElementException("Сочетания закончились");
+                @Override
+                public boolean hasNext() {
+                    return has;
                 }
-                int[] result = current.clone();
-                has = advanceCombination(current, size, counter);
-                return result;
-            }
+
+                @Override
+                public int[] next() {
+                    if (!has) {
+                        throw new NoSuchElementException("Сочетания закончились");
+                    }
+                    objects.allocate();
+                    int[] result = current.clone();
+                    has = advanceCombination(current, size, counter);
+                    return result;
+                }
+            };
         };
     }
 
@@ -192,33 +249,43 @@ public interface Combinatorics {
      * порядке.
      */
     static Iterable<int[]> arrangementsWithRepetitionOf(int size, int taken, Counter counter) {
+        return arrangementsWithRepetitionOf(size, taken, counter, ObjectCounter.create());
+    }
+
+    static Iterable<int[]> arrangementsWithRepetitionOf(
+        int size, int taken, Counter counter, ObjectCounter objects) {
         if (size < 0 || taken < 0) {
             throw new IllegalArgumentException("Размер и длина не могут быть отрицательными: " + size + ", " + taken);
         }
         if (taken == 0) {
+            objects.allocate();
             return () -> Collections.singletonList(new int[0]).iterator();
         }
         if (size == 0) {
             return Collections::emptyIterator;
         }
-        return () -> new Iterator<>() {
-            private final int[] current = new int[taken];
-            private boolean has = true;
+        return () -> {
+            objects.allocate();
+            return new Iterator<>() {
+                private final int[] current = new int[taken];
+                private boolean has = true;
 
-            @Override
-            public boolean hasNext() {
-                return has;
-            }
-
-            @Override
-            public int[] next() {
-                if (!has) {
-                    throw new NoSuchElementException("Размещения закончились");
+                @Override
+                public boolean hasNext() {
+                    return has;
                 }
-                int[] result = current.clone();
-                has = advanceRepetition(current, size, counter);
-                return result;
-            }
+
+                @Override
+                public int[] next() {
+                    if (!has) {
+                        throw new NoSuchElementException("Размещения закончились");
+                    }
+                    objects.allocate();
+                    int[] result = current.clone();
+                    has = advanceRepetition(current, size, counter);
+                    return result;
+                }
+            };
         };
     }
 
@@ -227,33 +294,43 @@ public interface Combinatorics {
      * лексикографическом порядке.
      */
     static Iterable<int[]> combinationsWithRepetitionOf(int size, int taken, Counter counter) {
+        return combinationsWithRepetitionOf(size, taken, counter, ObjectCounter.create());
+    }
+
+    static Iterable<int[]> combinationsWithRepetitionOf(
+        int size, int taken, Counter counter, ObjectCounter objects) {
         if (size < 0 || taken < 0) {
             throw new IllegalArgumentException("Размер и длина не могут быть отрицательными: " + size + ", " + taken);
         }
         if (taken == 0) {
+            objects.allocate();
             return () -> Collections.singletonList(new int[0]).iterator();
         }
         if (size == 0) {
             return Collections::emptyIterator;
         }
-        return () -> new Iterator<>() {
-            private final int[] current = new int[taken];
-            private boolean has = true;
+        return () -> {
+            objects.allocate();
+            return new Iterator<>() {
+                private final int[] current = new int[taken];
+                private boolean has = true;
 
-            @Override
-            public boolean hasNext() {
-                return has;
-            }
-
-            @Override
-            public int[] next() {
-                if (!has) {
-                    throw new NoSuchElementException("Сочетания закончились");
+                @Override
+                public boolean hasNext() {
+                    return has;
                 }
-                int[] result = current.clone();
-                has = advanceRepetitionCombination(current, size, counter);
-                return result;
-            }
+
+                @Override
+                public int[] next() {
+                    if (!has) {
+                        throw new NoSuchElementException("Сочетания закончились");
+                    }
+                    objects.allocate();
+                    int[] result = current.clone();
+                    has = advanceRepetitionCombination(current, size, counter);
+                    return result;
+                }
+            };
         };
     }
 

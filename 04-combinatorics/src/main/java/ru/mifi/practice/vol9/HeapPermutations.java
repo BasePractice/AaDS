@@ -1,6 +1,7 @@
 package ru.mifi.practice.vol9;
 
 import ru.mifi.practice.commons.Counter;
+import ru.mifi.practice.commons.ObjectCounter;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -19,55 +20,63 @@ public final class HeapPermutations {
     }
 
     public static Iterable<int[]> of(int size, Counter counter) {
+        return of(size, counter, ObjectCounter.create());
+    }
+
+    public static Iterable<int[]> of(int size, Counter counter, ObjectCounter objects) {
         if (size < 1) {
             throw new IllegalArgumentException("Размер перестановки должен быть положительным: " + size);
         }
-        return () -> new Iterator<>() {
-            private final int[] values = initial(size);
-            private final int[] counters = new int[size];
-            private final int length = size;
-            private int index = 1;
-            private int[] next = values.clone();
-            private boolean has = true;
+        return () -> {
+            objects.allocate(3);
+            return new Iterator<>() {
+                private final int[] values = initial(size);
+                private final int[] counters = new int[size];
+                private final int length = size;
+                private int index = 1;
+                private int[] next = values.clone();
+                private boolean has = true;
 
-            @Override
-            public boolean hasNext() {
-                return has;
-            }
-
-            @Override
-            public int[] next() {
-                if (!has) {
-                    throw new NoSuchElementException("Перестановки закончились");
+                @Override
+                public boolean hasNext() {
+                    return has;
                 }
-                counter.increment();
-                int[] result = next;
-                has = advance();
-                if (has) {
-                    next = values.clone();
-                }
-                return result;
-            }
 
-            private boolean advance() {
-                while (index < length) {
-                    counter.increment();
-                    if (counters[index] < index) {
-                        if (index % 2 == 0) {
-                            swap(values, 0, index);
-                        } else {
-                            swap(values, counters[index], index);
-                        }
-                        counter.increment();
-                        ++counters[index];
-                        index = 1;
-                        return true;
+                @Override
+                public int[] next() {
+                    if (!has) {
+                        throw new NoSuchElementException("Перестановки закончились");
                     }
-                    counters[index] = 0;
-                    ++index;
+                    counter.increment();
+                    int[] result = next;
+                    has = advance();
+                    if (has) {
+                        objects.allocate();
+                        next = values.clone();
+                    }
+                    return result;
                 }
-                return false;
-            }
+
+                private boolean advance() {
+                    while (index < length) {
+                        counter.increment();
+                        if (counters[index] < index) {
+                            if (index % 2 == 0) {
+                                swap(values, 0, index);
+                            } else {
+                                swap(values, counters[index], index);
+                            }
+                            counter.increment();
+                            ++counters[index];
+                            index = 1;
+                            return true;
+                        }
+                        counters[index] = 0;
+                        ++index;
+                    }
+                    return false;
+                }
+            };
         };
     }
 

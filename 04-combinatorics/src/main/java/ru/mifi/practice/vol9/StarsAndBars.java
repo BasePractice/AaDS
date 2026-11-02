@@ -1,6 +1,7 @@
 package ru.mifi.practice.vol9;
 
 import ru.mifi.practice.commons.Counter;
+import ru.mifi.practice.commons.ObjectCounter;
 
 import java.math.BigInteger;
 
@@ -18,9 +19,13 @@ public final class StarsAndBars {
     }
 
     public static BigInteger number(int balls, int bins, Counter counter) {
+        return number(balls, bins, counter, ObjectCounter.create());
+    }
+
+    public static BigInteger number(int balls, int bins, Counter counter, ObjectCounter objects) {
         if (balls < 0 || bins <= 0) {
             return BigInteger.ZERO;
         }
-        return Combinatorics.combinations(balls + bins - 1, bins - 1, counter);
+        return Combinatorics.combinations(balls + bins - 1, bins - 1, counter, objects);
     }
 }

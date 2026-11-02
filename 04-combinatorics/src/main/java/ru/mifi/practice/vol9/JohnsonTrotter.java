@@ -1,6 +1,7 @@
 package ru.mifi.practice.vol9;
 
 import ru.mifi.practice.commons.Counter;
+import ru.mifi.practice.commons.ObjectCounter;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -23,100 +24,108 @@ public final class JohnsonTrotter {
     }
 
     public static Iterable<int[]> permutations(int n, Counter counter) {
+        return permutations(n, counter, ObjectCounter.create());
+    }
+
+    public static Iterable<int[]> permutations(int n, Counter counter, ObjectCounter objects) {
         if (n < 1) {
             throw new IllegalArgumentException("Размер перестановки должен быть положительным: " + n);
         }
-        return () -> new Iterator<>() {
-            private final int size = n;
-            private final int[] values = initValues(n);
-            private final int[] dirs = initDirs(n);
-            private boolean first = true;
+        return () -> {
+            objects.allocate(2);
+            return new Iterator<>() {
+                private final int size = n;
+                private final int[] values = initValues(n);
+                private final int[] dirs = initDirs(n);
+                private boolean first = true;
 
-            @Override
-            public boolean hasNext() {
-                return first || hasMobile();
-            }
+                @Override
+                public boolean hasNext() {
+                    return first || hasMobile();
+                }
 
-            @Override
-            public int[] next() {
-                counter.increment();
-                if (first) {
-                    first = false;
+                @Override
+                public int[] next() {
+                    counter.increment();
+                    if (first) {
+                        first = false;
+                        return copy(values);
+                    }
+                    if (!step()) {
+                        throw new NoSuchElementException("Перестановки закончились");
+                    }
                     return copy(values);
                 }
-                if (!step()) {
-                    throw new NoSuchElementException("Перестановки закончились");
-                }
-                return copy(values);
-            }
 
-            private boolean step() {
-                int idx = findLargestMobileIndex();
-                if (idx < 0) {
-                    return false;
-                }
-                int moveDir = dirs[idx];
-                int swapIdx = idx + moveDir;
-                swap(values, idx, swapIdx);
-                swap(dirs, idx, swapIdx);
-                counter.increment();
-                int movedVal = values[swapIdx];
-                for (int i = 0; i < size; i++) {
+                private boolean step() {
+                    int idx = findLargestMobileIndex();
+                    if (idx < 0) {
+                        return false;
+                    }
+                    int moveDir = dirs[idx];
+                    int swapIdx = idx + moveDir;
+                    swap(values, idx, swapIdx);
+                    swap(dirs, idx, swapIdx);
                     counter.increment();
-                    if (values[i] > movedVal) {
-                        dirs[i] = -dirs[i];
+                    int movedVal = values[swapIdx];
+                    for (int i = 0; i < size; i++) {
+                        counter.increment();
+                        if (values[i] > movedVal) {
+                            dirs[i] = -dirs[i];
+                        }
                     }
+                    return true;
                 }
-                return true;
-            }
 
-            private boolean hasMobile() {
-                return findLargestMobileIndex() >= 0;
-            }
+                private boolean hasMobile() {
+                    return findLargestMobileIndex() >= 0;
+                }
 
-            private int findLargestMobileIndex() {
-                int bestIdx = -1;
-                int bestVal = -1;
-                for (int i = 0; i < size; i++) {
-                    counter.increment();
-                    int dir = dirs[i];
-                    int neighbor = i + dir;
-                    if (neighbor < 0 || neighbor >= size) {
-                        continue;
+                private int findLargestMobileIndex() {
+                    int bestIdx = -1;
+                    int bestVal = -1;
+                    for (int i = 0; i < size; i++) {
+                        counter.increment();
+                        int dir = dirs[i];
+                        int neighbor = i + dir;
+                        if (neighbor < 0 || neighbor >= size) {
+                            continue;
+                        }
+                        if (values[i] > values[neighbor] && values[i] > bestVal) {
+                            bestVal = values[i];
+                            bestIdx = i;
+                        }
                     }
-                    if (values[i] > values[neighbor] && values[i] > bestVal) {
-                        bestVal = values[i];
-                        bestIdx = i;
+                    return bestIdx;
+                }
+
+                private int[] initValues(int len) {
+                    int[] result = new int[len];
+                    for (int i = 0; i < len; i++) {
+                        result[i] = i + 1;
                     }
+                    return result;
                 }
-                return bestIdx;
-            }
 
-            private int[] initValues(int len) {
-                int[] result = new int[len];
-                for (int i = 0; i < len; i++) {
-                    result[i] = i + 1;
+                private int[] initDirs(int len) {
+                    int[] directions = new int[len];
+                    Arrays.fill(directions, LEFT);
+                    return directions;
                 }
-                return result;
-            }
 
-            private int[] initDirs(int len) {
-                int[] directions = new int[len];
-                Arrays.fill(directions, LEFT);
-                return directions;
-            }
+                private int[] copy(int[] src) {
+                    objects.allocate();
+                    int[] dst = new int[src.length];
+                    System.arraycopy(src, 0, dst, 0, src.length);
+                    return dst;
+                }
 
-            private int[] copy(int[] src) {
-                int[] dst = new int[src.length];
-                System.arraycopy(src, 0, dst, 0, src.length);
-                return dst;
-            }
-
-            private void swap(int[] array, int i, int j) {
-                int temp = array[i];
-                array[i] = array[j];
-                array[j] = temp;
-            }
+                private void swap(int[] array, int i, int j) {
+                    int temp = array[i];
+                    array[i] = array[j];
+                    array[j] = temp;
+                }
+            };
         };
     }
 }
