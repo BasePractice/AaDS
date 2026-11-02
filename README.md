@@ -27,7 +27,7 @@ mvn -B clean package
 | 1 | Асимптотика и сложность | `01-basics/bigo`, `00-commons`, `90-sandbox/prime` (решето) |
 | 2 | Линейные структуры: массивы, списки, стек, очередь, дек | `01-basics`, `90-sandbox/buffer` (кольцевой буфер) |
 | 3 | Рекурсия | `03-recursion`, `90-sandbox/trampoline` (рекурсия без роста стека) |
-| 4 | Комбинаторика | [04-combinatorics](04-combinatorics) с ребусом `yasymb`, `90-sandbox/jt` (Джонсон — Троттер) |
+| 4 | Комбинаторика | [04-combinatorics](04-combinatorics) с ребусом `yasymb` и алгоритмом Джонсона — Троттера |
 | 5 | Сортировка и поиск | `05-sorting-search` |
 | 6 | Хеширование | `06-hashing` |
 | 7 | Графы: представления, обходы, Дейкстра | `07-graphs` |

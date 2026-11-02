@@ -112,8 +112,7 @@
 
 **Примеры.**
 
-- [`04-combinatorics`](../04-combinatorics) — `vol9.Combinatorics`, `vol9.yasymb`
-- [`90-sandbox`](../90-sandbox) — `voln.jt`
+- [`04-combinatorics`](../04-combinatorics) — `vol9.Combinatorics`, `vol9.JohnsonTrotter`, `vol9.yasymb`
 
 ## 5. Сортировка и поиск
 

@@ -1,10 +1,15 @@
-package ru.mifi.practice.voln.jt;
+package ru.mifi.practice.vol9;
 
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-/** Перебор всех перестановок алгоритмом Джонсона—Троттера. */
+/**
+ * Перебор всех перестановок алгоритмом Джонсона—Троттера. Каждая следующая перестановка
+ * получается одним обменом соседних элементов, а сами перестановки не повторяются. Подвижным
+ * считается элемент, который больше своего соседа в направлении стрелки; на каждом шаге
+ * двигается наибольший подвижный элемент, после чего стрелки всех больших него разворачиваются.
+ */
 public final class JohnsonTrotter {
     private static final int LEFT = -1;
 
@@ -13,7 +18,7 @@ public final class JohnsonTrotter {
 
     public static Iterable<int[]> permutations(int n) {
         if (n < 1) {
-            throw new IllegalArgumentException("Только положительное количество перестановок возможно");
+            throw new IllegalArgumentException("Размер перестановки должен быть положительным: " + n);
         }
         return () -> new Iterator<>() {
             private final int size = n;
@@ -33,7 +38,7 @@ public final class JohnsonTrotter {
                     return copy(values);
                 }
                 if (!step()) {
-                    throw new NoSuchElementException();
+                    throw new NoSuchElementException("Перестановки закончились");
                 }
                 return copy(values);
             }
