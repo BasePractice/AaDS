@@ -112,7 +112,10 @@
 
 **Примеры.**
 
-- [`04-combinatorics`](../04-combinatorics) — `vol9.Combinatorics`, `vol9.JohnsonTrotter`, `vol9.yasymb`
+- [`04-combinatorics`](../04-combinatorics) — `vol9.Combinatorics`, `vol9.JohnsonTrotter`,
+  `vol9.HeapPermutations`, `vol9.Subsets`, `vol9.Partitions`, `vol9.GrayCode`,
+  `vol9.PascalTriangle`, `vol9.Catalan`, `vol9.Bell`, `vol9.Stirling`, `vol9.Derangements`,
+  `vol9.StarsAndBars`, `vol9.yasymb`
 
 ## 5. Сортировка и поиск
 

@@ -1,0 +1,31 @@
+package ru.mifi.practice.vol9;
+
+import java.math.BigInteger;
+
+/**
+ * Числа Белла: количество разбиений множества из n элементов на непустые части. Считаются по
+ * треугольнику Белла, в котором первое число строки равно последнему числу предыдущей.
+ */
+public final class Bell {
+
+    private Bell() {
+    }
+
+    public static BigInteger number(int n) {
+        if (n < 0) {
+            throw new IllegalArgumentException("Номер числа Белла не может быть отрицательным: " + n);
+        }
+        BigInteger[][] triangle = new BigInteger[n + 1][];
+        for (int row = 0; row <= n; row++) {
+            triangle[row] = new BigInteger[row + 1];
+        }
+        triangle[0][0] = BigInteger.ONE;
+        for (int row = 1; row <= n; row++) {
+            triangle[row][0] = triangle[row - 1][row - 1];
+            for (int column = 1; column <= row; column++) {
+                triangle[row][column] = triangle[row][column - 1].add(triangle[row - 1][column - 1]);
+            }
+        }
+        return triangle[n][0];
+    }
+}

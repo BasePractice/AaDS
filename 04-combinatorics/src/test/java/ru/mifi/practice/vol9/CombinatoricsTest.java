@@ -114,4 +114,38 @@ final class CombinatoricsTest {
         assertThat("taking more elements than available produces tuples",
             Combinatorics.collect(Combinatorics.combinationsOf(3, 5, Counter.create())).size(), is(0));
     }
+
+    @DisplayName("Число размещений с повторениями равно n^k")
+    @Test
+    @Timeout(1)
+    void countsArrangementsWithRepetition() {
+        assertThat("arrangement count with repetition dont equal three squared",
+            Combinatorics.arrangementsWithRepetition(3, 2), is(BigInteger.valueOf(9)));
+    }
+
+    @DisplayName("Число сочетаний с повторениями считает мультимножества")
+    @Test
+    @Timeout(1)
+    void countsCombinationsWithRepetition() {
+        assertThat("combination count with repetition dont equal C(4,2)",
+            Combinatorics.combinationsWithRepetition(3, 2), is(BigInteger.valueOf(6)));
+    }
+
+    @DisplayName("Порождает все размещения с повторениями")
+    @Test
+    @Timeout(1)
+    void generatesArrangementsWithRepetition() {
+        assertThat("arrangements with repetition dont cover every tuple",
+            Combinatorics.collect(Combinatorics.arrangementsWithRepetitionOf(2, 2, Counter.create())),
+            contains("[0, 0]", "[0, 1]", "[1, 0]", "[1, 1]"));
+    }
+
+    @DisplayName("Порождает все сочетания с повторениями")
+    @Test
+    @Timeout(1)
+    void generatesCombinationsWithRepetition() {
+        assertThat("combinations with repetition dont cover every multiset",
+            Combinatorics.collect(Combinatorics.combinationsWithRepetitionOf(3, 2, Counter.create())),
+            contains("[0, 0]", "[0, 1]", "[0, 2]", "[1, 1]", "[1, 2]", "[2, 2]"));
+    }
 }

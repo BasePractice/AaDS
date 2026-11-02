@@ -45,6 +45,31 @@ public interface Combinatorics {
         return arrangements(n, k).divide(factorial(k));
     }
 
+    /**
+     * Число размещений с повторениями: A(n, k) = n^k — k позиций, на каждую можно поставить любой
+     * из n элементов.
+     */
+    static BigInteger arrangementsWithRepetition(int n, int k) {
+        if (n < 0 || k < 0) {
+            return BigInteger.ZERO;
+        }
+        return BigInteger.valueOf(n).pow(k);
+    }
+
+    /**
+     * Число сочетаний с повторениями: C(n + k − 1, k) — выбор k элементов из n видов, порядок не
+     * важен, элементы могут повторяться.
+     */
+    static BigInteger combinationsWithRepetition(int n, int k) {
+        if (n < 0 || k < 0 || (n == 0 && k > 0)) {
+            return BigInteger.ZERO;
+        }
+        if (k == 0) {
+            return BigInteger.ONE;
+        }
+        return combinations(n + k - 1, k);
+    }
+
     private static BigInteger factorial(int n) {
         if (n < 0) {
             throw new IllegalArgumentException("Факториал отрицательного числа не определён: " + n);
@@ -114,6 +139,76 @@ public interface Combinatorics {
         };
     }
 
+    /**
+     * Размещения с повторениями: все кортежи длины k из элементов 0..n−1 в лексикографическом
+     * порядке.
+     */
+    static Iterable<int[]> arrangementsWithRepetitionOf(int size, int taken, Counter counter) {
+        if (size < 0 || taken < 0) {
+            throw new IllegalArgumentException("Размер и длина не могут быть отрицательными: " + size + ", " + taken);
+        }
+        if (taken == 0) {
+            return () -> Collections.singletonList(new int[0]).iterator();
+        }
+        if (size == 0) {
+            return Collections::emptyIterator;
+        }
+        return () -> new Iterator<>() {
+            private final int[] current = new int[taken];
+            private boolean has = true;
+
+            @Override
+            public boolean hasNext() {
+                return has;
+            }
+
+            @Override
+            public int[] next() {
+                if (!has) {
+                    throw new NoSuchElementException("Размещения закончились");
+                }
+                int[] result = current.clone();
+                has = advanceRepetition(current, size, counter);
+                return result;
+            }
+        };
+    }
+
+    /**
+     * Сочетания с повторениями: неубывающие кортежи длины k из элементов 0..n−1 в
+     * лексикографическом порядке.
+     */
+    static Iterable<int[]> combinationsWithRepetitionOf(int size, int taken, Counter counter) {
+        if (size < 0 || taken < 0) {
+            throw new IllegalArgumentException("Размер и длина не могут быть отрицательными: " + size + ", " + taken);
+        }
+        if (taken == 0) {
+            return () -> Collections.singletonList(new int[0]).iterator();
+        }
+        if (size == 0) {
+            return Collections::emptyIterator;
+        }
+        return () -> new Iterator<>() {
+            private final int[] current = new int[taken];
+            private boolean has = true;
+
+            @Override
+            public boolean hasNext() {
+                return has;
+            }
+
+            @Override
+            public int[] next() {
+                if (!has) {
+                    throw new NoSuchElementException("Сочетания закончились");
+                }
+                int[] result = current.clone();
+                has = advanceRepetitionCombination(current, size, counter);
+                return result;
+            }
+        };
+    }
+
     private static int[] initial(int size) {
         int[] initial = new int[size];
         for (int i = 0; i < size; i++) {
@@ -158,6 +253,36 @@ public interface Combinatorics {
         ++combination[index];
         for (int i = index + 1; i < combination.length; i++) {
             combination[i] = combination[i - 1] + 1;
+        }
+        return true;
+    }
+
+    private static boolean advanceRepetition(int[] tuple, int size, Counter counter) {
+        int index = tuple.length - 1;
+        while (index >= 0 && tuple[index] == size - 1) {
+            counter.increment();
+            tuple[index] = 0;
+            --index;
+        }
+        if (index < 0) {
+            return false;
+        }
+        ++tuple[index];
+        return true;
+    }
+
+    private static boolean advanceRepetitionCombination(int[] combination, int size, Counter counter) {
+        int index = combination.length - 1;
+        while (index >= 0 && combination[index] == size - 1) {
+            counter.increment();
+            --index;
+        }
+        if (index < 0) {
+            return false;
+        }
+        int next = combination[index] + 1;
+        for (int i = index; i < combination.length; i++) {
+            combination[i] = next;
         }
         return true;
     }
