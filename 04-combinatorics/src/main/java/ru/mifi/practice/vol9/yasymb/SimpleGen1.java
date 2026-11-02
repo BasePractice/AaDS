@@ -1,5 +1,7 @@
 package ru.mifi.practice.vol9.yasymb;
 
+import ru.mifi.practice.commons.Counter;
+
 import java.util.HashSet;
 import java.util.Optional;
 
@@ -193,14 +195,14 @@ public final class SimpleGen1 implements YaSymbol {
     }
 
     @Override
-    public Optional<Equation> process(String x, String y, String z) {
-        var input = new Equation(x, y, z, new Metrics());
-        var context = process(new Context(), input, 1, false);
+    public Optional<Equation> process(String x, String y, String z, Counter counter) {
+        var input = new Equation(x, y, z, counter);
+        var context = process(new Context(counter), input, 1, false);
         return context.map(value -> new Equation(
             value.transform(x),
             value.transform(y),
             value.transform(z),
-            value.metrics
+            value.counter
         ));
     }
 }

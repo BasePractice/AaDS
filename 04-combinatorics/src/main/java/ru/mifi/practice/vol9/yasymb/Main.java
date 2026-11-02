@@ -1,5 +1,7 @@
 package ru.mifi.practice.vol9.yasymb;
 
+import ru.mifi.practice.commons.Counter;
+
 import java.util.Optional;
 
 public abstract class Main {
@@ -18,11 +20,11 @@ public abstract class Main {
         System.out.println("Перестановок: " + fact);
         Optional<YaSymbol.Equation> processed = YA.process(x, y, z);
         if (processed.isPresent()) {
-            System.out.printf("------ %7d -------%n", processed.get().metrics().getOperations());
+            System.out.printf("------ %7d -------%n", processed.get().counter().count());
         } else {
             System.out.printf("----------------------%n");
         }
-        new YaSymbol.Equation(x, y, z, new YaSymbol.Metrics()).print();
+        new YaSymbol.Equation(x, y, z, Counter.create()).print();
         System.out.println();
         if (processed.isPresent()) {
             YaSymbol.Equation equation = processed.get();

@@ -1,5 +1,7 @@
 package ru.mifi.practice.vol9;
 
+import ru.mifi.practice.commons.Counter;
+
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -14,6 +16,10 @@ public final class GrayCode {
     }
 
     public static Iterable<int[]> of(int bits) {
+        return of(bits, Counter.create());
+    }
+
+    public static Iterable<int[]> of(int bits, Counter counter) {
         if (bits < 0 || bits > MAX_BITS) {
             throw new IllegalArgumentException("Количество битов должно быть от нуля до " + MAX_BITS + ": " + bits);
         }
@@ -31,10 +37,12 @@ public final class GrayCode {
                 if (!hasNext()) {
                     throw new NoSuchElementException("Код Грея закончился");
                 }
+                counter.increment();
                 int value = index ^ (index >>> 1);
                 ++index;
                 int[] code = new int[bits];
                 for (int bit = 0; bit < bits; bit++) {
+                    counter.increment();
                     code[bits - bit - 1] = value & 1;
                     value >>>= 1;
                 }

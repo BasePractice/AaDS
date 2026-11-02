@@ -22,27 +22,54 @@ public interface Combinatorics {
      * Число перестановок n элементов: n!
      */
     static BigInteger permutations(int n) {
-        return factorial(n);
+        return permutations(n, Counter.create());
+    }
+
+    /**
+     * Число перестановок n элементов: n! с подсчётом операций.
+     */
+    static BigInteger permutations(int n, Counter counter) {
+        return factorial(n, counter);
     }
 
     /**
      * Число размещений: A(n, k) = n! / (n − k)!  — выбор k элементов с учётом порядка.
      */
     static BigInteger arrangements(int n, int k) {
+        return arrangements(n, k, Counter.create());
+    }
+
+    /**
+     * Число размещений: A(n, k) = n! / (n − k)! с подсчётом операций.
+     */
+    static BigInteger arrangements(int n, int k, Counter counter) {
         if (k < 0 || k > n) {
             return BigInteger.ZERO;
         }
-        return factorial(n).divide(factorial(n - k));
+        BigInteger numerator = factorial(n, counter);
+        BigInteger denominator = factorial(n - k, counter);
+        counter.increment();
+        return numerator.divide(denominator);
     }
 
     /**
      * Число сочетаний: C(n, k) = n! / (k! (n − k)!) — выбор k элементов без учёта порядка.
      */
     static BigInteger combinations(int n, int k) {
+        return combinations(n, k, Counter.create());
+    }
+
+    /**
+     * Число сочетаний: C(n, k) = n! / (k! (n − k)!) с подсчётом операций.
+     */
+    static BigInteger combinations(int n, int k, Counter counter) {
         if (k < 0 || k > n) {
             return BigInteger.ZERO;
         }
-        return arrangements(n, k).divide(factorial(k));
+        BigInteger result = arrangements(n, k, counter);
+        BigInteger divisor = factorial(k, counter);
+        counter.increment();
+        return result.divide(divisor);
     }
 
     /**
@@ -50,10 +77,23 @@ public interface Combinatorics {
      * из n элементов.
      */
     static BigInteger arrangementsWithRepetition(int n, int k) {
+        return arrangementsWithRepetition(n, k, Counter.create());
+    }
+
+    /**
+     * Число размещений с повторениями: A(n, k) = n^k с подсчётом операций.
+     */
+    static BigInteger arrangementsWithRepetition(int n, int k, Counter counter) {
         if (n < 0 || k < 0) {
             return BigInteger.ZERO;
         }
-        return BigInteger.valueOf(n).pow(k);
+        BigInteger result = BigInteger.ONE;
+        BigInteger base = BigInteger.valueOf(n);
+        for (int i = 0; i < k; i++) {
+            counter.increment();
+            result = result.multiply(base);
+        }
+        return result;
     }
 
     /**
@@ -61,21 +101,29 @@ public interface Combinatorics {
      * важен, элементы могут повторяться.
      */
     static BigInteger combinationsWithRepetition(int n, int k) {
+        return combinationsWithRepetition(n, k, Counter.create());
+    }
+
+    /**
+     * Число сочетаний с повторениями: C(n + k − 1, k) с подсчётом операций.
+     */
+    static BigInteger combinationsWithRepetition(int n, int k, Counter counter) {
         if (n < 0 || k < 0 || (n == 0 && k > 0)) {
             return BigInteger.ZERO;
         }
         if (k == 0) {
             return BigInteger.ONE;
         }
-        return combinations(n + k - 1, k);
+        return combinations(n + k - 1, k, counter);
     }
 
-    private static BigInteger factorial(int n) {
+    private static BigInteger factorial(int n, Counter counter) {
         if (n < 0) {
             throw new IllegalArgumentException("Факториал отрицательного числа не определён: " + n);
         }
         BigInteger result = BigInteger.ONE;
         for (int i = 2; i <= n; i++) {
+            counter.increment();
             result = result.multiply(BigInteger.valueOf(i));
         }
         return result;

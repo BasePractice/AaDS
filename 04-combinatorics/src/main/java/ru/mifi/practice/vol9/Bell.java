@@ -1,5 +1,7 @@
 package ru.mifi.practice.vol9;
 
+import ru.mifi.practice.commons.Counter;
+
 import java.math.BigInteger;
 
 /**
@@ -12,6 +14,10 @@ public final class Bell {
     }
 
     public static BigInteger number(int n) {
+        return number(n, Counter.create());
+    }
+
+    public static BigInteger number(int n, Counter counter) {
         if (n < 0) {
             throw new IllegalArgumentException("Номер числа Белла не может быть отрицательным: " + n);
         }
@@ -21,8 +27,10 @@ public final class Bell {
         }
         triangle[0][0] = BigInteger.ONE;
         for (int row = 1; row <= n; row++) {
+            counter.increment();
             triangle[row][0] = triangle[row - 1][row - 1];
             for (int column = 1; column <= row; column++) {
+                counter.increment();
                 triangle[row][column] = triangle[row][column - 1].add(triangle[row - 1][column - 1]);
             }
         }

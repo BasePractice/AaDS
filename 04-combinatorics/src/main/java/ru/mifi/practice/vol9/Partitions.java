@@ -1,5 +1,7 @@
 package ru.mifi.practice.vol9;
 
+import ru.mifi.practice.commons.Counter;
+
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -13,6 +15,10 @@ public final class Partitions {
     }
 
     public static Iterable<int[]> of(int number) {
+        return of(number, Counter.create());
+    }
+
+    public static Iterable<int[]> of(int number, Counter counter) {
         if (number < 0) {
             throw new IllegalArgumentException("Число не может быть отрицательным: " + number);
         }
@@ -30,8 +36,9 @@ public final class Partitions {
                 if (!has) {
                     throw new NoSuchElementException("Разбиения закончились");
                 }
+                counter.increment();
                 int[] result = current;
-                int[] next = successor(current);
+                int[] next = successor(current, counter);
                 has = next.length > 0;
                 current = next;
                 return result;
@@ -39,9 +46,10 @@ public final class Partitions {
         };
     }
 
-    private static int[] successor(int[] parts) {
+    private static int[] successor(int[] parts, Counter counter) {
         int index = parts.length - 1;
         while (index >= 0 && parts[index] <= 1) {
+            counter.increment();
             --index;
         }
         if (index < 0) {
@@ -50,6 +58,7 @@ public final class Partitions {
         int value = parts[index] - 1;
         int total = 0;
         for (int part : parts) {
+            counter.increment();
             total += part;
         }
         int[] next = new int[total];
@@ -57,10 +66,12 @@ public final class Partitions {
         next[index] = value;
         int remaining = total;
         for (int i = 0; i <= index; i++) {
+            counter.increment();
             remaining -= next[i];
         }
         int position = index + 1;
         while (remaining > 0) {
+            counter.increment();
             int part = Math.min(value, remaining);
             next[position] = part;
             remaining -= part;

@@ -1,5 +1,7 @@
 package ru.mifi.practice.vol9;
 
+import ru.mifi.practice.commons.Counter;
+
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -17,6 +19,10 @@ public final class JohnsonTrotter {
     }
 
     public static Iterable<int[]> permutations(int n) {
+        return permutations(n, Counter.create());
+    }
+
+    public static Iterable<int[]> permutations(int n, Counter counter) {
         if (n < 1) {
             throw new IllegalArgumentException("Размер перестановки должен быть положительным: " + n);
         }
@@ -33,6 +39,7 @@ public final class JohnsonTrotter {
 
             @Override
             public int[] next() {
+                counter.increment();
                 if (first) {
                     first = false;
                     return copy(values);
@@ -52,8 +59,10 @@ public final class JohnsonTrotter {
                 int swapIdx = idx + moveDir;
                 swap(values, idx, swapIdx);
                 swap(dirs, idx, swapIdx);
+                counter.increment();
                 int movedVal = values[swapIdx];
                 for (int i = 0; i < size; i++) {
+                    counter.increment();
                     if (values[i] > movedVal) {
                         dirs[i] = -dirs[i];
                     }
@@ -69,6 +78,7 @@ public final class JohnsonTrotter {
                 int bestIdx = -1;
                 int bestVal = -1;
                 for (int i = 0; i < size; i++) {
+                    counter.increment();
                     int dir = dirs[i];
                     int neighbor = i + dir;
                     if (neighbor < 0 || neighbor >= size) {

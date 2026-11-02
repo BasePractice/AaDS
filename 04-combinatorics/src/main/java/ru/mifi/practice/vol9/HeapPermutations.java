@@ -1,5 +1,7 @@
 package ru.mifi.practice.vol9;
 
+import ru.mifi.practice.commons.Counter;
+
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -13,6 +15,10 @@ public final class HeapPermutations {
     }
 
     public static Iterable<int[]> of(int size) {
+        return of(size, Counter.create());
+    }
+
+    public static Iterable<int[]> of(int size, Counter counter) {
         if (size < 1) {
             throw new IllegalArgumentException("Размер перестановки должен быть положительным: " + size);
         }
@@ -34,6 +40,7 @@ public final class HeapPermutations {
                 if (!has) {
                     throw new NoSuchElementException("Перестановки закончились");
                 }
+                counter.increment();
                 int[] result = next;
                 has = advance();
                 if (has) {
@@ -44,12 +51,14 @@ public final class HeapPermutations {
 
             private boolean advance() {
                 while (index < length) {
+                    counter.increment();
                     if (counters[index] < index) {
                         if (index % 2 == 0) {
                             swap(values, 0, index);
                         } else {
                             swap(values, counters[index], index);
                         }
+                        counter.increment();
                         ++counters[index];
                         index = 1;
                         return true;

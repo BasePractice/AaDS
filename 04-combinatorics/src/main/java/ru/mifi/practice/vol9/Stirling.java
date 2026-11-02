@@ -1,5 +1,7 @@
 package ru.mifi.practice.vol9;
 
+import ru.mifi.practice.commons.Counter;
+
 import java.math.BigInteger;
 
 /**
@@ -12,11 +14,16 @@ public final class Stirling {
     }
 
     public static BigInteger second(int n, int k) {
+        return second(n, k, Counter.create());
+    }
+
+    public static BigInteger second(int n, int k, Counter counter) {
         check(n, k);
         BigInteger[][] table = new BigInteger[n + 1][k + 1];
         table[0][0] = BigInteger.ONE;
         for (int row = 1; row <= n; row++) {
             for (int column = 1; column <= Math.min(row, k); column++) {
+                counter.increment();
                 BigInteger same = BigInteger.valueOf(column).multiply(value(table, row - 1, column));
                 BigInteger previous = value(table, row - 1, column - 1);
                 table[row][column] = same.add(previous);
@@ -26,11 +33,16 @@ public final class Stirling {
     }
 
     public static BigInteger first(int n, int k) {
+        return first(n, k, Counter.create());
+    }
+
+    public static BigInteger first(int n, int k, Counter counter) {
         check(n, k);
         BigInteger[][] table = new BigInteger[n + 1][k + 1];
         table[0][0] = BigInteger.ONE;
         for (int row = 1; row <= n; row++) {
             for (int column = 1; column <= Math.min(row, k); column++) {
+                counter.increment();
                 BigInteger same = BigInteger.valueOf(row - 1L).multiply(value(table, row - 1, column));
                 BigInteger previous = value(table, row - 1, column - 1);
                 table[row][column] = same.add(previous);

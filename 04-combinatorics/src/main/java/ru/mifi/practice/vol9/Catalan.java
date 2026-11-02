@@ -1,5 +1,7 @@
 package ru.mifi.practice.vol9;
 
+import ru.mifi.practice.commons.Counter;
+
 import java.math.BigInteger;
 
 /**
@@ -12,9 +14,15 @@ public final class Catalan {
     }
 
     public static BigInteger number(int n) {
+        return number(n, Counter.create());
+    }
+
+    public static BigInteger number(int n, Counter counter) {
         if (n < 0) {
             throw new IllegalArgumentException("Номер числа Каталана не может быть отрицательным: " + n);
         }
-        return Combinatorics.combinations(2 * n, n).divide(BigInteger.valueOf(n + 1L));
+        BigInteger result = Combinatorics.combinations(2 * n, n, counter);
+        counter.increment();
+        return result.divide(BigInteger.valueOf(n + 1L));
     }
 }

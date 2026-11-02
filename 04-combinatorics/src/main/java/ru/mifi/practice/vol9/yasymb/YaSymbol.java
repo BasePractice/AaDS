@@ -1,5 +1,7 @@
 package ru.mifi.practice.vol9.yasymb;
 
+import ru.mifi.practice.commons.Counter;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -8,45 +10,33 @@ import java.util.Set;
 
 /** Решение буквенно-цифрового ребуса сложения x + y = z. */
 public interface YaSymbol {
-    Optional<Equation> process(String x, String y, String z);
+    Optional<Equation> process(String x, String y, String z, Counter counter);
+
+    default Optional<Equation> process(String x, String y, String z) {
+        return process(x, y, z, Counter.create());
+    }
 
     enum StateType {
         DEFINED, GENERATED
     }
 
-    final class Metrics {
-        private int operations;
-
-        public Metrics() {
-            this.operations = 0;
-        }
-
-        public Metrics(Metrics metrics) {
-            operations = metrics.operations;
-        }
-
-        public int getOperations() {
-            return operations;
-        }
-
-        public void addOperations() {
-            operations++;
-        }
-    }
-
     final class Context {
         final Map<Character, Integer> symbols;
         final Set<Integer> digits;
-        final Metrics metrics;
+        final Counter counter;
 
         Context() {
-            this(new HashMap<>(), new HashSet<>(), new Metrics());
+            this(Counter.create());
         }
 
-        Context(Map<Character, Integer> symbols, Set<Integer> digits, Metrics metrics) {
+        Context(Counter counter) {
+            this(new HashMap<>(), new HashSet<>(), counter);
+        }
+
+        Context(Map<Character, Integer> symbols, Set<Integer> digits, Counter counter) {
             this.symbols = new HashMap<>(symbols);
             this.digits = new HashSet<>(digits);
-            this.metrics = new Metrics(metrics);
+            this.counter = counter;
         }
 
         @SuppressWarnings("PMD.AvoidBranchingStatementAsLastInLoop")
@@ -55,7 +45,7 @@ public interface YaSymbol {
                 return Optional.of(new State(StateType.DEFINED, symbols.get(symbol)));
             }
             for (int k = digit; k < 10; k++) {
-                metrics.addOperations();
+                counter.increment();
                 if (digits.contains(k)) {
                     continue;
                 }
@@ -109,18 +99,18 @@ public interface YaSymbol {
         }
 
         void addOperation() {
-            metrics.addOperations();
+            counter.increment();
         }
 
         public Context copy() {
-            return new Context(symbols, digits, metrics);
+            return new Context(symbols, digits, counter);
         }
     }
 
     record State(StateType type, int digit) {
     }
 
-    record Equation(String x, String y, String z, Metrics metrics) {
+    record Equation(String x, String y, String z, Counter counter) {
         void print() {
             int width = Math.max(x.length(), Math.max(y.length(), z.length()));
             System.out.printf("%" + width + "s + %n", x);
