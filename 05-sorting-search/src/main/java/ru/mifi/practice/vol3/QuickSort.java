@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * В коде есть ошибка
+ * Быстрая сортировка с выбираемой стратегией разбиения.
  *
  * @param <E> сортируемый элемент
  */
@@ -42,23 +42,31 @@ public final class QuickSort<E extends Comparable<E>> implements Sort<E> {
         if (low >= high - 1) {
             return;
         }
-        int middle = part(array, low, high, counter, debug);
-        quickSort(array, low, middle, counter, debug);
-        quickSort(array, middle + 1, high, counter, debug);
+        Partition partition = part(array, low, high, counter, debug);
+        quickSort(array, low, partition.leftHigh(), counter, debug);
+        quickSort(array, partition.rightLow(), high, counter, debug);
     }
 
-    private int part(List<E> array, int low, int high, Counter counter, boolean debug) {
+    private Partition part(List<E> array, int low, int high, Counter counter, boolean debug) {
         return strategy.part(array, low, high, counter, debug);
     }
 
+    /**
+     * Границы рекурсивных диапазонов [low, leftHigh) и [rightLow, high).
+     * Элементы между ними уже находятся на окончательных местах.
+     */
+    public record Partition(int leftHigh, int rightLow) {
+    }
+
     public sealed interface Strategy<E extends Comparable<E>> {
-        int part(List<E> array, int low, int high, Counter counter, boolean debug);
+        /** Разбивает [low, high) на два строго меньших рекурсивных диапазона. */
+        Partition part(List<E> array, int low, int high, Counter counter, boolean debug);
 
         final class Randomly<E extends Comparable<E>> implements Strategy<E> {
             private final Random random = new Random(new Date().getTime());
 
             @Override
-            public int part(List<E> array, int low, int high, Counter counter, boolean debug) {
+            public Partition part(List<E> array, int low, int high, Counter counter, boolean debug) {
                 int index = random.nextInt(high - low) + low;
                 E baseElement = array.get(index);
                 Collections.swap(array, index, high - 1);
@@ -100,15 +108,16 @@ public final class QuickSort<E extends Comparable<E>> implements Sort<E> {
                 if (debug) {
                     System.out.println("Middle : " + i);
                 }
-                return i;
+                return new Partition(i, i + 1);
             }
         }
 
         final class Halfway<E extends Comparable<E>> implements Strategy<E> {
 
             @Override
-            public int part(List<E> array, int low, int high, Counter counter, boolean debug) {
-                int index = low + (high - low) / 2;
+            public Partition part(List<E> array, int low, int high, Counter counter, boolean debug) {
+                // Нижняя середина гарантирует уменьшение диапазона даже для пары элементов.
+                int index = low + (high - low - 1) / 2;
                 E baseElement = array.get(index);
                 if (debug) {
                     System.out.println("Index  : [" + index + "] = " + baseElement);
@@ -138,7 +147,7 @@ public final class QuickSort<E extends Comparable<E>> implements Sort<E> {
                         if (debug) {
                             System.out.println("Middle : " + i);
                         }
-                        return j;
+                        return new Partition(j + 1, j + 1);
                     }
                     Collections.swap(array, i, j);
                     if (debug) {
