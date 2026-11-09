@@ -7,10 +7,10 @@ import java.util.Random;
 
 /** Генератор случайных числовых последовательностей для проверки сортировок. */
 public abstract class NumberGenerator {
-    static final int MAX_GENERATED_ELEMENT_VALUE = 100;
+    public static final int MAX_GENERATED_ELEMENT_VALUE = 100;
 
     @SuppressWarnings("PMD.UnusedPrivateMethod")
-    static List<Integer> generateSlice(int length) {
+    public static List<Integer> generateSlice(int length) {
         Random random = new Random(new Date().getTime());
         List<Integer> slice = new ArrayList<>(length);
         for (int i = 0; i < length; i++) {

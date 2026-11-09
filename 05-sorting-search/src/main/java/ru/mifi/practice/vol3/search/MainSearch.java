@@ -1,6 +1,8 @@
-package ru.mifi.practice.vol3;
+package ru.mifi.practice.vol3.search;
 
 import ru.mifi.practice.commons.Counter;
+import ru.mifi.practice.vol3.NumberGenerator;
+
 import java.util.List;
 import java.util.Optional;
 

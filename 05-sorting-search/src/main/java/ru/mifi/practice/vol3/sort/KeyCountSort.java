@@ -1,4 +1,4 @@
-package ru.mifi.practice.vol3;
+package ru.mifi.practice.vol3.sort;
 
 import java.util.List;
 import java.util.function.ToIntFunction;

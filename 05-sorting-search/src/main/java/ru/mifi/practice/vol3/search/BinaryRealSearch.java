@@ -1,4 +1,4 @@
-package ru.mifi.practice.vol3;
+package ru.mifi.practice.vol3.search;
 
 import ru.mifi.practice.commons.Counter;
 import java.util.Optional;

@@ -1,4 +1,4 @@
-package ru.mifi.practice.vol3;
+package ru.mifi.practice.vol3.sort;
 
 import ru.mifi.practice.commons.Counter;
 import java.util.List;

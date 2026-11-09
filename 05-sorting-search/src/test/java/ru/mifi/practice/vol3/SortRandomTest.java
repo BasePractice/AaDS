@@ -4,6 +4,15 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import ru.mifi.practice.commons.Counter;
+import ru.mifi.practice.vol3.sort.BubbleSort;
+import ru.mifi.practice.vol3.sort.CountSort;
+import ru.mifi.practice.vol3.sort.HeapSort;
+import ru.mifi.practice.vol3.sort.InsertionSort;
+import ru.mifi.practice.vol3.sort.MergeSort;
+import ru.mifi.practice.vol3.sort.QuickSort;
+import ru.mifi.practice.vol3.sort.RadixSort;
+import ru.mifi.practice.vol3.sort.SelectionSort;
+import ru.mifi.practice.vol3.sort.Sort;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -4,6 +4,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import ru.mifi.practice.commons.Counter;
+import ru.mifi.practice.vol3.search.BinaryNaturalSearch;
+import ru.mifi.practice.vol3.search.Search;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
