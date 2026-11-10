@@ -1,6 +1,5 @@
 package ru.mifi.practice.vol4.hash;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -52,18 +51,30 @@ final class SearchTest {
             new Search.SimpleSearch().search("abc", "xy", new Counter.Default()).isPresent(), is(false));
     }
 
-    /**
-     * Задание к разделу «Хеширование»: в PolynomialSearchCached есть ошибка, помеченная в JavaDoc.
-     * Слева хеш приведён по модулю, а справа произведение subHash на степень основания — нет,
-     * поэтому сравнение переполняется и почти всегда даёт ложь. Снимите @Disabled и почините.
-     */
-    @Disabled("Учебное задание: ошибка в PolynomialSearchCached")
     @DisplayName("Поиск по хешам находит подстроку")
     @Test
     @Timeout(1)
     void polynomialSearchFindsSubstring() {
         assertThat("hash based search compares a reduced hash against an unreduced product",
-            new Search.PolynomialSearchCached().search("abcabc", "cab", new Counter.Default()).orElseThrow().index(),
-            is(2));
+            new Search.PolynomialSearchCached().search("100000045608889", "4560", new Counter.Default())
+                .orElseThrow().index(), is(7));
+    }
+
+    @DisplayName("Продолжает поиск после коллизии")
+    @Test
+    @Timeout(1)
+    void skipsHashCollision() {
+        assertThat("a collision is reported as the first match",
+            new Search.PolynomialSearchCached().search("`AAB", "AB", new Counter.Default())
+                .orElseThrow().index(), is(2));
+    }
+
+    @DisplayName("Находит подстроку за пределами кэша степеней")
+    @Test
+    @Timeout(1)
+    void searchesBeyondCachedPowers() {
+        assertThat("search cannot handle text longer than the cached powers",
+            new Search.PolynomialSearchCached().search("a".repeat(Character.MAX_VALUE) + "b", "b",
+                new Counter.Default()).orElseThrow().index(), is((int) Character.MAX_VALUE));
     }
 }

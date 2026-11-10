@@ -9,12 +9,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 
-/**
- * Проверка накопленных степеней и префиксных хешей.
- *
- * <p>Здесь проверяется только сам накопитель: длина, детерминированность и границы. Сравнение
- * хешей подстрок остаётся учебным заданием в PolynomialSearchCached и здесь не закрепляется.
- */
+/** Проверка накопленных степеней и префиксных хешей. */
 @DisplayName("Полиномиальный хеш с кэшем степеней")
 final class CachedPolynomialTest {
 

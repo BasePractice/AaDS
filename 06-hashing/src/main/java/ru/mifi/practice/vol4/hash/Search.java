@@ -8,18 +8,25 @@ import java.util.Optional;
 public interface Search {
     Optional<Index> search(String text, String substring, Counter counter);
 
-    /**
-     * Найдите здесь ошибку
-     */
+    /** Сравнивает префиксные хеши и проверяет совпадения по символам. */
     final class PolynomialSearchCached implements Search {
         private final CachedPolynomial poly = new CachedPolynomial();
 
         @Override
         public Optional<Index> search(String text, String substring, Counter counter) {
-            int[] hashes = poly.hashing(text, counter);
-            int subHash = poly.hash(poly.hashing(substring, counter), 0, substring.length() - 1);
-            for (int i = 0; i + substring.length() <= hashes.length; i++) {
-                if (poly.hash(hashes, i, i + substring.length() - 1) == subHash * poly.polynomials[i]) {
+            int length = substring.length();
+            if (length == 0) {
+                return Optional.of(new Index(text, substring, 0));
+            }
+            if (length > text.length()) {
+                return Optional.empty();
+            }
+            int[] powers = poly.powers(text.length());
+            int[] hashes = poly.hashing(text, powers, counter);
+            int subHash = poly.hash(poly.hashing(substring, powers, counter), 0, length - 1);
+            for (int i = 0; i <= text.length() - length; i++) {
+                long shifted = (long) subHash * powers[i] % poly.mod;
+                if (poly.hash(hashes, i, i + length - 1) == shifted && text.startsWith(substring, i)) {
                     return Optional.of(new Index(text, substring, i));
                 }
             }
@@ -31,7 +38,7 @@ public interface Search {
 
         @Override
         public Optional<Index> search(String text, String subtext, Counter counter) {
-            for (int i = 0; i + subtext.length() <= text.length(); i++) {
+            for (int i = 0; i <= text.length() - subtext.length(); i++) {
                 int cursor = i;
                 counter.increment();
                 for (int j = 0; j < subtext.length(); j++) {

@@ -3,7 +3,7 @@
 # Алгоритмы и структуры данных
 
 Практика к курсу «Алгоритмы и структуры данных».
-[Презентация](https://docs.google.com/presentation/d/1TlAXM6sfDqQ1q7lRAd7AakCaWQfM4avy/edit?usp=sharing).
+[Презентация](https://docs.google.com/presentation/d/16UXBJ5QWMvD_zb1vOZffqkXLppBAF9iQ/edit?usp=sharing&ouid=103425146937158568285&rtpof=true&sd=true).
 
 ## Сборка
 
