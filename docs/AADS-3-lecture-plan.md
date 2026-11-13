@@ -18,6 +18,16 @@
 
 Объём — одно занятие №17, ориентировочно 90–110 слайдов (сравнимо с занятиями 5–8 курса).
 
+## Решения заказчика (утверждено)
+
+- «luma» — это Loom: раздел 11 «Виртуальные потоки», Disruptor не включаем.
+- Виртуальные потоки: вариант (б) — компилируемый пример под `--release 21` с оговоркой и пометкой
+  в модуле; JDK проекта не поднимаем.
+- Лекция — занятие №17; модуль практики — `92-concurrency` (в линейке `90-sandbox` / `91-heroes`,
+  регистрация в корневом `pom.xml` после `91-heroes`), пакет `ru.mifi.practice.vol92`.
+- Демо гонок/дедлоков: на слайдах фиксированные interleaving-сценарии с числами, в тестах цикл
+  повторений с «хотя бы один раз».
+
 ## Разделы лекции
 
 ### 1. Зачем несколько потоков (6–8 слайдов)
@@ -166,26 +176,26 @@ message passing — акторы/очереди вместо замков; до�
 
 ## Модуль практики
 
-Новый модуль `17-concurrency` (артефакт `17-concurrency`, описание «Модуль №17.
-Многопоточность»), пакет `ru.mifi.practice.vol17` — по образцу `06-hashing` и `16-mazes-life`:
-отдельный `pom.xml` с зависимостью на `00-commons`, `README.md`, примеры в `src/main/java`,
-«злые» тесты в `src/test/java` один-к-одному. Регистрация модуля в корневом `pom.xml`.
+Новый модуль `92-concurrency` (в линейке `90-sandbox` / `91-heroes`, регистрация в корневом
+`pom.xml` после `91-heroes`), пакет `ru.mifi.practice.vol92` — по образцу `06-hashing` и
+`16-mazes-life`: отдельный `pom.xml` с зависимостью на `00-commons`, `README.md`, примеры в
+`src/main/java`, «злые» тесты в `src/test/java` один-к-одному.
 
 Пакеты и примеры (каждому разделу лекции — свой):
 
 | Пакет | Примеры |
 |---|---|
-| `vol17.thread` | `HelloThread` (start/run/join), `InterruptibleTask` (отмена), `StatefulThread` (состояния) |
-| `vol17.race` | `BrokenCounter` (гонка), `VolatileCounter`, `HappensBefore` |
-| `vol17.monitor` | `ProducerConsumer` (wait/notify на кольцевом буфере) |
-| `vol17.sync` | `SemaphoreGate`, `LatchedStart`, `TryLockRoom` |
-| `vol17.atomic` | `AtomicCounter`, `CasLoop`, `AdderStats` |
-| `vol17.collection` | `ConcurrentWordCount`, `QueuePipeline`, `BrokenHashMapDemo` |
-| `vol17.pool` | `FixedPoolBenchmark`, `PoolShutdown`, `CpuVsIo` |
-| `vol17.future` | `SumFuture`, `ChainFuture`, `ParallelAllOf` |
-| `vol17.philosophers` | `Fork`, `Philosopher`, `DeadlockPhilosophers`, `OrderedPhilosophers`, `SemaphorePhilosophers`, `TryLockPhilosophers` |
-| `vol17.virtual` | `VirtualThreadsDemo` (зависит от решения по JDK) |
-| `vol17.patterns` | `ImmutableMessage`, `MessagePassingCounter`, `ThreadSafeChecklist` |
+| `vol92.thread` | `HelloThread` (start/run/join), `InterruptibleTask` (отмена), `StatefulThread` (состояния) |
+| `vol92.race` | `BrokenCounter` (гонка), `VolatileCounter`, `HappensBefore` |
+| `vol92.monitor` | `ProducerConsumer` (wait/notify на кольцевом буфере) |
+| `vol92.sync` | `SemaphoreGate`, `LatchedStart`, `TryLockRoom` |
+| `vol92.atomic` | `AtomicCounter`, `CasLoop`, `AdderStats` |
+| `vol92.collection` | `ConcurrentWordCount`, `QueuePipeline`, `BrokenHashMapDemo` |
+| `vol92.pool` | `FixedPoolBenchmark`, `PoolShutdown`, `CpuVsIo` |
+| `vol92.future` | `SumFuture`, `ChainFuture`, `ParallelAllOf` |
+| `vol92.philosophers` | `Fork`, `Philosopher`, `DeadlockPhilosophers`, `OrderedPhilosophers`, `SemaphorePhilosophers`, `TryLockPhilosophers` |
+| `vol92.virtual` | `VirtualThreadsDemo` (зависит от решения по JDK) |
+| `vol92.patterns` | `ImmutableMessage`, `MessagePassingCounter`, `ThreadSafeChecklist` |
 
 Задания для студентов («Место для решения студента» + `@Disabled`-тест, по образцу курса):
 починить `BrokenCounter`, реализовать producer–consumer на `wait/notify`, убрать дедлок
@@ -214,8 +224,8 @@ message passing — акторы/очереди вместо замков; до�
 2. **JDK и виртуальные потоки.** Проект собирается на JDK 17 (enforcer), виртуальные потоки
    стабильны с JDK 21. Варианты: (а) раздел 11 теоретический, без компилируемого кода;
    (б) пример под `--release 21` с оговоркой и пометкой; (в) поднять JDK проекта. Нужно решение.
-3. **Номер занятия.** Курс рассчитан на 16 занятий, лекция становится занятием 17
-   (соответственно модуль `17-concurrency`). Подтвердить или указать другое место.
+3. **Номер занятия.** Курс рассчитан на 16 занятий, лекция становится занятием 17.
+   **Решение:** занятие №17, модуль `92-concurrency`, пакет `ru.mifi.practice.vol92`.
 4. **Объём.** 90–110 слайдов на 13 разделов — ок или сжать/расширить? Какие разделы приоритетны
    для заказчика, если нужно резать объём?
 5. **Демонстрации.** Гонки и дедлоки недетерминированы: в практике — цикл повторений с
