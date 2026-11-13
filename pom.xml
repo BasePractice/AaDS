@@ -47,6 +47,7 @@
         <module>16-mazes-life</module>
         <module>90-sandbox</module>
         <module>91-heroes</module>
+        <module>92-concurrency</module>
     </modules>
 
     <dependencyManagement>
