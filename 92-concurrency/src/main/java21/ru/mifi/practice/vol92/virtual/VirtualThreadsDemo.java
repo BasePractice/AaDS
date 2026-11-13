@@ -6,17 +6,18 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * Виртуальные потоки: сто тысяч блокирующихся задач дешевле ста тысяч платформенных потоков.
- * Компилируется с --release 21 и новее, JDK проекта на 17 — см. README модуля.
+ * По одному виртуальному потоку на каждую задачу с ожиданием.
+ * Компилируется с --release 21, JDK проекта на 17 — см. README модуля.
  */
 public final class VirtualThreadsDemo {
-    private final AtomicInteger done;
-
-    public VirtualThreadsDemo() {
-        this.done = new AtomicInteger();
+    public static void main(String[] args) throws InterruptedException {
+        int tasks = args.length == 0 ? 100_000 : Integer.parseInt(args[0]);
+        int completed = new VirtualThreadsDemo().run(tasks);
+        System.out.printf("Завершено задач: %d из %d%n", completed, tasks);
     }
 
     public int run(int tasks) throws InterruptedException {
+        AtomicInteger done = new AtomicInteger();
         try (ExecutorService pool = Executors.newVirtualThreadPerTaskExecutor()) {
             for (int i = 0; i < tasks; i++) {
                 pool.submit(() -> {
@@ -24,6 +25,9 @@ public final class VirtualThreadsDemo {
                     return done.incrementAndGet();
                 });
             }
+        }
+        if (Thread.interrupted()) {
+            throw new InterruptedException("Ожидание завершения виртуальных потоков прервано");
         }
         return done.get();
     }

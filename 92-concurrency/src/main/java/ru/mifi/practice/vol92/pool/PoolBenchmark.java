@@ -1,9 +1,13 @@
 package ru.mifi.practice.vol92.pool;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.function.IntToLongFunction;
 
 /** Сравнение: один поток против пула на независимых кусках работы. */
 public final class PoolBenchmark {
@@ -16,23 +20,26 @@ public final class PoolBenchmark {
     }
 
     public long pooled(int chunks, int threads) throws InterruptedException {
+        return pooled(chunks, threads, this::work);
+    }
+
+    long pooled(int chunks, int threads, IntToLongFunction calculate) throws InterruptedException {
+        List<Callable<Long>> tasks = new ArrayList<>();
+        for (int chunk = 0; chunk < chunks; chunk++) {
+            final int index = chunk;
+            tasks.add(() -> calculate.applyAsLong(index));
+        }
         ExecutorService pool = Executors.newFixedThreadPool(threads);
         try {
             long total = 0;
-            for (int chunk = 0; chunk < chunks; chunk++) {
-                final int work = chunk;
-                Future<Long> future = pool.submit(() -> work(work));
+            for (Future<Long> future : pool.invokeAll(tasks)) {
                 total += future.get();
             }
             return total;
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw e;
-        } catch (java.util.concurrent.ExecutionException e) {
-            throw new IllegalStateException("chunk failed", e);
+        } catch (ExecutionException e) {
+            throw new IllegalStateException("Ошибка при расчёте части работы", e);
         } finally {
-            pool.shutdown();
-            pool.awaitTermination(10, TimeUnit.SECONDS);
+            pool.shutdownNow();
         }
     }
 

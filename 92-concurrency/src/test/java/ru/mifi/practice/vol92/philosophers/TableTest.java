@@ -5,8 +5,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.not;
 
@@ -54,5 +56,44 @@ final class TableTest {
             meals, not(lessThan(1)));
         assertThat("trylock philosophers lose all meals",
             meals, not(lessThan(1)));
+    }
+
+    @DisplayName("Прерывание прогона завершает философов и возвращает вилки и разрешения")
+    @Test
+    @Timeout(10)
+    void releasesResourcesWhenCallerIsInterrupted() throws InterruptedException {
+        Table table = new Table(2, Table.Strategy.SEMAPHORE, 1);
+        Fork held = table.fork(1);
+        held.grab();
+        ThreadGroup group = new ThreadGroup("прерывание прогона");
+        AtomicBoolean interrupted = new AtomicBoolean();
+        Thread caller = new Thread(group, () -> {
+            try {
+                table.dine(1, TimeUnit.MINUTES);
+            } catch (InterruptedException e) {
+                interrupted.set(true);
+                Thread.currentThread().interrupt();
+            }
+        });
+        try {
+            caller.start();
+            long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(2);
+            while (table.room().availablePermits() != 0 && System.nanoTime() < deadline) {
+                Thread.sleep(1);
+            }
+            assertThat("Никто не занял место за столом", table.room().availablePermits(), is(0));
+            caller.interrupt();
+            caller.join(2_000);
+            assertThat("Вызывающий поток продолжает ждать", caller.isAlive(), is(false));
+            assertThat("Вызывающий поток потерял прерывание", interrupted.get(), is(true));
+            assertThat("Философы продолжают работу", group.activeCount(), is(0));
+            assertThat("Разрешение семафора осталось занято", table.room().availablePermits(), is(1));
+            Fork free = table.fork(0);
+            assertThat("Вилка осталась захвачена", free.take(), is(true));
+            free.put();
+        } finally {
+            group.interrupt();
+            held.put();
+        }
     }
 }

@@ -32,13 +32,15 @@ public final class Philosopher implements Runnable {
     }
 
     private void greedy() throws InterruptedException {
-        table.barrier();
-        table.fork(seat).grab();
-        Thread.sleep(20);
-        table.fork((seat + 1) % table.seats()).grab();
-        eat();
-        table.fork((seat + 1) % table.seats()).put();
-        table.fork(seat).put();
+        Fork left = table.fork(seat);
+        left.grab();
+        try {
+            // Каждый удерживает свою вилку, прежде чем пытаться взять соседнюю.
+            table.barrier();
+            eatWithFork(table.fork((seat + 1) % table.seats()));
+        } finally {
+            left.put();
+        }
     }
 
     private void ordered() throws InterruptedException {
@@ -50,22 +52,17 @@ public final class Philosopher implements Runnable {
             first = second;
             second = swap;
         }
-        first.grab();
-        second.grab();
-        eat();
-        second.put();
-        first.put();
+        eatWithForks(first, second);
     }
 
     private void limited() throws InterruptedException {
         table.barrier();
         table.room().acquire();
-        table.fork(seat).grab();
-        table.fork((seat + 1) % table.seats()).grab();
-        eat();
-        table.fork((seat + 1) % table.seats()).put();
-        table.fork(seat).put();
-        table.room().release();
+        try {
+            eatWithForks(table.fork(seat), table.fork((seat + 1) % table.seats()));
+        } finally {
+            table.room().release();
+        }
     }
 
     private void opportunistic() throws InterruptedException {
@@ -74,13 +71,35 @@ public final class Philosopher implements Runnable {
         if (!left.take()) {
             return;
         }
-        if (!right.take()) {
+        try {
+            if (right.take()) {
+                try {
+                    eat();
+                } finally {
+                    right.put();
+                }
+            }
+        } finally {
             left.put();
-            return;
         }
-        eat();
-        right.put();
-        left.put();
+    }
+
+    private void eatWithForks(Fork first, Fork second) throws InterruptedException {
+        first.grab();
+        try {
+            eatWithFork(second);
+        } finally {
+            first.put();
+        }
+    }
+
+    private void eatWithFork(Fork fork) throws InterruptedException {
+        fork.grab();
+        try {
+            eat();
+        } finally {
+            fork.put();
+        }
     }
 
     private void eat() throws InterruptedException {

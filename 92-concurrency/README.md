@@ -37,7 +37,7 @@
 ```bash
 javac --release 21 -d target/java21 \
   src/main/java21/ru/mifi/practice/vol92/virtual/VirtualThreadsDemo.java
-java --enable-preview -cp target/java21 ru.mifi.practice.vol92.virtual.VirtualThreadsDemo
+java -cp target/java21 ru.mifi.practice.vol92.virtual.VirtualThreadsDemo 1000
 ```
 
-`--enable-preview` не нужен на стабильном API 21 — достаточно `--release 21`.
+Ожидаемый вывод — `Завершено задач: 1000 из 1000`. Без аргумента пример запускает 100 000 задач.

@@ -42,19 +42,42 @@ public final class Table {
         for (int seat = 0; seat < forks.length; seat++) {
             threads[seat] = new Thread(new Philosopher(this, seat, cycles));
         }
-        for (Thread thread : threads) {
-            thread.start();
-        }
-        if (!done.await(timeout, unit)) {
+        boolean completed = false;
+        try {
             for (Thread thread : threads) {
-                thread.interrupt();
+                thread.start();
             }
-            done.await(1, TimeUnit.SECONDS);
-        }
-        for (Thread thread : threads) {
-            thread.join(1000);
+            completed = done.await(timeout, unit);
+        } finally {
+            joinWorkers(threads, completed);
         }
         return meals.get();
+    }
+
+    private static void joinWorkers(Thread[] threads, boolean completed) throws InterruptedException {
+        if (!completed) {
+            interruptWorkers(threads);
+        }
+        InterruptedException interrupted = null;
+        for (Thread thread : threads) {
+            while (thread.isAlive()) {
+                try {
+                    thread.join();
+                } catch (InterruptedException e) {
+                    interrupted = e;
+                    interruptWorkers(threads);
+                }
+            }
+        }
+        if (interrupted != null) {
+            throw interrupted;
+        }
+    }
+
+    private static void interruptWorkers(Thread[] threads) {
+        for (Thread thread : threads) {
+            thread.interrupt();
+        }
     }
 
     public int expected() {
@@ -85,7 +108,9 @@ public final class Table {
         try {
             barrier.await();
         } catch (java.util.concurrent.BrokenBarrierException e) {
-            throw new IllegalStateException("barrier broken", e);
+            InterruptedException interrupted = new InterruptedException("Ожидание прервано у другого философа");
+            interrupted.initCause(e);
+            throw interrupted;
         }
     }
 

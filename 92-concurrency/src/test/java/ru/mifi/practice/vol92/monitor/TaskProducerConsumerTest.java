@@ -5,8 +5,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
+import java.util.List;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 
 @DisplayName("Задание: конвейер производителя и потребителя")
 final class TaskProducerConsumerTest {
@@ -15,12 +19,24 @@ final class TaskProducerConsumerTest {
     @DisplayName("pipe перекачивает сообщения из очереди в список")
     @Test
     @Timeout(30)
-    void pipesMessagesFromQueueToList() throws InterruptedException {
+    void pipesMessagesFromQueueToList() throws Exception {
         ProducerConsumer queue = new ProducerConsumer(4);
-        for (int i = 0; i < 5; i++) {
-            queue.put("сообщение " + i);
+        List<String> messages = List.of("первое", "второе", "третье", "четвёртое", "пятое");
+        FutureTask<Void> send = new FutureTask<>(() -> {
+            for (String message : messages) {
+                queue.put(message);
+            }
+            return null;
+        });
+        Thread producer = new Thread(send);
+        producer.start();
+        try {
+            assertThat("Нарушен порядок сообщений",
+                new TaskProducerConsumer().pipe(queue, messages.size()), is(messages));
+            send.get(5, TimeUnit.SECONDS);
+        } finally {
+            send.cancel(true);
+            producer.join();
         }
-        assertThat("student pipe loses messages",
-            new TaskProducerConsumer().pipe(queue, 5), hasSize(5));
     }
 }
