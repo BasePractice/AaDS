@@ -14,6 +14,24 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @DisplayName("Быстрое преобразование Фурье")
 final class CooleyTukeyTest {
 
+    @DisplayName("Обе реализации дают спектр из примера лекции")
+    @Test
+    @Timeout(1)
+    void matchesTheLectureSpectrum() {
+        Complex[] input = signal(3, 2, 1, 0);
+        Complex[] expected = {new Complex(6, 0), new Complex(2, -2),
+            new Complex(2, 0), new Complex(2, 2)};
+        for (Fourier transform : new Fourier[]{new PlainFourier(), new CooleyTukey()}) {
+            Complex[] actual = transform.direct(input);
+            for (int frequency = 0; frequency < expected.length; frequency++) {
+                String coefficient = transform.getClass().getSimpleName() + ", k=" + frequency;
+                assertThat(coefficient, actual[frequency].real(), closeTo(expected[frequency].real(), 1e-9));
+                assertThat(coefficient, actual[frequency].imaginary(),
+                    closeTo(expected[frequency].imaginary(), 1e-9));
+            }
+        }
+    }
+
     @DisplayName("Постоянный сигнал даёт единственную нулевую частоту")
     @Test
     @Timeout(1)
