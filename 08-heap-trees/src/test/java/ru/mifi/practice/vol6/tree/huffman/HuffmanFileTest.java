@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -35,6 +36,22 @@ final class HuffmanFileTest {
             HuffmanFile.decompress(packed, restored);
             assertArrayEquals(examples[index], Files.readAllBytes(restored));
         }
+    }
+
+    @Test
+    @DisplayName("Файл на 10 байт превышает лимит 9 байт и помещается в лимит 10 байт")
+    void stopsAtDecompressionLimitBeforeCreatingOutput() throws IOException {
+        Path source = Files.writeString(directory.resolve("original"), "BOOBS BOOM");
+        Path packed = directory.resolve("packed");
+        Path restored = directory.resolve("restored");
+        HuffmanFile.compress(source, packed);
+
+        IOException exception = assertThrows(IOException.class, () -> HuffmanFile.decompress(packed, restored, 9));
+        assertEquals("Превышен лимит распаковки: 9 байт", exception.getMessage());
+        assertFalse(Files.exists(restored));
+
+        HuffmanFile.decompress(packed, restored, 10);
+        assertArrayEquals(Files.readAllBytes(source), Files.readAllBytes(restored));
     }
 
     @Test

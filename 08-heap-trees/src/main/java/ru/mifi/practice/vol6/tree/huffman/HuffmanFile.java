@@ -81,10 +81,18 @@ public final class HuffmanFile {
     }
 
     public static void decompress(Path source, Path target) throws IOException {
+        decompress(source, target, MAX_SOURCE_BYTES);
+    }
+
+    /** Восстанавливает файл в пределах заданного числа выходных байтов. */
+    public static void decompress(Path source, Path target, int maxOutputBytes) throws IOException {
+        if (maxOutputBytes < 0 || maxOutputBytes > MAX_SOURCE_BYTES) {
+            throw new IllegalArgumentException("Лимит распаковки должен быть от 0 до " + MAX_SOURCE_BYTES);
+        }
         byte[] packed = readLimited(source, MAX_PACKED_BYTES);
         byte[] restored;
         try (DataInputStream input = new DataInputStream(new ByteArrayInputStream(packed))) {
-            Map<Character, Integer> frequencies = readHeader(input);
+            Map<Character, Integer> frequencies = readHeader(input, maxOutputBytes);
             Tree.Node root = Tree.buildTree(frequencies);
             int length = root == null ? 0 : root.frequency();
             restored = readBits(input, root, length);
@@ -98,7 +106,7 @@ public final class HuffmanFile {
         Files.write(target, restored, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
     }
 
-    private static Map<Character, Integer> readHeader(DataInputStream input) throws IOException {
+    private static Map<Character, Integer> readHeader(DataInputStream input, int maxOutputBytes) throws IOException {
         if (input.readInt() != MAGIC) {
             throw new IOException("Ожидается файл HUF1");
         }
@@ -111,8 +119,11 @@ public final class HuffmanFile {
         for (int index = 0; index < count; index++) {
             char symbol = (char) input.readUnsignedByte();
             int frequency = input.readInt();
-            if (frequency <= 0 || frequency > MAX_SOURCE_BYTES - total) {
-                throw new IOException("Некорректная частота или превышен лимит распаковки");
+            if (frequency <= 0) {
+                throw new IOException("Некорректная частота");
+            }
+            if (frequency > maxOutputBytes - total) {
+                throw new IOException("Превышен лимит распаковки: " + maxOutputBytes + " байт");
             }
             if (frequencies.putIfAbsent(symbol, frequency) != null) {
                 throw new IOException("Повторяющийся символ в таблице частот");
