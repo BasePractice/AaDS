@@ -38,6 +38,7 @@ final class QuickSortTest {
             new QuickSort<Integer>().sort(List.of(5, 3, 9, 1, 3), new Counter.Default(), false),
             contains(1, 3, 3, 5, 9));
     }
+
     static Stream<QuickSort.Strategy<Integer>> strategies() {
         return Stream.of(new QuickSort.Strategy.Halfway<>(), new QuickSort.Strategy.Randomly<>());
     }

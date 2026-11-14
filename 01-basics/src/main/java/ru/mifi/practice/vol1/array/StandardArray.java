@@ -7,6 +7,7 @@ public final class StandardArray<T> implements Array<T> {
     private int capacity;
     private int size;
     private Object[] array;
+    private long copies;
 
     public StandardArray(int capacity) {
         this.size = 0;
@@ -27,6 +28,7 @@ public final class StandardArray<T> implements Array<T> {
             capacity = Math.max(index + 1, capacity * 2);
             Object[] newArray = new Object[capacity];
             System.arraycopy(array, 0, newArray, 0, array.length);
+            copies += array.length;
             array = newArray;
         }
         array[index] = value;
@@ -44,6 +46,11 @@ public final class StandardArray<T> implements Array<T> {
         array[size - 1] = null;
         --size;
         return value;
+    }
+
+    /** Число элементов, скопированных при расширениях. */
+    long copies() {
+        return copies;
     }
 
     @Override
