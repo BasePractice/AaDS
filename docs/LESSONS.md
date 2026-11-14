@@ -256,7 +256,7 @@
 **Примеры.**
 
 - [`08-heap-trees`](../08-heap-trees) — `vol6.tree.search`: `BinarySearchTree`, `AVL`, `RBT`;
-  `vol6.tree.huffman.HuffmanFile` (слайды 707–731 в локальной `АиСД5.pptx`).
+  `vol6.tree.huffman.HuffmanFile` (слайды 734–758 в локальной `АиСД5.pptx`).
 
 ## 13. Динамическое программирование
 
