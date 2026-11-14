@@ -34,13 +34,13 @@ public final class Tree {
         buildCodes(node.right, code + "1", codes);
     }
 
-    private static Node buildTree(Map<Character, Integer> frequency) {
+    static Node buildTree(Map<Character, Integer> frequency) {
         PriorityQueue<Node> min = new PriorityQueue<>();
         frequency.forEach((character, count) -> min.add(new Node(character, count, null, null)));
         while (min.size() > 1) {
             Node left = Objects.requireNonNull(min.poll());
             Node right = Objects.requireNonNull(min.poll());
-            Node node = new Node((char) 0, left.frequency + right.frequency, left, right);
+            Node node = new Node((char) Math.min(left.character, right.character), left.frequency + right.frequency, left, right);
             min.add(node);
         }
         return min.poll();
@@ -79,10 +79,16 @@ public final class Tree {
         }
     }
     @SuppressWarnings("PMD.OverrideBothEqualsAndHashCodeOnComparable")
-    private record Node(char character, int frequency, Node left, Node right) implements Comparable<Node> {
+    record Node(char character, int frequency, Node left, Node right) implements Comparable<Node> {
         @Override
         public int compareTo(Node o) {
-            return Integer.compare(this.frequency, o.frequency);
+            int byFrequency = Integer.compare(this.frequency, o.frequency);
+            if (byFrequency != 0) {
+                return byFrequency;
+            }
+            // При равных весах сначала берём лист, затем меньший байт поддерева.
+            int byKind = Boolean.compare(left != null, o.left != null);
+            return byKind == 0 ? Character.compare(character, o.character) : byKind;
         }
     }
 }

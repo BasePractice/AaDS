@@ -8,7 +8,7 @@ public abstract class Main {
         String text = "Она вдруг остановилась с улыбкой насмешки над своею горячностью.";
         Tree.Compressed compressed = Tree.compress(text);
         System.out.println("Original    : " + text);
-        System.out.println("Length      : " + text.length());
+        System.out.println("UTF-16 units: " + text.length());
         System.out.println("Compressed  : " + compressed.text());
         Map<Character, String> codes = new HashMap<>();
         Tree.buildCodes(compressed.tree(), "", codes);
@@ -17,7 +17,7 @@ public abstract class Main {
         for (Map.Entry<Character, String> entry : codes.entrySet()) {
             System.out.println("            : " + entry.getKey() + " = " + entry.getValue());
         }
-        System.out.println("Length      : " + compressed.text().length() / 8);
+        System.out.println("Payload bits: " + compressed.text().length());
         System.out.println("Decompressed: " + compressed.decompress());
     }
 }
