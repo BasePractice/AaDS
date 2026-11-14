@@ -23,7 +23,7 @@ public abstract class Main {
             new Backpack.Item("Лопата", 1, 3),
             new Backpack.Item("Молот", 10, 1),
             new Backpack.Item("Еда", 3, 3),
-            new Backpack.Item("Пиво", 3, 4)
+            new Backpack.Item("Пиво", 6, 4)
         );
         List<Backpack.Item> putting = backpack.putting(items);
         System.out.println("         Backpack : " + putting);
