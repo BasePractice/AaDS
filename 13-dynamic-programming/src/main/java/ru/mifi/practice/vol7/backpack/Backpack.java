@@ -28,9 +28,15 @@ public interface Backpack {
 
         @Override
         public List<Item> putting(List<Item> items) {
+            return putting(items, () -> { });
+        }
+
+        /** Вызывает наблюдатель один раз для каждой посещённой ячейки, включая базовые случаи. */
+        List<Item> putting(List<Item> items, Runnable visitCell) {
             State[][] states = new State[items.size() + 1][maxWeight + 1];
             for (int i = 0; i < states.length; i++) {
                 for (int j = 0; j < states[i].length; j++) {
+                    visitCell.run();
                     if (i == 0 || j == 0) {
                         states[i][j] = new State(List.of());
                     } else if (i == 1) {

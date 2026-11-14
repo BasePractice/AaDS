@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -57,5 +58,47 @@ final class BackpackTest {
     void putsNothingWhenThereIsNothingToPut() {
         assertThat("an empty item list dont produce an empty backpack",
             new Backpack.Classic(5).putting(List.of()).size(), is(0));
+    }
+
+    @Test
+    @DisplayName("Порог ценности проверяется по оптимальному набору")
+    void checksThreshold() {
+        List<Backpack.Item> items = List.of(
+            new Backpack.Item("A", 2, 3), new Backpack.Item("B", 3, 4), new Backpack.Item("C", 4, 5));
+        List<Backpack.Item> selected = new Backpack.Classic(5).putting(items);
+        int value = selected.stream().mapToInt(Backpack.Item::needed).sum();
+        assertThat("вес набора", selected.stream().mapToInt(Backpack.Item::weight).sum(), is(5));
+        assertThat("ценность набора", value, is(7));
+        assertThat("порог 7", value >= 7, is(true));
+        assertThat("порог 8", value >= 8, is(false));
+    }
+
+    @Test
+    @DisplayName("Рюкзак проверяет достижимость точной суммы")
+    void reducesSubsetSum() {
+        List<Backpack.Item> items = List.of(
+            new Backpack.Item("2", 2, 2), new Backpack.Item("3", 3, 3), new Backpack.Item("7", 7, 7));
+        for (int target : List.of(5, 6)) {
+            List<Backpack.Item> selected = new Backpack.Classic(target).putting(items);
+            int sum = selected.stream().mapToInt(Backpack.Item::needed).sum();
+            assertThat("лучшая достижимая сумма", sum, is(5));
+            assertThat("достижимость цели " + target, sum >= target, is(target == 5));
+        }
+    }
+
+    @Test
+    @DisplayName("Каждый новый бит ёмкости удваивает число посещённых ячеек")
+    void countsVisitedCells() {
+        List<Backpack.Item> items = List.of(
+            new Backpack.Item("A", 2, 3), new Backpack.Item("B", 3, 4), new Backpack.Item("C", 4, 5));
+        for (int bits = 4; bits <= 7; bits++) {
+            int capacity = (1 << bits) - 1;
+            AtomicInteger visits = new AtomicInteger();
+            List<Backpack.Item> selected = new Backpack.Classic(capacity).putting(items, visits::incrementAndGet);
+            int value = selected.stream().mapToInt(Backpack.Item::needed).sum();
+            assertThat("число битов ёмкости", Integer.toBinaryString(capacity).length(), is(bits));
+            assertThat("посещения при W=" + capacity, visits.get(), is(4 * (1 << bits)));
+            assertThat("ценность при W=" + capacity, value, is(12));
+        }
     }
 }
