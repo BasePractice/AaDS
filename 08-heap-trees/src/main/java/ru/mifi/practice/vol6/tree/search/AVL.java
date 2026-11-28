@@ -17,22 +17,24 @@ public final class AVL<T extends Comparable<T>> implements BinaryTree<T> {
     }
 
     @Override
-    public BinaryTree<T> add(T value) {
-        root = add(root, value);
+    public BinaryTree<T> add(T value, Counter counter) {
+        root = add(root, value, counter);
         return this;
     }
 
-    private Node<T> add(Node<T> node, T value) {
+    private Node<T> add(Node<T> node, T value, Counter counter) {
+        counter.increment();
         if (node == null) {
             return new Node<>(value);
         }
         if (node.value.compareTo(value) > 0) {
-            node.left = add(node.left, value);
+            node.left = add(node.left, value, counter);
         } else if (node.value.compareTo(value) < 0) {
-            node.right = add(node.right, value);
+            node.right = add(node.right, value, counter);
         } else {
             return node;
         }
+        counter.increment();
         up(node);
         int balance = balance(node);
         if (balance > 1 && value.compareTo(node.left.value) < 0) {
@@ -53,18 +55,19 @@ public final class AVL<T extends Comparable<T>> implements BinaryTree<T> {
     }
 
     @Override
-    public void delete(T value) {
-        root = delete(root, value);
+    public void delete(T value, Counter counter) {
+        root = delete(root, value, counter);
     }
 
-    private Node<T> delete(Node<T> node, T value) {
+    private Node<T> delete(Node<T> node, T value, Counter counter) {
+        counter.increment();
         if (node == null) {
             return null;
         }
         if (node.value.compareTo(value) > 0) {
-            node.left = delete(node.left, value);
+            node.left = delete(node.left, value, counter);
         } else if (node.value.compareTo(value) < 0) {
-            node.right = delete(node.right, value);
+            node.right = delete(node.right, value, counter);
         } else {
             if (node.left == null || node.right == null) {
                 Node<T> temporary;
@@ -75,14 +78,15 @@ public final class AVL<T extends Comparable<T>> implements BinaryTree<T> {
                 }
                 node = temporary;
             } else {
-                Node<T> temporary = minimum(node.right);
+                Node<T> temporary = minimum(node.right, counter);
                 node.value = temporary.value;
-                node.right = delete(node.right, temporary.value);
+                node.right = delete(node.right, temporary.value, counter);
             }
         }
         if (node == null) {
             return null;
         }
+        counter.increment();
         up(node);
         int balance = balance(node);
         if (balance > 1 && balance(node.left) >= 0) {
@@ -132,10 +136,12 @@ public final class AVL<T extends Comparable<T>> implements BinaryTree<T> {
         return next;
     }
 
-    private Node<T> minimum(Node<T> node) {
+    private Node<T> minimum(Node<T> node, Counter counter) {
+        counter.increment();
         Node<T> it = node;
         while (it.left != null) {
             it = it.left;
+            counter.increment();
         }
         return it;
     }

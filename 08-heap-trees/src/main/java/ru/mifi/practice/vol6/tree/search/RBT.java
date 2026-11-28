@@ -13,16 +13,16 @@ public final class RBT<T extends Comparable<T>> implements BinaryTree<T> {
     Node<T> root;
 
     @Override
-    public BinaryTree<T> add(T value) {
-        insert(value);
+    public BinaryTree<T> add(T value, Counter counter) {
+        insert(value, counter);
         return this;
     }
 
     @Override
-    public void delete(T value) {
-        Node<T> target = findNode(root, value);
+    public void delete(T value, Counter counter) {
+        Node<T> target = findNode(root, value, counter);
         if (target != null) {
-            deleteNode(target);
+            deleteNode(target, counter);
         }
     }
 
@@ -36,12 +36,13 @@ public final class RBT<T extends Comparable<T>> implements BinaryTree<T> {
         return nodes.print(root);
     }
 
-    private void insert(T value) {
+    private void insert(T value, Counter counter) {
         Node<T> newNode = new Node<>(value);
         newNode.custom = RED;
         Node<T> parent = null;
         Node<T> current = root;
         while (current != null) {
+            counter.increment();
             parent = current;
             int cmp = value.compareTo(current.value);
             if (cmp < 0) {
@@ -53,6 +54,7 @@ public final class RBT<T extends Comparable<T>> implements BinaryTree<T> {
                 return;
             }
         }
+        counter.increment();
         newNode.parent = parent;
         if (parent == null) {
             root = newNode;
@@ -61,12 +63,13 @@ public final class RBT<T extends Comparable<T>> implements BinaryTree<T> {
         } else {
             parent.right = newNode;
         }
-        fixInsert(newNode);
+        fixInsert(newNode, counter);
     }
 
-    private void fixInsert(Node<T> inserted) {
+    private void fixInsert(Node<T> inserted, Counter counter) {
         Node<T> current = inserted;
         while (current != root && colorOf(current.parent) == RED) {
+            counter.increment();
             if (current.parent == leftOf(parentOf(current.parent))) {
                 Node<T> uncle = rightOf(parentOf(current.parent));
                 if (colorOf(uncle) == RED) {
@@ -101,6 +104,7 @@ public final class RBT<T extends Comparable<T>> implements BinaryTree<T> {
                 }
             }
         }
+        counter.increment();
         setColor(root, BLACK);
     }
 
@@ -140,7 +144,7 @@ public final class RBT<T extends Comparable<T>> implements BinaryTree<T> {
         node.parent = left;
     }
 
-    private void deleteNode(Node<T> target) {
+    private void deleteNode(Node<T> target, Counter counter) {
         Node<T> child;
         Node<T> parent;
         Node<T> successor = target;
@@ -154,7 +158,7 @@ public final class RBT<T extends Comparable<T>> implements BinaryTree<T> {
             parent = target.parent;
             transplant(target, target.left);
         } else {
-            successor = minimum(target.right);
+            successor = minimum(target.right, counter);
             successorColor = colorOf(successor);
             child = successor.right;
             if (successor.parent == target) {
@@ -171,14 +175,15 @@ public final class RBT<T extends Comparable<T>> implements BinaryTree<T> {
             setColor(successor, colorOf(target));
         }
         if (successorColor == BLACK) {
-            fixDelete(child, parent);
+            fixDelete(child, parent, counter);
         }
     }
 
-    private void fixDelete(Node<T> child, Node<T> parent) {
+    private void fixDelete(Node<T> child, Node<T> parent, Counter counter) {
         Node<T> cursor = child;
         Node<T> cursorParent = parent;
         while (cursor != root && colorOf(cursor) == BLACK) {
+            counter.increment();
             if (cursor == leftOf(cursorParent)) {
                 Node<T> sibling = rightOf(cursorParent);
                 if (colorOf(sibling) == RED) {
@@ -231,6 +236,7 @@ public final class RBT<T extends Comparable<T>> implements BinaryTree<T> {
                 }
             }
         }
+        counter.increment();
         setColor(cursor, BLACK);
     }
 
@@ -247,17 +253,20 @@ public final class RBT<T extends Comparable<T>> implements BinaryTree<T> {
         }
     }
 
-    private Node<T> minimum(Node<T> node) {
+    private Node<T> minimum(Node<T> node, Counter counter) {
+        counter.increment();
         Node<T> current = node;
         while (current.left != null) {
             current = current.left;
+            counter.increment();
         }
         return current;
     }
 
-    private Node<T> findNode(Node<T> node, T value) {
+    private Node<T> findNode(Node<T> node, T value, Counter counter) {
         Node<T> current = node;
         while (current != null) {
+            counter.increment();
             int cmp = value.compareTo(current.value);
             if (cmp < 0) {
                 current = current.left;
@@ -267,6 +276,7 @@ public final class RBT<T extends Comparable<T>> implements BinaryTree<T> {
                 return current;
             }
         }
+        counter.increment();
         return null;
     }
 

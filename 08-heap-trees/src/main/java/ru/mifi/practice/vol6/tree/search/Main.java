@@ -2,38 +2,34 @@ package ru.mifi.practice.vol6.tree.search;
 
 import ru.mifi.practice.commons.Counter;
 
-import java.util.function.Consumer;
+import java.util.List;
 
+/** Сравнение одного поиска в трёх деревьях на одинаковых входных данных. */
 public abstract class Main {
     public static void main(String[] args) {
-        Consumer<BinaryTree<Integer>> generator = tree -> tree.add(8).add(3).add(6).add(1).add(4)
-            .add(7).add(10).add(14).add(13);
-        test("Binary", new BinarySearchTree<>(), generator);
-        test("AVL", new AVL<>(), generator);
-        test("RBT", new RBT<>(), generator);
-        System.out.println("Вырожденное дерево");
-        generator = tree -> tree.add(1).add(2).add(3).add(4).add(5).add(6).add(7).add(8).add(9);
-        test("Binary", new BinarySearchTree<>(), generator);
-        test("AVL", new AVL<>(), generator);
-        test("RBT", new RBT<>(), generator);
+        compare("Смешанный порядок", List.of(5, 2, 8, 1, 3, 6, 9, 4, 7));
+        compare("Отсортированный порядок", List.of(1, 2, 3, 4, 5, 6, 7, 8, 9));
     }
 
-    private static void test(String title, BinaryTree<Integer> tree, Consumer<BinaryTree<Integer>> generator) {
-        System.out.println("Tree   : " + title);
-        Counter counter = new Counter.Default();
-        generator.accept(tree);
-        System.out.println("BinTree: " + tree);
-        System.out.println("Search : " + tree.search(8, counter));
-        System.out.println("Steps  : " + counter);
-        counter.reset();
-        System.out.println("Search : " + tree.search(150, counter));
-        System.out.println("Steps  : " + counter);
-        tree.delete(7);
-        System.out.println("Delete : " + 7);
-        System.out.println("BinTree: " + tree);
-        tree.delete(9);
-        System.out.println("Delete : " + 9);
-        System.out.println("BinTree: " + tree);
-        counter.reset();
+    private static void compare(String title, List<Integer> values) {
+        System.out.println(title + ": " + values);
+        System.out.println("Шаг поиска — посещение узла, включая конечный NIL при отсутствии ключа.");
+        System.out.println("Дерево | Ключ | Найден | Шаги поиска");
+        search("BST", new BinarySearchTree<>(), values);
+        search("AVL", new AVL<>(), values);
+        search("RBT", new RBT<>(), values);
+    }
+
+    private static void search(String title, BinaryTree<Integer> tree, List<Integer> values) {
+        values.forEach(tree::add);
+        Counter counter = Counter.create();
+        for (int key : List.of(8, 150)) {
+            counter.reset();
+            boolean found = tree.search(key, counter).isPresent();
+            if (found != values.contains(key)) {
+                throw new IllegalStateException("Search disagrees with the input values");
+            }
+            System.out.println(title + " | " + key + " | " + found + " | " + counter.count());
+        }
     }
 }

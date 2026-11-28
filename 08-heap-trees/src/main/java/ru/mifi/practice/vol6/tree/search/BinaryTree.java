@@ -7,9 +7,19 @@ import java.util.Optional;
 /** Двоичное дерево поиска по сравнимым значениям. */
 public interface BinaryTree<T extends Comparable<T>> {
 
-    BinaryTree<T> add(T value);
+    default BinaryTree<T> add(T value) {
+        return add(value, Counter.create());
+    }
 
-    void delete(T value);
+    /** Вставляет значение и накапливает шаги обработки узлов без сброса счётчика. */
+    BinaryTree<T> add(T value, Counter counter);
+
+    default void delete(T value) {
+        delete(value, Counter.create());
+    }
+
+    /** Удаляет значение и накапливает шаги обхода и восстановления баланса. */
+    void delete(T value, Counter counter);
 
     Optional<Node<T>> search(T value, Counter counter);
 
