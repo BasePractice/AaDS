@@ -1,5 +1,6 @@
 package ru.mifi.practice.vol5.graph.algorithms;
 
+import ru.mifi.practice.commons.Counter;
 import ru.mifi.practice.vol5.graph.Graph;
 import ru.mifi.practice.vol5.graph.Weight;
 
@@ -26,6 +27,11 @@ public final class DijkstraShortestPath<T, W extends Number & Comparable<W>> imp
 
     @Override
     public Map<Graph.Vertex<T, W>, W> distances(Graph<T, W> graph, Graph.Vertex<T, W> source) {
+        return distances(graph, source, Counter.create());
+    }
+
+    /** Считает попытки релаксации; счётчик накапливается без сброса. */
+    public Map<Graph.Vertex<T, W>, W> distances(Graph<T, W> graph, Graph.Vertex<T, W> source, Counter counter) {
         Map<Graph.Vertex<T, W>, W> distances = new HashMap<>();
         List<Graph.Vertex<T, W>> vertices = graph.getVertices();
         vertices.forEach(vertex -> distances.put(vertex, maxDistance));
@@ -55,6 +61,7 @@ public final class DijkstraShortestPath<T, W extends Number & Comparable<W>> imp
                     continue;
                 }
                 W known = distances.get(target);
+                counter.increment();
                 W distance = weight.sum(tuple.distance, edge.weight());
                 if (distance.compareTo(known) < 0) {
                     distances.put(target, distance);

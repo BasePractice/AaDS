@@ -1,5 +1,6 @@
 package ru.mifi.practice.vol5.graph.algorithms;
 
+import ru.mifi.practice.commons.Counter;
 import ru.mifi.practice.vol5.graph.Graph;
 import ru.mifi.practice.vol5.graph.Weight;
 
@@ -31,11 +32,16 @@ public final class FloydWarshallShortestPath<T, W extends Number & Comparable<W>
 
     @Override
     public Map<Graph.Vertex<T, W>, Map<Graph.Vertex<T, W>, W>> distances(Graph<T, W> graph) {
+        return distances(graph, Counter.create());
+    }
+
+    /** Считает попытки релаксации достижимых пар; счётчик накапливается без сброса. */
+    public Map<Graph.Vertex<T, W>, Map<Graph.Vertex<T, W>, W>> distances(Graph<T, W> graph, Counter counter) {
         List<Graph.Vertex<T, W>> vertices = graph.getVertices();
         Map<Graph.Vertex<T, W>, Map<Graph.Vertex<T, W>, W>> distances = table(vertices);
         for (Graph.Vertex<T, W> middle : vertices) {
             for (Graph.Vertex<T, W> source : vertices) {
-                relax(source, middle, vertices, distances);
+                relax(source, middle, vertices, distances, counter);
             }
         }
         return distances;
@@ -44,7 +50,7 @@ public final class FloydWarshallShortestPath<T, W extends Number & Comparable<W>
     private void relax(Graph.Vertex<T, W> source,
                        Graph.Vertex<T, W> middle,
                        List<Graph.Vertex<T, W>> vertices,
-                       Map<Graph.Vertex<T, W>, Map<Graph.Vertex<T, W>, W>> distances) {
+                       Map<Graph.Vertex<T, W>, Map<Graph.Vertex<T, W>, W>> distances, Counter counter) {
         W reach = distances.get(source).get(middle);
         if (reach.equals(maxDistance)) {
             return;
@@ -52,6 +58,7 @@ public final class FloydWarshallShortestPath<T, W extends Number & Comparable<W>
         for (Graph.Vertex<T, W> target : vertices) {
             W rest = distances.get(middle).get(target);
             if (!rest.equals(maxDistance)) {
+                counter.increment();
                 W distance = weight.sum(reach, rest);
                 if (distance.compareTo(distances.get(source).get(target)) < 0) {
                     distances.get(source).put(target, distance);

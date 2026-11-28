@@ -1,5 +1,6 @@
 package ru.mifi.practice.vol5.graph.algorithms;
 
+import ru.mifi.practice.commons.Counter;
 import ru.mifi.practice.vol5.graph.Graph;
 import ru.mifi.practice.vol5.graph.Weight;
 
@@ -30,34 +31,41 @@ public final class BellmanFordShortestPath<T, W extends Number & Comparable<W>>
 
     @Override
     public Map<Graph.Vertex<T, W>, W> distances(Graph<T, W> graph, Graph.Vertex<T, W> source) {
+        return distances(graph, source, Counter.create());
+    }
+
+    /** Считает попытки релаксации; счётчик накапливается без сброса. */
+    public Map<Graph.Vertex<T, W>, W> distances(Graph<T, W> graph, Graph.Vertex<T, W> source, Counter counter) {
         Map<Graph.Vertex<T, W>, W> distances = new HashMap<>();
         graph.getVertices().forEach(vertex -> distances.put(vertex, maxDistance));
         distances.put(source, minDistance);
         for (int round = 1; round < graph.size(); round++) {
-            if (!relaxed(graph, distances)) {
+            if (!relaxed(graph, distances, counter)) {
                 return distances;
             }
         }
-        if (relaxed(graph, distances)) {
+        if (relaxed(graph, distances, counter)) {
             throw new IllegalStateException("Negative cycle leaves the shortest path undefined");
         }
         return distances;
     }
 
-    private boolean relaxed(Graph<T, W> graph, Map<Graph.Vertex<T, W>, W> distances) {
+    private boolean relaxed(Graph<T, W> graph, Map<Graph.Vertex<T, W>, W> distances, Counter counter) {
         boolean changed = false;
         for (Graph.Vertex<T, W> vertex : graph.getVertices()) {
             W known = distances.get(vertex);
-            if (!known.equals(maxDistance) && relaxed(vertex, known, distances)) {
+            if (!known.equals(maxDistance) && relaxed(vertex, known, distances, counter)) {
                 changed = true;
             }
         }
         return changed;
     }
 
-    private boolean relaxed(Graph.Vertex<T, W> vertex, W known, Map<Graph.Vertex<T, W>, W> distances) {
+    private boolean relaxed(Graph.Vertex<T, W> vertex, W known, Map<Graph.Vertex<T, W>, W> distances,
+                            Counter counter) {
         boolean changed = false;
         for (Graph.Edge<T, W> edge : vertex.edges()) {
+            counter.increment();
             W distance = weight.sum(known, edge.weight());
             if (distance.compareTo(distances.get(edge.target())) < 0) {
                 distances.put(edge.target(), distance);
